@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -34,7 +35,10 @@ func (s *Server) ReportHealth() bool {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(master bool) error {
-	return nil
+	if s.Registry.Identifier == "SiMac.local" {
+		return nil
+	}
+	return fmt.Errorf("Unable to take master as %v", s.Registry.Identifier)
 }
 
 // GetState gets the state of the server
