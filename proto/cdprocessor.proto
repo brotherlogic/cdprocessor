@@ -2,6 +2,12 @@ syntax = "proto3";
 
 package cdprocessor;
 
-service CDProcessor {
+message GetRippedRequest {}
 
+message GetRippedResponse {
+  repeated int32 ripped_ids = 1;
+}
+
+service CDProcessor {
+  rpc GetRipped (GetRippedRequest) returns (GetRippedResponse);
 }
