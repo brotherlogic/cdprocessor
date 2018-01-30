@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
@@ -19,7 +21,7 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 			name := f.Name()
 			id, err := s.io.convert(name)
 			if err != nil {
-				return &pbcdp.GetRippedResponse{}, err
+				return &pbcdp.GetRippedResponse{}, fmt.Errorf("Unable to convert %v -> %v", name, err)
 			}
 			resp.RippedIds = append(resp.RippedIds, id)
 		}
