@@ -12,6 +12,7 @@ import (
 	"github.com/brotherlogic/goserver"
 	"google.golang.org/grpc"
 
+	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbg "github.com/brotherlogic/goserver/proto"
 )
 
@@ -59,7 +60,7 @@ func Init(dir string) *Server {
 
 // DoRegister does RPC registration
 func (s *Server) DoRegister(server *grpc.Server) {
-	// Do nothing
+	pbcdp.RegisterCDProcessorServer(server, s)
 }
 
 // ReportHealth alerts if we're not healthy
