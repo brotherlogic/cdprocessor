@@ -6,6 +6,8 @@ import (
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
+	pbgd "github.com/brotherlogic/godiscogs"
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
 //GetRipped returns the ripped cds
@@ -24,6 +26,35 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 				return &pbcdp.GetRippedResponse{}, fmt.Errorf("Unable to convert %v -> %v", name, err)
 			}
 			resp.RippedIds = append(resp.RippedIds, id)
+		}
+	}
+
+	return resp, nil
+}
+
+//GetMissing gets the missing rips
+func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (*pbcdp.GetMissingResponse, error) {
+	resp := &pbcdp.GetMissingResponse{}
+
+	missing, err := s.rc.get(&pbrc.Record{Release: &pbgd.Release{FolderId: 242018}})
+	if err != nil {
+		return resp, err
+	}
+
+	ripped, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
+	if err != nil {
+		return resp, err
+	}
+
+	for _, r := range missing.Records {
+		found := false
+		for _, ri := range ripped.GetRippedIds() {
+			if ri == r.GetRelease().Id {
+				found = true
+			}
+		}
+		if !found {
+			resp.Missing = append(resp.GetMissing(), r)
 		}
 	}
 

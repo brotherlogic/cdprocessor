@@ -11,7 +11,23 @@ import (
 	"testing"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
+	pbgd "github.com/brotherlogic/godiscogs"
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
+
+type testRc struct {
+	failGet bool
+}
+
+func (rc *testRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
+	if rc.failGet {
+		return &pbrc.GetRecordsResponse{}, fmt.Errorf("Built to fail")
+	}
+	return &pbrc.GetRecordsResponse{Records: []*pbrc.Record{
+		&pbrc.Record{Release: &pbgd.Release{Id: 12345}},
+		&pbrc.Record{Release: &pbgd.Release{Id: 12346}},
+	}}, nil
+}
 
 type testIo struct {
 	dir      string
@@ -75,5 +91,39 @@ func TestGetFailConvert(t *testing.T) {
 	_, err := s.GetRipped(context.Background(), &pbcdp.GetRippedRequest{})
 	if err == nil {
 		t.Fatalf("Bad read did not fail: %v", err)
+	}
+}
+
+func TestGetMissing(t *testing.T) {
+	s := Init("testdata")
+	s.io = &testIo{dir: "testdata"}
+	s.rc = &testRc{}
+	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
+	if err != nil {
+		t.Fatalf("Error getting missing: %v", err)
+	}
+
+	if len(missing.GetMissing()) != 1 || missing.GetMissing()[0].GetRelease().Id != 12346 {
+		t.Errorf("Rips reported missing: %v", missing)
+	}
+}
+
+func TestGetMissingFailGet(t *testing.T) {
+	s := Init("testdata")
+	s.io = &testIo{dir: "testdata"}
+	s.rc = &testRc{failGet: true}
+	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
+	if err == nil {
+		t.Fatalf("Should have failed: %v", missing)
+	}
+}
+
+func TestGetMissingFailGetRipped(t *testing.T) {
+	s := Init("testdata")
+	s.io = &testIo{dir: "testdata", failConv: true}
+	s.rc = &testRc{}
+	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
+	if err == nil {
+		t.Fatalf("Should have failed: %v", missing)
 	}
 }
