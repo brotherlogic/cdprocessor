@@ -2,12 +2,21 @@ syntax = "proto3";
 
 package cdprocessor;
 
+import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
+
 message GetRippedRequest {}
 
 message GetRippedResponse {
   repeated int32 ripped_ids = 1;
 }
 
+message GetMissingRequest {}
+
+message GetMissingResponse {
+  repeated recordcollection.Record missing = 1;
+}
+
 service CDProcessor {
   rpc GetRipped (GetRippedRequest) returns (GetRippedResponse);
+  rpc GetMissing (GetMissingRequest) returns (GetMissingResponse);
 }

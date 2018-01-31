@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -8,17 +9,45 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/brotherlogic/goserver"
 	"google.golang.org/grpc"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbg "github.com/brotherlogic/goserver/proto"
+	"github.com/brotherlogic/goserver/utils"
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
 type io interface {
 	readDir() ([]os.FileInfo, error)
 	convert(name string) (int32, error)
+}
+
+type rc interface {
+	get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error)
+}
+
+type prodRc struct{}
+
+func (rc *prodRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
+	host, port, err := utils.Resolve("recordcollection")
+
+	if err != nil {
+		return &pbrc.GetRecordsResponse{}, err
+	}
+
+	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	defer conn.Close()
+	if err != nil {
+		return &pbrc.GetRecordsResponse{}, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: filter})
 }
 
 type prodIo struct {
@@ -49,12 +78,14 @@ func (i *prodIo) convert(name string) (int32, error) {
 type Server struct {
 	*goserver.GoServer
 	io io
+	rc rc
 }
 
 // Init builds the server
 func Init(dir string) *Server {
 	s := &Server{GoServer: &goserver.GoServer{},
-		io: &prodIo{dir: dir}}
+		io: &prodIo{dir: dir},
+		rc: &prodRc{}}
 	return s
 }
 
