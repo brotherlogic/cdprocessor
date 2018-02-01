@@ -15,6 +15,19 @@ import (
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
+type testGh struct {
+	count int
+	fail bool
+}
+
+func (gh *testGh) recordMissing(r *pbrc.Record) error {
+	if gh.fail {
+		return fmt.Errorf("Built to fail")
+	}
+	gh.count++
+	return nil
+}
+
 type testRc struct {
 	failGet bool
 }
@@ -40,6 +53,7 @@ func (i *testIo) readDir() ([]os.FileInfo, error) {
 		return make([]os.FileInfo, 0), fmt.Errorf("Build to fail")
 	}
 
+	log.Printf("WHAT: %v", i.dir)
 	return ioutil.ReadDir(i.dir)
 }
 
