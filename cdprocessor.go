@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/brotherlogic/goserver"
 	"google.golang.org/grpc"
 
@@ -18,7 +17,34 @@ import (
 	pbg "github.com/brotherlogic/goserver/proto"
 	"github.com/brotherlogic/goserver/utils"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
+	pbgh "github.com/brotherlogic/githubcard/proto"
 )
+
+type gh interface {
+	recordMissing(r *pbrc.Record) error
+}
+
+type prodGh struct{}
+
+func (gh *prodGh) recordMissing(r *pbrc.Record) error {
+	host, port, err := utils.Resolve("githubcard")
+
+        if err != nil {
+                return err
+        }
+
+        conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+        defer conn.Close()
+        if err != nil {
+                return err
+        }
+
+        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+        defer cancel()
+        client := pbgh.NewGithubClient(conn)
+        _, err = client.AddIssue(ctx, &pbgh.Issue{Title: "Rip CD", Body: r.GetRelease().Title})
+	return err
+}
 
 type io interface {
 	readDir() ([]os.FileInfo, error)
@@ -79,13 +105,15 @@ type Server struct {
 	*goserver.GoServer
 	io io
 	rc rc
+	gh gh
 }
 
 // Init builds the server
 func Init(dir string) *Server {
 	s := &Server{GoServer: &goserver.GoServer{},
 		io: &prodIo{dir: dir},
-		rc: &prodRc{}}
+		rc: &prodRc{},
+		gh: &prodGh{}}
 	return s
 }
 
@@ -127,6 +155,7 @@ func main() {
 	server.Register = server
 
 	server.RegisterServer("cdprocessor", false)
+	server.RegisterRepeatingTask(server.logMissing, time.Hour)
 	server.Log("Starting!")
 	server.Serve()
 }
