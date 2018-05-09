@@ -14,7 +14,7 @@ import (
 	"github.com/brotherlogic/goserver"
 	"google.golang.org/grpc"
 
-	pbcdp "github.com/brotherlogic/cdprocessor/proto"
+	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbgh "github.com/brotherlogic/githubcard/proto"
 	pbg "github.com/brotherlogic/goserver/proto"
 	"github.com/brotherlogic/goserver/utils"
@@ -120,7 +120,7 @@ func Init(dir string) *Server {
 
 // DoRegister does RPC registration
 func (s *Server) DoRegister(server *grpc.Server) {
-	pbcdp.RegisterCDProcessorServer(server, s)
+	pb.RegisterCDProcessorServer(server, s)
 }
 
 // ReportHealth alerts if we're not healthy
@@ -130,10 +130,32 @@ func (s *Server) ReportHealth() bool {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(master bool) error {
-	if s.Registry.Identifier == "SiMac.local" {
-		return nil
+	resp, err := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("Unable to take master as %v", s.Registry.Identifier)
+	masterCount := len(resp.RippedIds)
+	servers, err := utils.ResolveAll("cdprocessor")
+	if err != nil {
+		return err
+	}
+	for _, s := range servers {
+		conn, err := grpc.Dial(s.Ip+":"+strconv.Itoa(int(s.Port)), grpc.WithInsecure())
+		defer conn.Close()
+		if err == nil {
+			client := pb.NewCDProcessorClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			val, err := client.GetRipped(ctx, &pb.GetRippedRequest{})
+			if err == nil {
+				if len(val.RippedIds) > masterCount {
+					return fmt.Errorf("Unable to mote, we have less ripped than %v", s.Identifier)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 // GetState gets the state of the server

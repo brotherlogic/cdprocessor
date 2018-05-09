@@ -8,7 +8,7 @@ import (
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 )
 
-func (s *Server) logMissing() {
+func (s *Server) logMissing(ctx context.Context) {
 	s.Log(fmt.Sprintf("RUNNING MISSING"))
 	m, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 	if err != nil {
