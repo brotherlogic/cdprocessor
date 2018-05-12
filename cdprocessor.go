@@ -168,7 +168,7 @@ func (s *Server) GetState() []*pbg.State {
 
 func main() {
 	var quiet = flag.Bool("quiet", false, "Show all output")
-	var dir = flag.String("dir", "/Users/simon/Music/Home/", "Base directory for storage location")
+	var dir = flag.String("dir", "/media/music/", "Base directory for storage location")
 	flag.Parse()
 
 	//Turn off logging
