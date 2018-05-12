@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"golang.org/x/net/context"
+)
 
 func TestLogMissing(t *testing.T) {
 	s := Init("testdata")
@@ -10,7 +14,7 @@ func TestLogMissing(t *testing.T) {
 	s.gh = gh
 	s.SkipLog = true
 
-	s.logMissing()
+	s.logMissing(context.Background())
 
 	if gh.count != 1 {
 		t.Errorf("Missing has not been logged")
@@ -25,13 +29,13 @@ func TestLogMissingFailOnMissing(t *testing.T) {
 	s.gh = gh
 	s.SkipLog = true
 
-	s.logMissing()
+	s.logMissing(context.Background())
+
 	if gh.count > 0 {
 		t.Errorf("Failing missing has not failed log")
 	}
 
 }
-
 
 func TestLogMissingFailOnBadLog(t *testing.T) {
 	s := Init("testdata")
@@ -41,7 +45,8 @@ func TestLogMissingFailOnBadLog(t *testing.T) {
 	s.gh = gh
 	s.SkipLog = true
 
-	s.logMissing()
+	s.logMissing(context.Background())
+
 	if gh.count > 0 {
 		t.Errorf("Failing missing has not failed log:")
 	}
