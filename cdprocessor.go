@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/brotherlogic/goserver"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
@@ -20,6 +20,11 @@ import (
 	"github.com/brotherlogic/goserver/utils"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
+
+type getter interface {
+	getRecord(ctx context.Context, id int32) *pbrc.Record
+	updateRecord(ctx context.Context, rec *pbrc.Record)
+}
 
 type gh interface {
 	recordMissing(r *pbrc.Record) error
@@ -104,9 +109,10 @@ func (i *prodIo) convert(name string) (int32, error) {
 //Server main server type
 type Server struct {
 	*goserver.GoServer
-	io io
-	rc rc
-	gh gh
+	io     io
+	rc     rc
+	gh     gh
+	getter getter
 }
 
 // Init builds the server
@@ -134,7 +140,7 @@ func (s *Server) Mote(master bool) error {
 	if err != nil {
 		return err
 	}
-	masterCount := len(resp.RippedIds)
+	masterCount := len(resp.Ripped)
 	servers, err := utils.ResolveAll("cdprocessor")
 	if err != nil {
 		return err
@@ -148,7 +154,7 @@ func (s *Server) Mote(master bool) error {
 			defer cancel()
 			val, err := client.GetRipped(ctx, &pb.GetRippedRequest{})
 			if err == nil {
-				if len(val.RippedIds) > masterCount {
+				if len(val.Ripped) > masterCount {
 					return fmt.Errorf("Unable to mote, we have less ripped than %v", s.Identifier)
 				}
 			}
@@ -162,7 +168,7 @@ func (s *Server) Mote(master bool) error {
 func (s *Server) GetState() []*pbg.State {
 	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
 	return []*pbg.State{
-		&pbg.State{Key: "count", Value: int64(len(r.RippedIds))},
+		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 	}
 }
 

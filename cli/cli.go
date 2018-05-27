@@ -37,7 +37,7 @@ func main() {
 		resp, err := registry.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 		if err == nil {
-			fmt.Printf("Got %v ripped records\n", len(resp.GetRippedIds()))
+			fmt.Printf("Got %v ripped records\n", len(resp.GetRipped()))
 		} else {
 			log.Fatalf("Error: %v", err)
 		}

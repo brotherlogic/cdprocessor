@@ -17,7 +17,7 @@ import (
 
 type testGh struct {
 	count int
-	fail bool
+	fail  bool
 }
 
 func (gh *testGh) recordMissing(r *pbrc.Record) error {
@@ -85,7 +85,7 @@ func TestGetRipped(t *testing.T) {
 		t.Fatalf("Error getting ripped: %v", err)
 	}
 
-	if len(ripped.GetRippedIds()) != 1 || ripped.GetRippedIds()[0] != 12345 {
+	if len(ripped.GetRipped()) != 1 || ripped.GetRipped()[0].Id != 12345 {
 		t.Errorf("Error in reading rips: %v", ripped)
 	}
 }
