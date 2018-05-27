@@ -6,8 +6,13 @@ import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
 
 message GetRippedRequest {}
 
+message Rip {
+  int32 id = 1;
+  string path = 2;
+}
+
 message GetRippedResponse {
-  repeated int32 ripped_ids = 1;
+  repeated Rip ripped = 1;
 }
 
 message GetMissingRequest {}
