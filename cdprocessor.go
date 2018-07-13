@@ -182,6 +182,5 @@ func main() {
 
 	server.RegisterServer("cdprocessor", false)
 	server.RegisterRepeatingTask(server.logMissing, time.Hour)
-	server.Log("Starting!")
 	server.Serve()
 }
