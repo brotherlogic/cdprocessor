@@ -17,7 +17,7 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 		return &pbcdp.GetRippedResponse{}, err
 	}
 
-	resp := &pbcdp.GetRippedResponse{RippedIds: make([]int32, 0)}
+	resp := &pbcdp.GetRippedResponse{Ripped: make([]*pbcdp.Rip, 0)}
 	for _, f := range files {
 		if f.IsDir() {
 			name := f.Name()
@@ -25,7 +25,7 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 			if err != nil {
 				return &pbcdp.GetRippedResponse{}, fmt.Errorf("Unable to convert %v -> %v", name, err)
 			}
-			resp.RippedIds = append(resp.RippedIds, id)
+			resp.Ripped = append(resp.Ripped, &pbcdp.Rip{Id: id, Path: f.Name()})
 		}
 	}
 
@@ -48,8 +48,8 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 
 	for _, r := range missing.Records {
 		found := false
-		for _, ri := range ripped.GetRippedIds() {
-			if ri == r.GetRelease().Id {
+		for _, ri := range ripped.GetRipped() {
+			if ri.Id == r.GetRelease().Id {
 				found = true
 			}
 		}
