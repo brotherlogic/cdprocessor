@@ -19,7 +19,7 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 
 	resp := &pbcdp.GetRippedResponse{Ripped: make([]*pbcdp.Rip, 0)}
 	for _, f := range files {
-		if f.IsDir() {
+		if f.IsDir() && f.Name() != "lost+found" {
 			name := f.Name()
 			id, err := s.io.convert(name)
 			if err != nil {
