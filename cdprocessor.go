@@ -141,25 +141,28 @@ func (s *Server) Mote(master bool) error {
 	if err != nil {
 		return err
 	}
-	masterCount := len(resp.Ripped)
-	servers, err := utils.ResolveAll("cdprocessor")
+	masterCount := int64(len(resp.Ripped))
+	ip, port, err := utils.Resolve("versionserver")
 	if err != nil {
 		return err
 	}
-	for _, s := range servers {
-		conn, err := grpc.Dial(s.Ip+":"+strconv.Itoa(int(s.Port)), grpc.WithInsecure())
-		defer conn.Close()
-		if err == nil {
-			client := pb.NewCDProcessorClient(conn)
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
-			val, err := client.GetRipped(ctx, &pb.GetRippedRequest{})
-			if err == nil {
-				if len(val.Ripped) > masterCount {
-					return fmt.Errorf("Unable to mote, we have less ripped than %v", s.Identifier)
-				}
-			}
-		}
+
+	conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pbvs.NewVersionServerClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	v, err := client.GetVersion(ctx, &pbvs.GetVersionRequest{Key: "github.com.brotherlogic.cdprocessor"})
+	if err != nil {
+		return err
+	}
+
+	if masterCount < v.Version.Value {
+		return fmt.Errorf("Not enough rips: %v", masterCount)
 	}
 
 	return nil
