@@ -11,14 +11,15 @@ import (
 	"time"
 
 	"github.com/brotherlogic/goserver"
+	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbgh "github.com/brotherlogic/githubcard/proto"
 	pbg "github.com/brotherlogic/goserver/proto"
-	"github.com/brotherlogic/goserver/utils"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
+	pbvs "github.com/brotherlogic/versionserver/proto"
 )
 
 type getter interface {
@@ -164,6 +165,21 @@ func (s *Server) Mote(master bool) error {
 	return nil
 }
 
+func (s *Server) writeCount(ctx context.Context) {
+	resp, err := s.GetRipped(ctx, &pb.GetRippedRequest{})
+	if err == nil {
+		ip, port, err := utils.Resolve("versionserver")
+		if err == nil {
+			conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+			defer conn.Close()
+			if err == nil {
+				client := pbvs.NewVersionServerClient(conn)
+				client.SetVersion(ctx, &pbvs.SetVersionRequest{Set: &pbvs.Version{Key: "github.com.brotherlogic.cdprocessor", Value: int64(len(resp.Ripped)), Setter: "cdprocessor"}})
+			}
+		}
+	}
+}
+
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
 	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
@@ -188,5 +204,6 @@ func main() {
 
 	server.RegisterServer("cdprocessor", false)
 	server.RegisterRepeatingTask(server.logMissing, time.Hour)
+	server.RegisterRepeatingTask(server.writeCount, time.Hour)
 	server.Serve()
 }
