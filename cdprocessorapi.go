@@ -36,25 +36,27 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (*pbcdp.GetMissingResponse, error) {
 	resp := &pbcdp.GetMissingResponse{}
 
-	missing, err := s.rc.get(&pbrc.Record{Release: &pbgd.Release{FolderId: 242018}})
-	if err != nil {
-		return resp, err
-	}
-
-	ripped, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
-	if err != nil {
-		return resp, err
-	}
-
-	for _, r := range missing.Records {
-		found := false
-		for _, ri := range ripped.GetRipped() {
-			if ri.Id == r.GetRelease().Id {
-				found = true
-			}
+	for _, id := range []int32{242018, 288751} {
+		missing, err := s.rc.get(&pbrc.Record{Release: &pbgd.Release{FolderId: id}})
+		if err != nil {
+			return resp, err
 		}
-		if !found {
-			resp.Missing = append(resp.GetMissing(), r)
+
+		ripped, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
+		if err != nil {
+			return resp, err
+		}
+
+		for _, r := range missing.Records {
+			found := false
+			for _, ri := range ripped.GetRipped() {
+				if ri.Id == r.GetRelease().Id {
+					found = true
+				}
+			}
+			if !found {
+				resp.Missing = append(resp.GetMissing(), r)
+			}
 		}
 	}
 
