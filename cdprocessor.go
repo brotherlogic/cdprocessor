@@ -49,7 +49,7 @@ func (gh *prodGh) recordMissing(r *pbrc.Record) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	client := pbgh.NewGithubClient(conn)
-	_, err = client.AddIssue(ctx, &pbgh.Issue{Title: "Rip CD", Body: r.GetRelease().Title, Service: "recordcollection"})
+	_, err = client.AddIssue(ctx, &pbgh.Issue{Title: "Rip CD", Body: fmt.Sprintf("%v [%v]", r.GetRelease().Title, r.GetRelease().Id), Service: "recordcollection"})
 	return err
 }
 
