@@ -136,7 +136,7 @@ func (s *Server) ReportHealth() bool {
 }
 
 // Mote promotes/demotes this server
-func (s *Server) Mote(master bool) error {
+func (s *Server) Mote(ctx context.Context, master bool) error {
 	resp, err := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
 	if err != nil {
 		return err
