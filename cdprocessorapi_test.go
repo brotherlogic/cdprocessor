@@ -37,8 +37,8 @@ func (rc *testRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
 		return &pbrc.GetRecordsResponse{}, fmt.Errorf("Built to fail")
 	}
 	return &pbrc.GetRecordsResponse{Records: []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{Id: 12345}},
-		&pbrc.Record{Release: &pbgd.Release{Id: 12346}},
+		&pbrc.Record{Release: &pbgd.Release{Id: 12345, Formats: []*pbgd.Format{&pbgd.Format{Name: "CD"}}}},
+		&pbrc.Record{Release: &pbgd.Release{Id: 12346, Formats: []*pbgd.Format{&pbgd.Format{Name: "CD"}}}},
 	}}, nil
 }
 
@@ -117,7 +117,7 @@ func TestGetMissing(t *testing.T) {
 		t.Fatalf("Error getting missing: %v", err)
 	}
 
-	if len(missing.GetMissing()) != 1 || missing.GetMissing()[0].GetRelease().Id != 12346 {
+	if len(missing.GetMissing()) != 3 || missing.GetMissing()[0].GetRelease().Id != 12346 {
 		t.Errorf("Rips reported missing: %v", missing)
 	}
 }
