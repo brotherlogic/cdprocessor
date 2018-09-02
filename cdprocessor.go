@@ -186,8 +186,10 @@ func (s *Server) writeCount(ctx context.Context) {
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
 	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
+	m, _ := s.GetMissing(context.Background(), &pb.GetMissingRequest{})
 	return []*pbg.State{
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
+		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
 	}
 }
 
