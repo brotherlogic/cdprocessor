@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	pbgd "github.com/brotherlogic/godiscogs"
 	"github.com/brotherlogic/goserver"
 	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
@@ -25,6 +26,51 @@ import (
 type getter interface {
 	getRecord(ctx context.Context, id int32) *pbrc.Record
 	updateRecord(ctx context.Context, rec *pbrc.Record)
+}
+
+type prodGetter struct{}
+
+func (rc *prodGetter) getRecord(ctx context.Context, id int32) *pbrc.Record {
+	host, port, err := utils.Resolve("recordcollection")
+
+	if err != nil {
+		return nil
+	}
+
+	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	defer conn.Close()
+	if err != nil {
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{InstanceId: id}}})
+	if err != nil {
+		return nil
+	}
+
+	return resp.GetRecords()[0]
+}
+
+func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
+	host, port, err := utils.Resolve("recordcollection")
+
+	if err != nil {
+		return
+	}
+
+	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	defer conn.Close()
+	if err != nil {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
 }
 
 type gh interface {
@@ -119,9 +165,11 @@ type Server struct {
 // Init builds the server
 func Init(dir string) *Server {
 	s := &Server{GoServer: &goserver.GoServer{},
-		io: &prodIo{dir: dir},
-		rc: &prodRc{},
-		gh: &prodGh{}}
+		io:     &prodIo{dir: dir},
+		rc:     &prodRc{},
+		gh:     &prodGh{},
+		getter: &prodGetter{},
+	}
 	return s
 }
 
