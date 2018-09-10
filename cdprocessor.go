@@ -51,6 +51,10 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) *pbrc.Record {
 		return nil
 	}
 
+	if len(resp.GetRecords()) == 0 {
+		return nil
+	}
+
 	return resp.GetRecords()[0]
 }
 
