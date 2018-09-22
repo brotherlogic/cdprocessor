@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
@@ -16,7 +18,7 @@ type testGetter struct {
 
 func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
 	if t.fail {
-		return nil, fmt.Errorf("Built to fail")
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Built to fail"))
 	}
 	return &pbrc.Record{Metadata: &pbrc.ReleaseMetadata{FilePath: ""}}, nil
 }
