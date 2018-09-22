@@ -15,6 +15,8 @@ import (
 	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbgh "github.com/brotherlogic/githubcard/proto"
@@ -52,7 +54,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, er
 	}
 
 	if len(resp.GetRecords()) == 0 {
-		return nil, fmt.Errorf("Unable to locate record")
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
 	}
 
 	return resp.GetRecords()[0], nil
@@ -260,8 +262,8 @@ func main() {
 	server.Register = server
 
 	server.RegisterServer("cdprocessor", false)
-	server.RegisterRepeatingTask(server.logMissing, time.Hour)
-	server.RegisterRepeatingTask(server.writeCount, time.Hour)
-	server.RegisterRepeatingTask(server.adjustExisting, time.Hour)
+	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
+	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
+	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
 	server.Serve()
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 )
@@ -18,7 +20,10 @@ func (s *Server) adjustExisting(ctx context.Context) {
 	for _, r := range m.Ripped {
 		rec, err := s.getter.getRecord(ctx, r.Id)
 		if err != nil {
-			s.RaiseIssue(ctx, "Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err), false)
+			e, ok := status.FromError(err)
+			if ok && e.Code() == codes.InvalidArgument {
+				s.RaiseIssue(ctx, "Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err), false)
+			}
 		} else {
 			if rec.GetMetadata().FilePath != r.Path {
 				rec.GetMetadata().FilePath = r.Path
