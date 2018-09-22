@@ -24,23 +24,23 @@ import (
 )
 
 type getter interface {
-	getRecord(ctx context.Context, id int32) *pbrc.Record
+	getRecord(ctx context.Context, id int32) (*pbrc.Record, error)
 	updateRecord(ctx context.Context, rec *pbrc.Record)
 }
 
 type prodGetter struct{}
 
-func (rc *prodGetter) getRecord(ctx context.Context, id int32) *pbrc.Record {
+func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
 	host, port, err := utils.Resolve("recordcollection")
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
 	defer conn.Close()
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -48,14 +48,14 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) *pbrc.Record {
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	if len(resp.GetRecords()) == 0 {
-		return nil
+		return nil, fmt.Errorf("Unable to locate record")
 	}
 
-	return resp.GetRecords()[0]
+	return resp.GetRecords()[0], nil
 }
 
 func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {

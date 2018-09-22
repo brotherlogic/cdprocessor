@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"golang.org/x/net/context"
@@ -13,8 +14,11 @@ type testGetter struct {
 	updates int
 }
 
-func (t *testGetter) getRecord(ctx context.Context, id int32) *pbrc.Record {
-	return &pbrc.Record{Metadata: &pbrc.ReleaseMetadata{FilePath: ""}}
+func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
+	if t.fail {
+		return nil, fmt.Errorf("Built to fail")
+	}
+	return &pbrc.Record{Metadata: &pbrc.ReleaseMetadata{FilePath: ""}}, nil
 }
 
 func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
@@ -47,6 +51,19 @@ func TestAdjustFail(t *testing.T) {
 	s := InitTestServer()
 	tg := &testGetter{}
 	s.io = &testIo{failRead: true}
+	s.getter = tg
+
+	s.adjustExisting(context.Background())
+
+	if tg.updates != 0 {
+		t.Errorf("Update has run!")
+	}
+}
+
+func TestAdjustFailOnFailedGet(t *testing.T) {
+	s := InitTestServer()
+	tg := &testGetter{fail: true}
+	s.io = &testIo{dir: "testdata"}
 	s.getter = tg
 
 	s.adjustExisting(context.Background())
