@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -11,6 +12,7 @@ import (
 )
 
 func (s *Server) adjustExisting(ctx context.Context) {
+	t := time.Now()
 	m, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 	if err != nil {
@@ -31,6 +33,8 @@ func (s *Server) adjustExisting(ctx context.Context) {
 			}
 		}
 	}
+
+	s.lastRunTime = time.Now().Sub(t)
 }
 
 func (s *Server) logMissing(ctx context.Context) {

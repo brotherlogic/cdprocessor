@@ -162,10 +162,11 @@ func (i *prodIo) convert(name string) (int32, error) {
 //Server main server type
 type Server struct {
 	*goserver.GoServer
-	io     io
-	rc     rc
-	gh     gh
-	getter getter
+	io          io
+	rc          rc
+	gh          gh
+	getter      getter
+	lastRunTime time.Duration
 }
 
 // Init builds the server
@@ -244,6 +245,7 @@ func (s *Server) GetState() []*pbg.State {
 	return []*pbg.State{
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
+		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
 	}
 }
 
