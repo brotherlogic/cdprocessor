@@ -167,6 +167,7 @@ type Server struct {
 	gh          gh
 	getter      getter
 	lastRunTime time.Duration
+	adjust      int
 }
 
 // Init builds the server
@@ -246,6 +247,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
 		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
+		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
 	}
 }
 
@@ -266,6 +268,6 @@ func main() {
 	server.RegisterServer("cdprocessor", false)
 	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
-	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
+	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Minute)
 	server.Serve()
 }

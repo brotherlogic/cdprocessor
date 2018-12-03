@@ -19,17 +19,20 @@ func (s *Server) adjustExisting(ctx context.Context) {
 		return
 	}
 
+	s.adjust = 0
 	for _, r := range m.Ripped {
 		rec, err := s.getter.getRecord(ctx, r.Id)
 		if err != nil {
 			e, ok := status.FromError(err)
-			if ok && e.Code() == codes.InvalidArgument {
+			if !ok || e.Code() == codes.InvalidArgument {
 				s.RaiseIssue(ctx, "Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err), false)
 			}
 		} else {
 			if rec.GetMetadata().FilePath != r.Path {
 				rec.GetMetadata().FilePath = r.Path
 				s.getter.updateRecord(ctx, rec)
+				s.adjust = 1
+				break
 			}
 		}
 	}
