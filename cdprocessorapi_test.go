@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -53,12 +52,10 @@ func (i *testIo) readDir() ([]os.FileInfo, error) {
 		return make([]os.FileInfo, 0), fmt.Errorf("Build to fail")
 	}
 
-	log.Printf("WHAT: %v", i.dir)
 	return ioutil.ReadDir(i.dir)
 }
 
 func (i *testIo) convert(name string) (int32, error) {
-	log.Printf("HERE: %v", name)
 	if i.failConv {
 		return -1, fmt.Errorf("Build to fail")
 	}
@@ -117,8 +114,10 @@ func TestGetMissing(t *testing.T) {
 		t.Fatalf("Error getting missing: %v", err)
 	}
 
-	if len(missing.GetMissing()) != 3 || missing.GetMissing()[0].GetRelease().Id != 12346 {
-		t.Errorf("Rips reported missing: %v", missing)
+	if len(missing.GetMissing()) != 6 || missing.GetMissing()[0].GetRelease().Id != 12346 {
+		for i := range missing.GetMissing() {
+			t.Errorf("%v. Missing: %v", i, missing.GetMissing()[i].GetRelease().Id)
+		}
 	}
 }
 

@@ -8,28 +8,38 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	pbgd "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
 type testGetter struct {
-	fail    bool
-	updates int
+	fail     bool
+	updates  int
+	adjusted map[int32]bool
 }
 
 func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
 	if t.fail {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Built to fail"))
 	}
-	return &pbrc.Record{Metadata: &pbrc.ReleaseMetadata{FilePath: ""}}, nil
+	filepath := ""
+	if t.adjusted[id] {
+		filepath = fmt.Sprintf("%v", id)
+	}
+	return &pbrc.Record{Release: &pbgd.Release{Id: id}, Metadata: &pbrc.ReleaseMetadata{FilePath: filepath}}, nil
 }
 
 func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
 	t.updates++
+	if t.adjusted == nil {
+		t.adjusted = make(map[int32]bool)
+	}
+	t.adjusted[rec.GetRelease().Id] = true
 }
 
-func InitTestServer() *Server {
-	s := Init("testdata")
-	s.io = &testIo{dir: "testdata"}
+func InitTestServer(dir string) *Server {
+	s := Init(dir)
+	s.io = &testIo{dir: dir}
 	s.rc = &testRc{}
 	gh := &testGh{}
 	s.gh = gh
@@ -38,7 +48,7 @@ func InitTestServer() *Server {
 }
 
 func TestAdjust(t *testing.T) {
-	s := InitTestServer()
+	s := InitTestServer("testdata")
 	tg := &testGetter{}
 	s.getter = tg
 
@@ -50,7 +60,7 @@ func TestAdjust(t *testing.T) {
 }
 
 func TestAdjustFail(t *testing.T) {
-	s := InitTestServer()
+	s := InitTestServer("testdata")
 	tg := &testGetter{}
 	s.io = &testIo{failRead: true}
 	s.getter = tg
@@ -63,7 +73,7 @@ func TestAdjustFail(t *testing.T) {
 }
 
 func TestAdjustFailOnFailedGet(t *testing.T) {
-	s := InitTestServer()
+	s := InitTestServer("testdata")
 	tg := &testGetter{fail: true}
 	s.io = &testIo{dir: "testdata"}
 	s.getter = tg
@@ -76,7 +86,7 @@ func TestAdjustFailOnFailedGet(t *testing.T) {
 }
 
 func TestLogMissing(t *testing.T) {
-	s := Init("testdata")
+	s := InitTestServer("testdata")
 	s.io = &testIo{dir: "testdata"}
 	s.rc = &testRc{}
 	gh := &testGh{}
@@ -91,7 +101,7 @@ func TestLogMissing(t *testing.T) {
 }
 
 func TestLogMissingFailOnMissing(t *testing.T) {
-	s := Init("testdata")
+	s := InitTestServer("testdata")
 	s.io = &testIo{dir: "testdata", failRead: true}
 	s.rc = &testRc{}
 	gh := &testGh{}
@@ -107,7 +117,7 @@ func TestLogMissingFailOnMissing(t *testing.T) {
 }
 
 func TestLogMissingFailOnBadLog(t *testing.T) {
-	s := Init("testdata")
+	s := InitTestServer("testdata")
 	s.io = &testIo{dir: "testdata"}
 	s.rc = &testRc{}
 	gh := &testGh{fail: true}
@@ -120,4 +130,18 @@ func TestLogMissingFailOnBadLog(t *testing.T) {
 		t.Errorf("Failing missing has not failed log:")
 	}
 
+}
+
+func TestMultiAdjustPasses(t *testing.T) {
+	s := InitTestServer("testmulti")
+	getter := &testGetter{adjusted: make(map[int32]bool)}
+	s.getter = getter
+
+	for i := 0; i < 3; i++ {
+		s.adjustExisting(context.Background())
+	}
+
+	if len(getter.adjusted) != 2 {
+		t.Errorf("Not enough records have been adjusted: %v", getter.adjusted)
+	}
 }
