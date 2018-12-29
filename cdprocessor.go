@@ -79,7 +79,7 @@ func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
 	defer cancel()
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
-	rc.log(fmt.Sprintf("Error: (%v) - %v", rec.GetRelease().Id, err))
+	rc.log(fmt.Sprintf("Updated %v (%v)", rec.GetRelease().Id, err))
 }
 
 type gh interface {
