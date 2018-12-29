@@ -30,7 +30,9 @@ type getter interface {
 	updateRecord(ctx context.Context, rec *pbrc.Record)
 }
 
-type prodGetter struct{}
+type prodGetter struct {
+	log func(in string)
+}
 
 func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
 	host, port, err := utils.Resolve("recordcollection")
@@ -76,7 +78,8 @@ func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
+	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
+	rc.log(fmt.Sprintf("Error: %v", err))
 }
 
 type gh interface {
@@ -178,6 +181,7 @@ func Init(dir string) *Server {
 		gh:     &prodGh{},
 		getter: &prodGetter{},
 	}
+	s.getter = &prodGetter{log: s.Log}
 	return s
 }
 
