@@ -221,6 +221,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 		return err
 	}
 
+	s.Log(fmt.Sprintf("Cannot Mote %v vs %v", masterCount, v.Version.Value))
 	if masterCount < v.Version.Value {
 		return fmt.Errorf("Not enough rips: %v", masterCount)
 	}
