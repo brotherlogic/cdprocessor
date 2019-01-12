@@ -94,18 +94,24 @@ func TestGetRipped(t *testing.T) {
 func TestGetFailRead(t *testing.T) {
 	s := InitTestServer("testdata/")
 	s.io = &testIo{dir: "testdata/", failRead: true}
-	_, err := s.GetRipped(context.Background(), &pbcdp.GetRippedRequest{})
-	if err == nil {
-		t.Fatalf("Bad read did not fail: %v", err)
+	s.rips = []*pbcdp.Rip{}
+	s.buildConfig(context.Background())
+	rips, _ := s.GetRipped(context.Background(), &pbcdp.GetRippedRequest{})
+	if len(rips.Ripped) != 0 {
+		t.Fatalf("Bad read did not fail: %v", rips)
 	}
 }
 
 func TestGetFailConvert(t *testing.T) {
 	s := InitTestServer("testdata/")
 	s.io = &testIo{dir: "testdata/", failConv: true}
-	_, err := s.GetRipped(context.Background(), &pbcdp.GetRippedRequest{})
-	if err == nil {
-		t.Fatalf("Bad read did not fail: %v", err)
+
+	s.rips = []*pbcdp.Rip{}
+	s.buildConfig(context.Background())
+
+	rips, _ := s.GetRipped(context.Background(), &pbcdp.GetRippedRequest{})
+	if len(rips.Ripped) != 0 {
+		t.Fatalf("Bad read did not fail: %v", rips)
 	}
 }
 
@@ -129,16 +135,6 @@ func TestGetMissingFailGet(t *testing.T) {
 	s := InitTestServer("testdata/")
 	s.io = &testIo{dir: "testdata/"}
 	s.rc = &testRc{failGet: true}
-	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
-	if err == nil {
-		t.Fatalf("Should have failed: %v", missing)
-	}
-}
-
-func TestGetMissingFailGetRipped(t *testing.T) {
-	s := InitTestServer("testdata/")
-	s.io = &testIo{dir: "testdata/", failConv: true}
-	s.rc = &testRc{}
 	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 	if err == nil {
 		t.Fatalf("Should have failed: %v", missing)

@@ -44,6 +44,7 @@ func InitTestServer(dir string) *Server {
 	gh := &testGh{}
 	s.gh = gh
 	s.SkipLog = true
+	s.buildConfig(context.Background())
 	return s
 }
 
@@ -56,19 +57,6 @@ func TestAdjust(t *testing.T) {
 
 	if tg.updates != 1 {
 		t.Errorf("Update has not run!")
-	}
-}
-
-func TestAdjustFail(t *testing.T) {
-	s := InitTestServer("testdata")
-	tg := &testGetter{}
-	s.io = &testIo{failRead: true}
-	s.getter = tg
-
-	s.adjustExisting(context.Background())
-
-	if tg.updates != 0 {
-		t.Errorf("Update has run!")
 	}
 }
 
@@ -98,22 +86,6 @@ func TestLogMissing(t *testing.T) {
 	if gh.count != 1 {
 		t.Errorf("Missing has not been logged")
 	}
-}
-
-func TestLogMissingFailOnMissing(t *testing.T) {
-	s := InitTestServer("testdata")
-	s.io = &testIo{dir: "testdata", failRead: true}
-	s.rc = &testRc{}
-	gh := &testGh{}
-	s.gh = gh
-	s.SkipLog = true
-
-	s.logMissing(context.Background())
-
-	if gh.count > 0 {
-		t.Errorf("Failing missing has not failed log")
-	}
-
 }
 
 func TestLogMissingFailOnBadLog(t *testing.T) {

@@ -177,6 +177,7 @@ type Server struct {
 	getter      getter
 	lastRunTime time.Duration
 	adjust      int
+	rips        []*pb.Rip
 }
 
 // Init builds the server
@@ -204,11 +205,9 @@ func (s *Server) ReportHealth() bool {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
-	resp, err := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
-	if err != nil {
-		return err
-	}
-	masterCount := int64(len(resp.Ripped))
+	s.buildConfig(ctx)
+
+	masterCount := int64(len(s.rips))
 	ip, port, err := utils.Resolve("versionserver")
 	if err != nil {
 		return err
@@ -221,8 +220,6 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 	defer conn.Close()
 
 	client := pbvs.NewVersionServerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	v, err := client.GetVersion(ctx, &pbvs.GetVersionRequest{Key: "github.com.brotherlogic.cdprocessor"})
 	if err != nil {
 		return err
@@ -237,16 +234,13 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 }
 
 func (s *Server) writeCount(ctx context.Context) {
-	resp, err := s.GetRipped(ctx, &pb.GetRippedRequest{})
+	ip, port, err := utils.Resolve("versionserver")
 	if err == nil {
-		ip, port, err := utils.Resolve("versionserver")
+		conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+		defer conn.Close()
 		if err == nil {
-			conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
-			defer conn.Close()
-			if err == nil {
-				client := pbvs.NewVersionServerClient(conn)
-				client.SetVersion(ctx, &pbvs.SetVersionRequest{Set: &pbvs.Version{Key: "github.com.brotherlogic.cdprocessor", Value: int64(len(resp.Ripped)), Setter: "cdprocessor"}})
-			}
+			client := pbvs.NewVersionServerClient(conn)
+			client.SetVersion(ctx, &pbvs.SetVersionRequest{Set: &pbvs.Version{Key: "github.com.brotherlogic.cdprocessor", Value: int64(len(s.rips)), Setter: "cdprocessor"}})
 		}
 	}
 }

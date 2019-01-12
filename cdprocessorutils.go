@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -11,13 +12,42 @@ import (
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 )
 
-func (s *Server) adjustExisting(ctx context.Context) {
-	t := time.Now()
-	m, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
-
+func (s *Server) buildConfig(ctx context.Context) {
+	files, err := s.io.readDir()
 	if err != nil {
 		return
 	}
+
+	rips := []*pbcdp.Rip{}
+	for _, f := range files {
+		if f.IsDir() && f.Name() != "lost+found" {
+			name := f.Name()
+			id, err := s.io.convert(name)
+			if err != nil {
+				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
+				return
+			}
+
+			trackFiles, _ := s.io.readSubdir(f.Name())
+			tracks := []*pbcdp.Track{}
+			for _, tf := range trackFiles {
+				if strings.HasSuffix(tf.Name(), "wav") {
+					tracks = append(tracks, &pbcdp.Track{WavPath: f.Name() + "/" + tf.Name()})
+				} else if strings.HasSuffix(tf.Name(), "mp3") {
+					tracks = append(tracks, &pbcdp.Track{Mp3Path: f.Name() + "/" + tf.Name()})
+				}
+			}
+
+			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
+		}
+	}
+
+	s.rips = rips
+}
+
+func (s *Server) adjustExisting(ctx context.Context) {
+	t := time.Now()
+	m, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 	for _, r := range m.Ripped {
 		rec, err := s.getter.getRecord(ctx, r.Id)
@@ -40,10 +70,7 @@ func (s *Server) adjustExisting(ctx context.Context) {
 }
 
 func (s *Server) logMissing(ctx context.Context) {
-	m, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
-	if err != nil {
-		return
-	}
+	m, _ := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 
 	if len(m.Missing) > 0 {
 		err := s.gh.recordMissing(m.Missing[0])
