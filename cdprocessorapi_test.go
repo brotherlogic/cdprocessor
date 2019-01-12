@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -56,6 +57,7 @@ func (i *testIo) readDir() ([]os.FileInfo, error) {
 }
 
 func (i *testIo) readSubdir(f string) ([]os.FileInfo, error) {
+	log.Printf("BANG %v", i.dir+f)
 	return ioutil.ReadDir(i.dir + f)
 }
 

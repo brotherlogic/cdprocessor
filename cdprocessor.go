@@ -178,6 +178,7 @@ type Server struct {
 	lastRunTime time.Duration
 	adjust      int
 	rips        []*pb.Rip
+	ripCount    int64
 }
 
 // Init builds the server
@@ -273,6 +274,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "tracks", Value: int64(tracks)},
 		&pbg.State{Key: "wavs", Fraction: wavs / float64(tracks)},
 		&pbg.State{Key: "mp3s", Fraction: mp3s / float64(tracks)},
+		&pbg.State{Key: "rips", Value: s.ripCount},
 	}
 }
 
@@ -294,5 +296,6 @@ func main() {
 	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Minute)
+	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*5)
 	server.Serve()
 }
