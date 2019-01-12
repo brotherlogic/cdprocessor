@@ -338,7 +338,7 @@ func main() {
 	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Minute)
-	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*5)
+	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*1)
 
 	server.Serve()
 }
