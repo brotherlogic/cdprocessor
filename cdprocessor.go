@@ -149,7 +149,6 @@ func (i *prodIo) readDir() ([]os.FileInfo, error) {
 }
 
 func (i *prodIo) readSubdir(f string) ([]os.FileInfo, error) {
-	i.log(fmt.Sprintf("Reading %v", i.dir+f))
 	return ioutil.ReadDir(i.dir + f)
 }
 
@@ -257,13 +256,16 @@ func (s *Server) GetState() []*pbg.State {
 	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
 	m, _ := s.GetMissing(context.Background(), &pb.GetMissingRequest{})
 
-	wavs := 0
-	mp3s := 0
+	wavs := float64(0)
+	mp3s := float64(0)
+	tracks := 0
 	for _, rip := range r.Ripped {
+		tracks += len(rip.Tracks)
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 {
 				wavs++
-			} else if len(t.Mp3Path) > 0 {
+			}
+			if len(t.Mp3Path) > 0 {
 				mp3s++
 			}
 		}
@@ -274,8 +276,9 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
 		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
-		&pbg.State{Key: "wavs", Value: int64(wavs)},
-		&pbg.State{Key: "mp3s", Value: int64(mp3s)},
+		&pbg.State{Key: "tracks", Value: int64(tracks)},
+		&pbg.State{Key: "wavs", Fraction: wavs / float64(tracks)},
+		&pbg.State{Key: "mp3s", Fraction: mp3s / float64(tracks)},
 	}
 }
 

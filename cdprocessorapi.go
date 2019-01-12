@@ -37,8 +37,6 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 				}
 			}
 
-			s.Log(fmt.Sprintf("Added %v tracks", len(tracks)))
-
 			resp.Ripped = append(resp.Ripped, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
 	}
