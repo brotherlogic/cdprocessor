@@ -110,6 +110,7 @@ func (gh *prodGh) recordMissing(r *pbrc.Record) error {
 
 type io interface {
 	readDir() ([]os.FileInfo, error)
+	readSubdir(f string) ([]os.FileInfo, error)
 	convert(name string) (int32, error)
 }
 
@@ -144,6 +145,10 @@ type prodIo struct {
 
 func (i *prodIo) readDir() ([]os.FileInfo, error) {
 	return ioutil.ReadDir(i.dir)
+}
+
+func (i *prodIo) readSubdir(f string) ([]os.FileInfo, error) {
+	return ioutil.ReadDir(i.dir + f)
 }
 
 func (i *prodIo) convert(name string) (int32, error) {
