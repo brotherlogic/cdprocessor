@@ -28,6 +28,7 @@ import (
 
 type ripper interface {
 	ripToMp3(ctx context.Context, pathIn, pathOut string)
+	ripToFlac(ctx context.Context, pathIn, pathOut string)
 }
 
 type prodRipper struct {
@@ -57,6 +58,29 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 
 			client := pbe.NewExecutorServiceClient(conn)
 			_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
+			pr.log(fmt.Sprintf("Ripped: %v", err))
+		}
+	}
+}
+
+func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
+	entries, err := utils.ResolveAll("executor")
+
+	if err != nil {
+		return
+	}
+
+	for _, entry := range entries {
+		if entry.Identifier == pr.server() {
+			conn, err := grpc.Dial(entry.Ip+":"+strconv.Itoa(int(entry.Port)), grpc.WithInsecure())
+			defer conn.Close()
+
+			if err != nil {
+				return
+			}
+
+			client := pbe.NewExecutorServiceClient(conn)
+			_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
 			pr.log(fmt.Sprintf("Ripped: %v", err))
 		}
 	}
@@ -216,6 +240,7 @@ type Server struct {
 	adjust      int
 	rips        []*pb.Rip
 	ripCount    int64
+	flacCount   int64
 	dir         string
 	ripper      ripper
 }
@@ -295,6 +320,7 @@ func (s *Server) GetState() []*pbg.State {
 
 	wavs := float64(0)
 	mp3s := float64(0)
+	flacs := float64(0)
 	tracks := 0
 	for _, rip := range r.Ripped {
 		tracks += len(rip.Tracks)
@@ -305,6 +331,10 @@ func (s *Server) GetState() []*pbg.State {
 			if len(t.Mp3Path) > 0 {
 				mp3s++
 			}
+			if len(t.FlacPath) > 0 {
+				flacs++
+			}
+
 		}
 	}
 
@@ -316,7 +346,9 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "tracks", Value: int64(tracks)},
 		&pbg.State{Key: "wavs", Fraction: wavs / float64(tracks)},
 		&pbg.State{Key: "mp3s", Fraction: mp3s / float64(tracks)},
+		&pbg.State{Key: "flacs", Fraction: flacs / float64(tracks)},
 		&pbg.State{Key: "rips", Value: s.ripCount},
+		&pbg.State{Key: "flacrips", Value: s.flacCount},
 	}
 }
 
@@ -339,6 +371,7 @@ func main() {
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Minute)
 	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*1)
+	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute*1)
 
 	server.Serve()
 }

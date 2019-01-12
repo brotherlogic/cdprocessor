@@ -27,6 +27,20 @@ func (s *Server) convertToMP3(ctx context.Context) {
 	}
 }
 
+func (s *Server) convertToFlac(ctx context.Context) {
+	for _, rip := range s.rips {
+		for _, t := range rip.Tracks {
+			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
+				s.flacCount++
+				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
+				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
+				s.buildConfig(ctx)
+				return
+			}
+		}
+	}
+}
+
 func (s *Server) buildConfig(ctx context.Context) {
 	files, err := s.io.readDir()
 	if err != nil {
@@ -64,6 +78,8 @@ func (s *Server) buildConfig(ctx context.Context) {
 						foundTrack.WavPath = f.Name() + "/" + tf.Name()
 					} else if strings.HasSuffix(tf.Name(), "mp3") {
 						foundTrack.Mp3Path = f.Name() + "/" + tf.Name()
+					} else if strings.HasSuffix(tf.Name(), "flac") {
+						foundTrack.FlacPath = f.Name() + "/" + tf.Name()
 					}
 				}
 			}

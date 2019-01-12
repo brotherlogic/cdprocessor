@@ -10,6 +10,7 @@ message Track {
   int32 track_number = 1;
   string wav_path = 2;
   string mp3_path = 3;
+  string flac_path = 4;
 }
 
 message Rip {
