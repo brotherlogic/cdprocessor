@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/net/context"
 
@@ -29,7 +30,11 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 			trackFiles, _ := s.io.readSubdir(f.Name())
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
-				tracks = append(tracks, &pbcdp.Track{WavPath: f.Name() + "/" + tf.Name()})
+				if strings.HasSuffix(tf.Name(), "wav") {
+					tracks = append(tracks, &pbcdp.Track{WavPath: f.Name() + "/" + tf.Name()})
+				} else if strings.HasSuffix(tf.Name(), "mp3") {
+					tracks = append(tracks, &pbcdp.Track{Mp3Path: f.Name() + "/" + tf.Name()})
+				}
 			}
 
 			s.Log(fmt.Sprintf("Added %v tracks", len(tracks)))

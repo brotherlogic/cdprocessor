@@ -258,8 +258,15 @@ func (s *Server) GetState() []*pbg.State {
 	m, _ := s.GetMissing(context.Background(), &pb.GetMissingRequest{})
 
 	wavs := 0
+	mp3s := 0
 	for _, rip := range r.Ripped {
-		wavs += len(rip.Tracks)
+		for _, t := range rip.Tracks {
+			if len(t.WavPath) > 0 {
+				wavs++
+			} else if len(t.Mp3Path) > 0 {
+				mp3s++
+			}
+		}
 	}
 
 	return []*pbg.State{
@@ -268,6 +275,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
 		&pbg.State{Key: "wavs", Value: int64(wavs)},
+		&pbg.State{Key: "mp3s", Value: int64(mp3s)},
 	}
 }
 
