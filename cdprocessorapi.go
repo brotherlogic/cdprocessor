@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
@@ -13,35 +10,7 @@ import (
 
 //GetRipped returns the ripped cds
 func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*pbcdp.GetRippedResponse, error) {
-	files, err := s.io.readDir()
-	if err != nil {
-		return &pbcdp.GetRippedResponse{}, err
-	}
-
-	resp := &pbcdp.GetRippedResponse{Ripped: make([]*pbcdp.Rip, 0)}
-	for _, f := range files {
-		if f.IsDir() && f.Name() != "lost+found" {
-			name := f.Name()
-			id, err := s.io.convert(name)
-			if err != nil {
-				return &pbcdp.GetRippedResponse{}, fmt.Errorf("Unable to convert %v -> %v", name, err)
-			}
-
-			trackFiles, _ := s.io.readSubdir(f.Name())
-			tracks := []*pbcdp.Track{}
-			for _, tf := range trackFiles {
-				if strings.HasSuffix(tf.Name(), "wav") {
-					tracks = append(tracks, &pbcdp.Track{WavPath: f.Name() + "/" + tf.Name()})
-				} else if strings.HasSuffix(tf.Name(), "mp3") {
-					tracks = append(tracks, &pbcdp.Track{Mp3Path: f.Name() + "/" + tf.Name()})
-				}
-			}
-
-			resp.Ripped = append(resp.Ripped, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
-		}
-	}
-
-	return resp, nil
+	return &pbcdp.GetRippedResponse{Ripped: s.rips}, nil
 }
 
 //GetMissing gets the missing rips
@@ -54,10 +23,7 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 			return resp, err
 		}
 
-		ripped, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
-		if err != nil {
-			return resp, err
-		}
+		ripped, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 		for _, r := range missing.Records {
 
