@@ -117,3 +117,12 @@ func TestMultiAdjustPasses(t *testing.T) {
 		t.Errorf("Not enough records have been adjusted: %v", getter.adjusted)
 	}
 }
+
+func TestRunMP3s(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.convertToMP3(context.Background())
+
+	if s.ripCount != 1 {
+		t.Errorf("No rips occured")
+	}
+}

@@ -13,6 +13,17 @@ import (
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 )
 
+func (s *Server) convertToMP3(ctx context.Context) {
+	for _, rip := range s.rips {
+		for _, t := range rip.Tracks {
+			if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
+				s.ripCount++
+				s.Log(fmt.Sprintf("Ripping %v", t))
+			}
+		}
+	}
+}
+
 func (s *Server) buildConfig(ctx context.Context) {
 	files, err := s.io.readDir()
 	if err != nil {
@@ -33,7 +44,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
 				if !tf.IsDir() {
-					s.Log(fmt.Sprintf("Processing: %v", tf.Name()))
 					trackNumber, _ := strconv.Atoi(tf.Name()[5:7])
 
 					var foundTrack *pbcdp.Track
