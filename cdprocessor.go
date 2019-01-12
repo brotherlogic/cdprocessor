@@ -31,8 +31,12 @@ type ripper interface {
 }
 
 type prodRipper struct {
-	server string
+	server func() string
 	log    func(s string)
+}
+
+func (s *Server) resolve() string {
+	return s.Registry.Identifier
 }
 
 func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
@@ -43,7 +47,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	}
 
 	for _, entry := range entries {
-		if entry.Identifier == pr.server {
+		if entry.Identifier == pr.server() {
 			conn, err := grpc.Dial(entry.Ip+":"+strconv.Itoa(int(entry.Port)), grpc.WithInsecure())
 			defer conn.Close()
 
@@ -227,7 +231,8 @@ func Init(dir string) *Server {
 	}
 	s.io = &prodIo{dir: dir, log: s.Log}
 	s.getter = &prodGetter{log: s.Log}
-	s.ripper = &prodRipper{log: s.Log}
+	s.ripper = &prodRipper{log: s.Log, server: s.resolve}
+
 	return s
 }
 
@@ -334,5 +339,6 @@ func main() {
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Minute)
 	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*5)
+
 	server.Serve()
 }
