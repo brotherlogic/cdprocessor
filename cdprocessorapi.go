@@ -25,7 +25,16 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 			if err != nil {
 				return &pbcdp.GetRippedResponse{}, fmt.Errorf("Unable to convert %v -> %v", name, err)
 			}
-			resp.Ripped = append(resp.Ripped, &pbcdp.Rip{Id: id, Path: f.Name()})
+
+			trackFiles, _ := s.io.readSubdir(f.Name())
+			tracks := []*pbcdp.Track{}
+			for _, tf := range trackFiles {
+				tracks = append(tracks, &pbcdp.Track{WavPath: f.Name() + "/" + tf.Name()})
+			}
+
+			s.Log(fmt.Sprintf("Added %v tracks", len(tracks)))
+
+			resp.Ripped = append(resp.Ripped, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
 	}
 
