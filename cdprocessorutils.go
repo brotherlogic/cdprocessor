@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,11 +32,26 @@ func (s *Server) buildConfig(ctx context.Context) {
 			trackFiles, _ := s.io.readSubdir(f.Name())
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
-				if strings.HasSuffix(tf.Name(), "wav") {
-					tracks = append(tracks, &pbcdp.Track{WavPath: f.Name() + "/" + tf.Name()})
-				} else if strings.HasSuffix(tf.Name(), "mp3") {
-					tracks = append(tracks, &pbcdp.Track{Mp3Path: f.Name() + "/" + tf.Name()})
+
+				trackNumber, _ := strconv.Atoi(tf.Name()[5:7])
+
+				var foundTrack *pbcdp.Track
+				for _, t := range tracks {
+					if int(t.TrackNumber) == trackNumber {
+						foundTrack = t
+					}
 				}
+				if foundTrack == nil {
+					foundTrack = &pbcdp.Track{TrackNumber: int32(trackNumber)}
+					tracks = append(tracks, foundTrack)
+				}
+
+				if strings.HasSuffix(tf.Name(), "wav") {
+					foundTrack.WavPath = f.Name() + "/" + tf.Name()
+				} else if strings.HasSuffix(tf.Name(), "mp3") {
+					foundTrack.Mp3Path = f.Name() + "/" + tf.Name()
+				}
+
 			}
 
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
