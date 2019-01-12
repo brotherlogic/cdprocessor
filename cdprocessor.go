@@ -141,6 +141,7 @@ func (rc *prodRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
 
 type prodIo struct {
 	dir string
+	log func(s string)
 }
 
 func (i *prodIo) readDir() ([]os.FileInfo, error) {
@@ -148,6 +149,7 @@ func (i *prodIo) readDir() ([]os.FileInfo, error) {
 }
 
 func (i *prodIo) readSubdir(f string) ([]os.FileInfo, error) {
+	i.log(fmt.Sprintf("Reading %v", i.dir+f))
 	return ioutil.ReadDir(i.dir + f)
 }
 
@@ -186,6 +188,7 @@ func Init(dir string) *Server {
 		gh:     &prodGh{},
 		getter: &prodGetter{},
 	}
+	s.io = &prodIo{dir: dir, log: s.Log}
 	s.getter = &prodGetter{log: s.Log}
 	return s
 }
