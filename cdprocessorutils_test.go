@@ -52,6 +52,7 @@ func InitTestServer(dir string) *Server {
 	s.gh = gh
 	s.SkipLog = true
 	s.buildConfig(context.Background())
+	s.ripper = &testRipper{}
 	return s
 }
 
