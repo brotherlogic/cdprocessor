@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	"golang.org/x/net/context"
@@ -35,6 +36,12 @@ func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
 		t.adjusted = make(map[int32]bool)
 	}
 	t.adjusted[rec.GetRelease().Id] = true
+}
+
+type testRipper struct{}
+
+func (tr *testRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
+	log.Printf("Ripping %v -> %v", pathIn, pathOut)
 }
 
 func InitTestServer(dir string) *Server {

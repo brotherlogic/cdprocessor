@@ -32,6 +32,7 @@ type ripper interface {
 
 type prodRipper struct {
 	server string
+	log    func(s string)
 }
 
 func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
@@ -47,11 +48,12 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 			defer conn.Close()
 
 			if err != nil {
-				log.Fatalf("Unable to dial: %v", err)
+				return
 			}
 
 			client := pbe.NewExecutorServiceClient(conn)
-			client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
+			_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
+			pr.log(fmt.Sprintf("Ripped: %v", err))
 		}
 	}
 }
@@ -211,6 +213,7 @@ type Server struct {
 	rips        []*pb.Rip
 	ripCount    int64
 	dir         string
+	ripper      ripper
 }
 
 // Init builds the server
@@ -224,6 +227,7 @@ func Init(dir string) *Server {
 	}
 	s.io = &prodIo{dir: dir, log: s.Log}
 	s.getter = &prodGetter{log: s.Log}
+	s.ripper = &prodRipper{log: s.Log}
 	return s
 }
 
