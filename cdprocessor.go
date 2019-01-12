@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	pbgd "github.com/brotherlogic/godiscogs"
 	"github.com/brotherlogic/goserver"
 	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
@@ -19,11 +18,43 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
+	pbe "github.com/brotherlogic/executor/proto"
 	pbgh "github.com/brotherlogic/githubcard/proto"
+	pbgd "github.com/brotherlogic/godiscogs"
 	pbg "github.com/brotherlogic/goserver/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pbvs "github.com/brotherlogic/versionserver/proto"
 )
+
+type ripper interface {
+	ripToMp3(ctx context.Context, pathIn, pathOut string)
+}
+
+type prodRipper struct {
+	server string
+}
+
+func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
+	entries, err := utils.ResolveAll("executor")
+
+	if err != nil {
+		return
+	}
+
+	for _, entry := range entries {
+		if entry.Identifier == pr.server {
+			conn, err := grpc.Dial(entry.Ip+":"+strconv.Itoa(int(entry.Port)), grpc.WithInsecure())
+			defer conn.Close()
+
+			if err != nil {
+				log.Fatalf("Unable to dial: %v", err)
+			}
+
+			client := pbe.NewExecutorServiceClient(conn)
+			client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
+		}
+	}
+}
 
 type getter interface {
 	getRecord(ctx context.Context, id int32) (*pbrc.Record, error)
@@ -179,6 +210,7 @@ type Server struct {
 	adjust      int
 	rips        []*pb.Rip
 	ripCount    int64
+	dir         string
 }
 
 // Init builds the server
@@ -188,6 +220,7 @@ func Init(dir string) *Server {
 		rc:     &prodRc{},
 		gh:     &prodGh{},
 		getter: &prodGetter{},
+		dir:    dir,
 	}
 	s.io = &prodIo{dir: dir, log: s.Log}
 	s.getter = &prodGetter{log: s.Log}

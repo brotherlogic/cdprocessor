@@ -18,7 +18,9 @@ func (s *Server) convertToMP3(ctx context.Context) {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
 				s.ripCount++
-				s.Log(fmt.Sprintf("Ripping %v", t))
+				s.Log(fmt.Sprintf("Ripping %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+".mp3"))
+				s.buildConfig(ctx)
+				return
 			}
 		}
 	}
