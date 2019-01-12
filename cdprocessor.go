@@ -248,11 +248,18 @@ func (s *Server) writeCount(ctx context.Context) {
 func (s *Server) GetState() []*pbg.State {
 	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
 	m, _ := s.GetMissing(context.Background(), &pb.GetMissingRequest{})
+
+	wavs := 0
+	for _, rip := range r.Ripped {
+		wavs += len(rip.Tracks)
+	}
+
 	return []*pbg.State{
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
 		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
+		&pbg.State{Key: "wavs", Value: int64(wavs)},
 	}
 }
 

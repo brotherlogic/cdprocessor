@@ -6,9 +6,15 @@ import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
 
 message GetRippedRequest {}
 
+message Track {
+  int32 track_number = 1;
+  string wav_path = 2;
+}
+
 message Rip {
   int32 id = 1;
   string path = 2;
+  repeated Track tracks = 3;
 }
 
 message GetRippedResponse {
