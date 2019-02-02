@@ -338,9 +338,15 @@ func (s *Server) GetState() []*pbg.State {
 		}
 	}
 
+	missing := 0
+	for _, miss := range m.Missing {
+		missing = int(miss.GetRelease().Id)
+	}
+
 	return []*pbg.State{
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
+		&pbg.State{Key: "missing_one", Value: int64(missing)},
 		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
 		&pbg.State{Key: "tracks", Value: int64(tracks)},
