@@ -39,8 +39,21 @@ func main() {
 
 			if err == nil {
 				fmt.Printf("%v: Got %v ripped records\n", e.Identifier, len(resp.GetRipped()))
+				for i, missing := range resp.GetRipped() {
+					fmt.Printf("%v. %v\n", i, missing.Id)
+				}
 			} else {
 				fmt.Printf("%v: Error: %v\n", e.Identifier, err)
+			}
+		case "missing":
+			resp, err := registry.GetMissing(ctx, &pbcdp.GetMissingRequest{})
+
+			if err != nil {
+				log.Fatalf("Error in request: %v", err)
+			}
+
+			for i, missing := range resp.Missing {
+				fmt.Printf("%v. [%v] %v\n", i, missing.GetRelease().Id, missing.GetRelease().Title)
 			}
 		}
 	}
