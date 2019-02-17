@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
@@ -44,7 +42,6 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 					}
 				}
 				if !found {
-					s.Log(fmt.Sprintf("%v -> given %v ripped", r.GetRelease().Id, len(ripped.GetRipped())))
 					resp.Missing = append(resp.GetMissing(), r)
 				}
 			}

@@ -20,7 +20,6 @@ func (s *Server) convertToMP3(ctx context.Context) {
 				s.ripCount++
 				s.Log(fmt.Sprintf("Ripping %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
-				s.buildConfig(ctx)
 				return
 			}
 		}
@@ -34,7 +33,6 @@ func (s *Server) convertToFlac(ctx context.Context) {
 				s.flacCount++
 				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
-				s.buildConfig(ctx)
 				return
 			}
 		}
@@ -119,9 +117,7 @@ func (s *Server) logMissing(ctx context.Context) {
 	m, _ := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 
 	if len(m.Missing) > 0 {
-		err := s.gh.recordMissing(m.Missing[0])
-		if err != nil {
-			return
-		}
+		s.RaiseIssue(ctx, "Rip CD", fmt.Sprintf("%v [%v]", m.Missing[0].GetRelease().Title, m.Missing[0].GetRelease().Id), false)
+		return
 	}
 }
