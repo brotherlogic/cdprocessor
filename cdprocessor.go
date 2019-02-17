@@ -188,6 +188,7 @@ func Init(dir string) *Server {
 		getter: &prodGetter{},
 		dir:    dir,
 	}
+	s.rc = &prodRc{dial: s.DialMaster}
 	s.io = &prodIo{dir: dir, log: s.Log}
 	s.getter = &prodGetter{log: s.Log, dial: s.DialMaster}
 	s.ripper = &prodRipper{log: s.Log, server: s.resolve, dial: s.DialServer}
