@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/brotherlogic/goserver"
-	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -19,7 +18,6 @@ import (
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbe "github.com/brotherlogic/executor/proto"
-	pbgh "github.com/brotherlogic/githubcard/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbg "github.com/brotherlogic/goserver/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
@@ -34,6 +32,7 @@ type ripper interface {
 type prodRipper struct {
 	server func() string
 	log    func(s string)
+	dial   func(server, host string) (*grpc.ClientConn, error)
 }
 
 func (s *Server) resolve() string {
@@ -41,49 +40,27 @@ func (s *Server) resolve() string {
 }
 
 func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
-	entries, err := utils.ResolveAll("executor")
-
+	conn, err := pr.dial("executor", pr.server())
 	if err != nil {
 		return
 	}
+	defer conn.Close()
 
-	for _, entry := range entries {
-		if entry.Identifier == pr.server() {
-			conn, err := grpc.Dial(entry.Ip+":"+strconv.Itoa(int(entry.Port)), grpc.WithInsecure())
-			defer conn.Close()
-
-			if err != nil {
-				return
-			}
-
-			client := pbe.NewExecutorServiceClient(conn)
-			_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
-			pr.log(fmt.Sprintf("Ripped: %v", err))
-		}
-	}
+	client := pbe.NewExecutorServiceClient(conn)
+	_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
+	pr.log(fmt.Sprintf("Ripped: %v", err))
 }
 
 func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
-	entries, err := utils.ResolveAll("executor")
-
+	conn, err := pr.dial("executor", pr.server())
 	if err != nil {
 		return
 	}
+	defer conn.Close()
 
-	for _, entry := range entries {
-		if entry.Identifier == pr.server() {
-			conn, err := grpc.Dial(entry.Ip+":"+strconv.Itoa(int(entry.Port)), grpc.WithInsecure())
-			defer conn.Close()
-
-			if err != nil {
-				return
-			}
-
-			client := pbe.NewExecutorServiceClient(conn)
-			_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
-			pr.log(fmt.Sprintf("Ripped: %v", err))
-		}
-	}
+	client := pbe.NewExecutorServiceClient(conn)
+	_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
+	pr.log(fmt.Sprintf("Ripped: %v", err))
 }
 
 type getter interface {
@@ -92,21 +69,16 @@ type getter interface {
 }
 
 type prodGetter struct {
-	log func(in string)
+	dial func(server string) (*grpc.ClientConn, error)
+	log  func(in string)
 }
 
 func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
-	host, port, err := utils.Resolve("recordcollection")
-
+	conn, err := rc.dial("recordcollection")
 	if err != nil {
 		return nil, err
 	}
-
-	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
 	defer conn.Close()
-	if err != nil {
-		return nil, err
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -124,49 +96,17 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, er
 }
 
 func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
-	host, port, err := utils.Resolve("recordcollection")
-
+	conn, err := rc.dial("recordcollection")
 	if err != nil {
 		return
 	}
-
-	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
 	defer conn.Close()
-	if err != nil {
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
 	rc.log(fmt.Sprintf("Updated %v (%v)", rec.GetRelease().Id, err))
-}
-
-type gh interface {
-	recordMissing(r *pbrc.Record) error
-}
-
-type prodGh struct{}
-
-func (gh *prodGh) recordMissing(r *pbrc.Record) error {
-	host, port, err := utils.Resolve("githubcard")
-
-	if err != nil {
-		return err
-	}
-
-	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
-	defer conn.Close()
-	if err != nil {
-		return err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	client := pbgh.NewGithubClient(conn)
-	_, err = client.AddIssue(ctx, &pbgh.Issue{Title: "Rip CD", Body: fmt.Sprintf("%v [%v]", r.GetRelease().Title, r.GetRelease().Id), Service: "recordcollection"})
-	return err
 }
 
 type io interface {
@@ -179,20 +119,16 @@ type rc interface {
 	get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error)
 }
 
-type prodRc struct{}
+type prodRc struct {
+	dial func(server string) (*grpc.ClientConn, error)
+}
 
 func (rc *prodRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
-	host, port, err := utils.Resolve("recordcollection")
-
+	conn, err := rc.dial("recordcollection")
 	if err != nil {
 		return &pbrc.GetRecordsResponse{}, err
 	}
-
-	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
 	defer conn.Close()
-	if err != nil {
-		return &pbrc.GetRecordsResponse{}, err
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -234,7 +170,6 @@ type Server struct {
 	*goserver.GoServer
 	io          io
 	rc          rc
-	gh          gh
 	getter      getter
 	lastRunTime time.Duration
 	adjust      int
@@ -250,13 +185,12 @@ func Init(dir string) *Server {
 	s := &Server{GoServer: &goserver.GoServer{},
 		io:     &prodIo{dir: dir},
 		rc:     &prodRc{},
-		gh:     &prodGh{},
 		getter: &prodGetter{},
 		dir:    dir,
 	}
 	s.io = &prodIo{dir: dir, log: s.Log}
-	s.getter = &prodGetter{log: s.Log}
-	s.ripper = &prodRipper{log: s.Log, server: s.resolve}
+	s.getter = &prodGetter{log: s.Log, dial: s.DialMaster}
+	s.ripper = &prodRipper{log: s.Log, server: s.resolve, dial: s.DialServer}
 
 	return s
 }
@@ -271,17 +205,17 @@ func (s *Server) ReportHealth() bool {
 	return true
 }
 
+// Shutdown the server
+func (s *Server) Shutdown(ctx context.Context) error {
+	return nil
+}
+
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
 	s.buildConfig(ctx)
 
 	masterCount := int64(len(s.rips))
-	ip, port, err := utils.Resolve("versionserver")
-	if err != nil {
-		return err
-	}
-
-	conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	conn, err := s.DialMaster("versionserver")
 	if err != nil {
 		return err
 	}
@@ -302,14 +236,11 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 }
 
 func (s *Server) writeCount(ctx context.Context) {
-	ip, port, err := utils.Resolve("versionserver")
+	conn, err := s.DialMaster("versionserver")
 	if err == nil {
-		conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
 		defer conn.Close()
-		if err == nil {
-			client := pbvs.NewVersionServerClient(conn)
-			client.SetVersion(ctx, &pbvs.SetVersionRequest{Set: &pbvs.Version{Key: "github.com.brotherlogic.cdprocessor", Value: int64(len(s.rips)), Setter: "cdprocessor"}})
-		}
+		client := pbvs.NewVersionServerClient(conn)
+		client.SetVersion(ctx, &pbvs.SetVersionRequest{Set: &pbvs.Version{Key: "github.com.brotherlogic.cdprocessor", Value: int64(len(s.rips)), Setter: "cdprocessor"}})
 	}
 }
 
@@ -318,12 +249,10 @@ func (s *Server) GetState() []*pbg.State {
 	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
 	m, _ := s.GetMissing(context.Background(), &pb.GetMissingRequest{})
 
-	wavs := float64(0)
-	mp3s := float64(0)
-	flacs := float64(0)
-	tracks := 0
+	wavs := int64(0)
+	mp3s := int64(0)
+	flacs := int64(0)
 	for _, rip := range r.Ripped {
-		tracks += len(rip.Tracks)
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 {
 				wavs++
@@ -349,11 +278,10 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "missing_one", Value: int64(missing)},
 		&pbg.State{Key: "adjust_time", Text: fmt.Sprintf("%v", s.lastRunTime)},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
-		&pbg.State{Key: "tracks", Value: int64(tracks)},
-		&pbg.State{Key: "wavs", Fraction: wavs / float64(tracks)},
-		&pbg.State{Key: "mp3s", Fraction: mp3s / float64(tracks)},
-		&pbg.State{Key: "flacs", Fraction: flacs / float64(tracks)},
-		&pbg.State{Key: "rips", Value: s.ripCount},
+		&pbg.State{Key: "wavs", Value: wavs},
+		&pbg.State{Key: "mp3s", Value: mp3s},
+		&pbg.State{Key: "flacs", Value: flacs},
+		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
 	}
 }

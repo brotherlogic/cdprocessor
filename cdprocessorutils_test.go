@@ -52,8 +52,6 @@ func InitTestServer(dir string) *Server {
 	s := Init(dir)
 	s.io = &testIo{dir: dir}
 	s.rc = &testRc{}
-	gh := &testGh{}
-	s.gh = gh
 	s.SkipLog = true
 	s.buildConfig(context.Background())
 	s.ripper = &testRipper{}
@@ -89,31 +87,18 @@ func TestLogMissing(t *testing.T) {
 	s := InitTestServer("testdata")
 	s.io = &testIo{dir: "testdata"}
 	s.rc = &testRc{}
-	gh := &testGh{}
-	s.gh = gh
 	s.SkipLog = true
 
 	s.logMissing(context.Background())
-
-	if gh.count != 1 {
-		t.Errorf("Missing has not been logged")
-	}
 }
 
 func TestLogMissingFailOnBadLog(t *testing.T) {
 	s := InitTestServer("testdata")
 	s.io = &testIo{dir: "testdata"}
 	s.rc = &testRc{}
-	gh := &testGh{fail: true}
-	s.gh = gh
 	s.SkipLog = true
 
 	s.logMissing(context.Background())
-
-	if gh.count > 0 {
-		t.Errorf("Failing missing has not failed log:")
-	}
-
 }
 
 func TestMultiAdjustPasses(t *testing.T) {
