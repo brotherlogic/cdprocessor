@@ -20,6 +20,7 @@ func (s *Server) convertToMP3(ctx context.Context) {
 				s.ripCount++
 				s.Log(fmt.Sprintf("Ripping %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
+				s.buildConfig(ctx)
 				return
 			}
 		}
@@ -33,6 +34,7 @@ func (s *Server) convertToFlac(ctx context.Context) {
 				s.flacCount++
 				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
+				s.buildConfig(ctx)
 				return
 			}
 		}

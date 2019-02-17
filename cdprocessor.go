@@ -48,7 +48,9 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
-	pr.log(fmt.Sprintf("Ripped: %v", err))
+	if err != nil {
+		pr.log(fmt.Sprintf("MP3ed: %v", err))
+	}
 }
 
 func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
@@ -60,7 +62,9 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
-	pr.log(fmt.Sprintf("Ripped: %v", err))
+	if err != nil {
+		pr.log(fmt.Sprintf("Flaced: %v", err))
+	}
 }
 
 type getter interface {
@@ -228,8 +232,8 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 		return err
 	}
 
-	s.Log(fmt.Sprintf("Cannot Mote %v vs %v", masterCount, v.Version.Value))
 	if masterCount < v.Version.Value {
+		s.Log(fmt.Sprintf("Cannot Mote %v vs %v", masterCount, v.Version.Value))
 		return fmt.Errorf("Not enough rips: %v", masterCount)
 	}
 
