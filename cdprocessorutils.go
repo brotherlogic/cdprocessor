@@ -119,9 +119,7 @@ func (s *Server) logMissing(ctx context.Context) {
 	m, _ := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 
 	if len(m.Missing) > 0 {
-		err := s.gh.recordMissing(m.Missing[0])
-		if err != nil {
-			return
-		}
+		s.RaiseIssue(ctx, "Rip CD", fmt.Sprintf("%v [%v]", m.Missing[0].GetRelease().Title, m.Missing[0].GetRelease().Id), false)
+		return
 	}
 }
