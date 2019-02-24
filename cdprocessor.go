@@ -299,7 +299,7 @@ func (s *Server) runVerify(ctx context.Context) {
 }
 
 func (s *Server) runLink(ctx context.Context) {
-	s.verify(ctx, 1161277)
+	s.makeLinks(ctx, 1161277)
 }
 
 func main() {
