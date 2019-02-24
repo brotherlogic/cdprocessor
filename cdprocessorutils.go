@@ -13,6 +13,20 @@ import (
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 )
 
+// verifies the status of the ripped cd
+func (s *Server) verify(ctx context.Context, ID int32) error {
+	record, err := s.getter.getRecord(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	if len(record.GetMetadata().CdPath) == 0 {
+		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path", record.GetRelease().Title, ID), false)
+	}
+
+	return nil
+}
+
 func (s *Server) convertToMP3(ctx context.Context) {
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
