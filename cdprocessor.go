@@ -237,7 +237,6 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 	}
 
 	if masterCount < v.Version.Value {
-		s.Log(fmt.Sprintf("Cannot Mote %v vs %v", masterCount, v.Version.Value))
 		return fmt.Errorf("Not enough rips: %v", masterCount)
 	}
 
@@ -299,6 +298,10 @@ func (s *Server) runVerify(ctx context.Context) {
 	s.verify(ctx, 1161277)
 }
 
+func (s *Server) runLink(ctx context.Context) {
+	s.verify(ctx, 1161277)
+}
+
 func main() {
 	var quiet = flag.Bool("quiet", false, "Show all output")
 	var dir = flag.String("dir", "/media/music/rips/", "Base directory for storage location")
@@ -321,6 +324,7 @@ func main() {
 	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*1)
 	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute*1)
 	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Minute*5)
+	server.RegisterRepeatingTask(server.runLink, "run_link", time.Minute*5)
 
 	server.Serve()
 }

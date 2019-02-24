@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
+	pbgd "github.com/brotherlogic/godiscogs"
 )
 
 // verifies the status of the ripped cd
@@ -22,6 +23,23 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 
 	if len(record.GetMetadata().CdPath) == 0 {
 		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path", record.GetRelease().Title, ID), false)
+	}
+
+	return nil
+}
+
+func (s *Server) makeLinks(ctx context.Context, ID int32) error {
+	record, err := s.getter.getRecord(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	if len(record.GetMetadata().CdPath) == 0 {
+		for _, track := range record.GetRelease().Tracklist {
+			if track.TrackType == pbgd.Track_TRACK {
+				s.Log(fmt.Sprintf("Converting %v", track.Position))
+			}
+		}
 	}
 
 	return nil

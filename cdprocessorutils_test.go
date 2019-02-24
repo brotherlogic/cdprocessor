@@ -27,7 +27,13 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 	if t.adjusted[id] {
 		filepath = fmt.Sprintf("%v", id)
 	}
-	return &pbrc.Record{Release: &pbgd.Release{Id: id}, Metadata: &pbrc.ReleaseMetadata{FilePath: filepath}}, nil
+	return &pbrc.Record{Release: &pbgd.Release{
+		Id: id,
+		Tracklist: []*pbgd.Track{
+			&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
+		}},
+		Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
+	}, nil
 }
 
 func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
@@ -147,6 +153,32 @@ func TestVerifyMissingPath(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Verify failed: %v", err)
+	}
+
+}
+
+func TestFailOnLink(t *testing.T) {
+	s := InitTestServer("testdata/")
+	tg := &testGetter{fail: true}
+	s.getter = tg
+
+	err := s.makeLinks(context.Background(), 1234)
+
+	if err == nil {
+		t.Errorf("Failing verify passed")
+	}
+
+}
+
+func TestLink(t *testing.T) {
+	s := InitTestServer("testdata/")
+	tg := &testGetter{}
+	s.getter = tg
+
+	err := s.makeLinks(context.Background(), 1234)
+
+	if err != nil {
+		t.Errorf("Failing link passed")
 	}
 
 }
