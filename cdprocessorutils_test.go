@@ -49,7 +49,7 @@ func (tr *testRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 }
 
 func InitTestServer(dir string) *Server {
-	s := Init(dir)
+	s := Init(dir, dir+"mp3")
 	s.io = &testIo{dir: dir}
 	s.rc = &testRc{}
 	s.SkipLog = true
@@ -123,4 +123,30 @@ func TestRunMP3s(t *testing.T) {
 	if s.ripCount != 1 || s.flacCount != 1 {
 		t.Errorf("No rips occured")
 	}
+}
+
+func TestFailOnVerify(t *testing.T) {
+	s := InitTestServer("testdata/")
+	tg := &testGetter{fail: true}
+	s.getter = tg
+
+	err := s.verify(context.Background(), 1234)
+
+	if err == nil {
+		t.Errorf("Failing verify passed")
+	}
+
+}
+
+func TestVerifyMissingPath(t *testing.T) {
+	s := InitTestServer("testdata/")
+	tg := &testGetter{}
+	s.getter = tg
+
+	err := s.verify(context.Background(), 1234)
+
+	if err != nil {
+		t.Errorf("Verify failed: %v", err)
+	}
+
 }

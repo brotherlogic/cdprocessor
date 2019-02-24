@@ -184,15 +184,17 @@ type Server struct {
 	flacCount   int64
 	dir         string
 	ripper      ripper
+	mp3dir      string
 }
 
 // Init builds the server
-func Init(dir string) *Server {
+func Init(dir string, mp3dir string) *Server {
 	s := &Server{GoServer: &goserver.GoServer{},
 		io:     &prodIo{dir: dir},
 		rc:     &prodRc{},
 		getter: &prodGetter{},
 		dir:    dir,
+		mp3dir: mp3dir,
 	}
 	s.rc = &prodRc{dial: s.DialMaster}
 	s.io = &prodIo{dir: dir, log: s.Log}
@@ -293,9 +295,14 @@ func (s *Server) GetState() []*pbg.State {
 	}
 }
 
+func (s *Server) runVerify(ctx context.Context) {
+	s.verify(ctx, 1161277)
+}
+
 func main() {
 	var quiet = flag.Bool("quiet", false, "Show all output")
-	var dir = flag.String("dir", "/media/music/", "Base directory for storage location")
+	var dir = flag.String("dir", "/media/music/rips/", "Base directory for storage location")
+	var mp3dir = flag.String("mp3", "/media/music/mp3s/", "Base directory for all mp3s location")
 	flag.Parse()
 
 	//Turn off logging
@@ -303,16 +310,17 @@ func main() {
 		log.SetFlags(0)
 		log.SetOutput(ioutil.Discard)
 	}
-	server := Init(*dir)
+	server := Init(*dir, *mp3dir)
 	server.PrepServer()
 	server.Register = server
 
 	server.RegisterServer("cdprocessor", false)
 	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
-	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Minute)
+	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
 	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*1)
 	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute*1)
+	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Minute*5)
 
 	server.Serve()
 }
