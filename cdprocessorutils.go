@@ -34,7 +34,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 		return err
 	}
 
+	s.Log(fmt.Sprintf("Getting cdpath :%v:", record.GetMetadata().CdPath))
 	if len(record.GetMetadata().CdPath) == 0 {
+		s.Log(fmt.Sprintf("Found %v tracks", len(record.GetRelease().Tracklist)))
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
 				s.Log(fmt.Sprintf("Converting %v", track.Position))
