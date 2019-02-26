@@ -31,6 +31,7 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 		Id: id,
 		Tracklist: []*pbgd.Track{
 			&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
+			&pbgd.Track{Position: "2"},
 		}},
 		Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
 	}, nil
