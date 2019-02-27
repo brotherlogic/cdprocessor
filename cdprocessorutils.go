@@ -42,8 +42,8 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 				s.Log(fmt.Sprintf("Converting %v", track.Position))
 			}
 			for _, subtrack := range track.SubTracks {
-				if track.TrackType == pbgd.Track_TRACK {
-					s.Log(fmt.Sprintf("Converting %v", track.Position))
+				if subtrack.TrackType == pbgd.Track_TRACK {
+					s.Log(fmt.Sprintf("Converting %v", subtrack.Position))
 				}
 
 			}
