@@ -40,8 +40,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
 				s.Log(fmt.Sprintf("Converting %v", track.Position))
-			} else {
-				s.Log(fmt.Sprintf("Skipping %v", track))
+			}
+			for _, subtrack := range track.SubTracks {
+				if subtrack.TrackType == pbgd.Track_TRACK {
+					s.Log(fmt.Sprintf("Converting %v", subtrack.Position))
+				}
+
 			}
 
 		}
