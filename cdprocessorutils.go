@@ -47,6 +47,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 				if subtrack.TrackType == pbgd.Track_TRACK {
 					command := fmt.Sprintf("ln -s %v%v/track%v.cdda.mp3 %v%v", s.dir, record.GetRelease().Id, track.Position, s.mp3dir, record.GetRelease().Id)
 					s.Log(fmt.Sprintf("Converting: %v [%v]", command, track.Position))
+					s.Log(fmt.Sprintf("What %v", track))
 				}
 
 			}
