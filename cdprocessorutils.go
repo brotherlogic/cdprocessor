@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -34,16 +35,18 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 		return err
 	}
 
-	s.Log(fmt.Sprintf("Getting cdpath :%v:", record.GetMetadata().CdPath))
 	if len(record.GetMetadata().CdPath) == 0 {
-		s.Log(fmt.Sprintf("Found %v tracks", len(record.GetRelease().Tracklist)))
+		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
+
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
-				s.Log(fmt.Sprintf("Converting %v", track.Position))
+				command := fmt.Sprintf("ln -s %v%v/track%v.cdda.mp3 %v%v", s.dir, record.GetRelease().Id, track.Position, s.mp3dir, record.GetRelease().Id)
+				s.Log(fmt.Sprintf("Converting: %v", command))
 			}
 			for _, subtrack := range track.SubTracks {
 				if subtrack.TrackType == pbgd.Track_TRACK {
-					s.Log(fmt.Sprintf("Converting %v", subtrack.Position))
+					command := fmt.Sprintf("ln -s %v%v/track%v.cdda.mp3 %v%v", s.dir, record.GetRelease().Id, track.Position, s.mp3dir, record.GetRelease().Id)
+					s.Log(fmt.Sprintf("Converting: %v", command))
 				}
 
 			}
