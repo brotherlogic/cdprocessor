@@ -29,6 +29,13 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 	return nil
 }
 
+func expand(v string) string {
+	if len(v) == 1 {
+		return "0" + v
+	}
+	return v
+}
+
 func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
@@ -40,11 +47,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
-				s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, track.Position), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
+				s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
 			}
 			for _, subtrack := range track.SubTracks {
 				if subtrack.TrackType == pbgd.Track_TRACK {
-					s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, subtrack.Position), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
+					s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, expand(subtrack.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
 				}
 
 			}

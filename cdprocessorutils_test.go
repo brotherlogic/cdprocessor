@@ -189,3 +189,10 @@ func TestLink(t *testing.T) {
 	}
 
 }
+
+func TestExpand(t *testing.T) {
+	s := expand("11")
+	if s != "11" {
+		t.Errorf("Poor expansion: %v", s)
+	}
+}
