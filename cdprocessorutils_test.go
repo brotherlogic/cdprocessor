@@ -53,6 +53,10 @@ func (tr *testRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	log.Printf("Ripping %v -> %v", pathIn, pathOut)
 }
 
+func (tr *testRipper) runCommand(ctx context.Context, command []string) error {
+	return nil
+}
+
 func (tr *testRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 	log.Printf("Ripping %v -> %v", pathIn, pathOut)
 }

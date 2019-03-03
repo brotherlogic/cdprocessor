@@ -40,13 +40,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
-				command := fmt.Sprintf("ln -s %v%v/track%v.cdda.mp3 %v%v", s.dir, record.GetRelease().Id, track.Position, s.mp3dir, record.GetRelease().Id)
-				s.Log(fmt.Sprintf("Converting: %v [%v]", command, track.Position))
+				s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, track.Position), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
 			}
 			for _, subtrack := range track.SubTracks {
 				if subtrack.TrackType == pbgd.Track_TRACK {
-					command := fmt.Sprintf("ln -s %v%v/track%v.cdda.mp3 %v%v", s.dir, record.GetRelease().Id, subtrack.Position, s.mp3dir, record.GetRelease().Id)
-					s.Log(fmt.Sprintf("Converting: %v", command))
+					s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, subtrack.Position), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
 				}
 
 			}

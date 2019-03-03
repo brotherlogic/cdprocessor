@@ -27,6 +27,7 @@ import (
 type ripper interface {
 	ripToMp3(ctx context.Context, pathIn, pathOut string)
 	ripToFlac(ctx context.Context, pathIn, pathOut string)
+	runCommand(ctx context.Context, command []string) error
 }
 
 type prodRipper struct {
@@ -52,6 +53,18 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 		pr.log(fmt.Sprintf("MP3ed: %v", err))
 	}
 	pr.log(fmt.Sprintf("MP3: %v", resp.CommandOutput))
+}
+
+func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
+	conn, err := pr.dial("executor", pr.server())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pbe.NewExecutorServiceClient(conn)
+	_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: command[0], Parameters: command[1:]}})
+	return err
 }
 
 func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
