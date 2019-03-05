@@ -72,7 +72,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 }
 
 func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.Release) {
-	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.Id)})
+	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.Id)})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", track.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
