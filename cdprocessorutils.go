@@ -54,6 +54,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 					s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, expand(subtrack.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
 					s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", subtrack.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
 					s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", subtrack.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
+					s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.GetRelease().Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
 				}
 
 			}
