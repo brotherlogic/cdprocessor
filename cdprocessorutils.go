@@ -36,6 +36,15 @@ func expand(v string) string {
 	return v
 }
 
+func computeArtist(rec *pbgd.Release) string {
+	str := ""
+	for _, artist := range rec.GetArtists() {
+		str += fmt.Sprintf("%v, ", artist.Name)
+	}
+
+	return str[:len(str)-2]
+}
+
 func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
@@ -55,6 +64,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 					s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", subtrack.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
 					s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", subtrack.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
 					s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.GetRelease().Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
+					s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record.GetRelease()), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
 				}
 
 			}
