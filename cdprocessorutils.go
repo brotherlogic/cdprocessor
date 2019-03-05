@@ -56,15 +56,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
-				s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
+				s.buildLink(ctx, track, record.GetRelease())
 			}
 			for _, subtrack := range track.SubTracks {
 				if subtrack.TrackType == pbgd.Track_TRACK {
-					s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, expand(subtrack.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)})
-					s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", subtrack.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
-					s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", subtrack.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
-					s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.GetRelease().Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
-					s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record.GetRelease()), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, expand(subtrack.Position))})
+					s.buildLink(ctx, subtrack, record.GetRelease())
 				}
 
 			}
@@ -73,6 +69,15 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 	}
 
 	return nil
+}
+
+func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.Release) {
+	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.Id)})
+	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", track.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
+
 }
 
 func (s *Server) convertToMP3(ctx context.Context) {
