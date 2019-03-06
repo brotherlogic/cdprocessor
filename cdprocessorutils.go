@@ -66,6 +66,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 			}
 
 		}
+
+		record.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
+		s.getter.updateRecord(ctx, record)
 	}
 
 	return nil
