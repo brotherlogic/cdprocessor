@@ -40,6 +40,16 @@ func (s *Server) resolve() string {
 	return s.Registry.Identifier
 }
 
+func (s *Server) fileExists(file string) bool {
+	if s.forceCheck {
+		return true
+	}
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	conn, err := pr.dial("executor", pr.server())
 	if err != nil {
@@ -199,6 +209,7 @@ type Server struct {
 	dir         string
 	ripper      ripper
 	mp3dir      string
+	forceCheck  bool
 }
 
 // Init builds the server
