@@ -324,8 +324,9 @@ func (s *Server) runVerify(ctx context.Context) {
 }
 
 func (s *Server) runLink(ctx context.Context) {
-	s.makeLinks(ctx, 1161277)
-	s.makeLinks(ctx, 2001047)
+	for _, rip := range s.rips {
+		s.makeLinks(ctx, rip.Id)
+	}
 }
 
 func main() {
