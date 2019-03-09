@@ -75,6 +75,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 }
 
 func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.Release) {
+	// Verify that the track exists
+	if !s.fileExists(fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position))) {
+		s.RaiseIssue(ctx, "Missing Tracks", fmt.Sprintf("%v is missing tracks", record.Id), false)
+		return
+	}
+
 	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.Id)})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", track.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})

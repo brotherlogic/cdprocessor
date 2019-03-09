@@ -191,6 +191,20 @@ func TestLink(t *testing.T) {
 
 }
 
+func TestLinkForced(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.forceCheck = true
+	tg := &testGetter{}
+	s.getter = tg
+
+	err := s.makeLinks(context.Background(), 1234)
+
+	if err != nil {
+		t.Errorf("Failing link passed")
+	}
+
+}
+
 func TestExpand(t *testing.T) {
 	s := expand("11")
 	if s != "11" {
