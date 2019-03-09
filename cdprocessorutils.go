@@ -56,11 +56,17 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 
 		for _, track := range record.GetRelease().Tracklist {
 			if track.TrackType == pbgd.Track_TRACK {
-				s.buildLink(ctx, track, record.GetRelease())
+				err := s.buildLink(ctx, track, record.GetRelease())
+				if err != nil {
+					return err
+				}
 			}
 			for _, subtrack := range track.SubTracks {
 				if subtrack.TrackType == pbgd.Track_TRACK {
-					s.buildLink(ctx, subtrack, record.GetRelease())
+					err := s.buildLink(ctx, subtrack, record.GetRelease())
+					if err != nil {
+						return err
+					}
 				}
 
 			}
@@ -74,11 +80,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 	return nil
 }
 
-func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.Release) {
+func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.Release) error {
 	// Verify that the track exists
 	if !s.fileExists(fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position))) {
 		s.RaiseIssue(ctx, "Missing Tracks", fmt.Sprintf("%v is missing tracks", record.Id), false)
-		return
+		return fmt.Errorf("Missing Track")
 	}
 
 	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.Id)})
@@ -87,6 +93,7 @@ func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.
 	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 
+	return nil
 }
 
 func (s *Server) convertToMP3(ctx context.Context) {
