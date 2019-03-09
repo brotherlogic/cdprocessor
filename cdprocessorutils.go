@@ -51,7 +51,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 		return err
 	}
 
-	if len(record.GetMetadata().CdPath) == 0 {
+	if len(record.GetMetadata().CdPath) == 0 && record.GetRelease().FormatQuantity == 1 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		for _, track := range record.GetRelease().Tracklist {
