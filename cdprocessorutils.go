@@ -115,8 +115,8 @@ func (s *Server) convertToFlac(ctx context.Context) {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
 				s.flacCount++
-				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
-				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
+				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac"))
+				s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
 				s.buildConfig(ctx)
 				return
 			}
