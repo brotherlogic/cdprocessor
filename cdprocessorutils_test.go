@@ -187,7 +187,7 @@ func TestLink(t *testing.T) {
 	err := s.makeLinks(context.Background(), 1234)
 
 	if err != nil {
-		t.Errorf("Failing link passed")
+		t.Errorf("Failing link passed: %v", err)
 	}
 
 }
