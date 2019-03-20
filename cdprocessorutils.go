@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -57,7 +56,6 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := recordutils.TrackExtract(record.GetRelease())
-		log.Printf("Got %v from %v", trackSet, record.GetRelease())
 		for _, track := range trackSet {
 			err := s.buildLink(ctx, track, record.GetRelease())
 			if err != nil {
