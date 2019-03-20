@@ -13,6 +13,7 @@ import (
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
+	"github.com/brotherlogic/recordcollection/recordutils"
 )
 
 // verifies the status of the ripped cd
@@ -54,23 +55,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 	if len(record.GetMetadata().CdPath) == 0 && record.GetRelease().FormatQuantity == 1 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
-		for _, track := range record.GetRelease().Tracklist {
-			if track.TrackType == pbgd.Track_TRACK {
-				err := s.buildLink(ctx, track, record.GetRelease())
-				if err != nil {
-					return err
-				}
+		trackSet := recordutils.TrackExtract(record.GetRelease())
+		for _, track := range trackSet {
+			err := s.buildLink(ctx, track, record.GetRelease())
+			if err != nil {
+				return err
 			}
-			for _, subtrack := range track.SubTracks {
-				if subtrack.TrackType == pbgd.Track_TRACK {
-					err := s.buildLink(ctx, subtrack, record.GetRelease())
-					if err != nil {
-						return err
-					}
-				}
-
-			}
-
 		}
 
 		record.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
@@ -80,16 +70,17 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 	return nil
 }
 
-func (s *Server) buildLink(ctx context.Context, track *pbgd.Track, record *pbgd.Release) error {
+func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, record *pbgd.Release) error {
 	// Verify that the track exists
 	if !s.fileExists(fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position))) {
 		s.RaiseIssue(ctx, "Missing Tracks", fmt.Sprintf("%v is missing tracks", record.Id), false)
-		return fmt.Errorf("Missing Track")
+		return fmt.Errorf("Missing Track: %v/%v/track%v", s.dir, record.Id, expand(track.Position))
 	}
 
+	title := recordutils.GetTitle(track)
 	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position)), fmt.Sprintf("%v%v", s.mp3dir, record.Id)})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
-	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", track.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.Title), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record), fmt.Sprintf("%v%v/track%v.cdda.mp3", s.mp3dir, record.Id, expand(track.Position))})
 
