@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -56,6 +57,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32) error {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := recordutils.TrackExtract(record.GetRelease())
+		log.Printf("Got %v from %v", trackSet, record.GetRelease())
 		for _, track := range trackSet {
 			err := s.buildLink(ctx, track, record.GetRelease())
 			if err != nil {
@@ -74,7 +76,7 @@ func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, rec
 	// Verify that the track exists
 	if !s.fileExists(fmt.Sprintf("%v%v/track%v.cdda.mp3", s.dir, record.Id, expand(track.Position))) {
 		s.RaiseIssue(ctx, "Missing Tracks", fmt.Sprintf("%v is missing tracks", record.Id), false)
-		return fmt.Errorf("Missing Track")
+		return fmt.Errorf("Missing Track: %v/%v/track%v", s.dir, record.Id, expand(track.Position))
 	}
 
 	title := recordutils.GetTitle(track)
