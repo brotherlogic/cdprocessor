@@ -268,13 +268,14 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 	return nil
 }
 
-func (s *Server) writeCount(ctx context.Context) {
+func (s *Server) writeCount(ctx context.Context) error {
 	conn, err := s.DialMaster("versionserver")
 	if err == nil {
 		defer conn.Close()
 		client := pbvs.NewVersionServerClient(conn)
 		client.SetVersion(ctx, &pbvs.SetVersionRequest{Set: &pbvs.Version{Key: "github.com.brotherlogic.cdprocessor", Value: int64(len(s.rips)), Setter: "cdprocessor"}})
 	}
+	return err
 }
 
 // GetState gets the state of the server
@@ -318,14 +319,16 @@ func (s *Server) GetState() []*pbg.State {
 	}
 }
 
-func (s *Server) runVerify(ctx context.Context) {
+func (s *Server) runVerify(ctx context.Context) error {
 	s.verify(ctx, 1161277)
+	return nil
 }
 
-func (s *Server) runLink(ctx context.Context) {
+func (s *Server) runLink(ctx context.Context) error {
 	for _, rip := range s.rips {
 		s.makeLinks(ctx, rip.Id)
 	}
+	return nil
 }
 
 func main() {
