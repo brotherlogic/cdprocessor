@@ -331,7 +331,7 @@ func (s *Server) GetState() []*pbg.State {
 	errstring := ""
 	if !s.Registry.Master {
 		r, err := s.findMissing(context.Background())
-		if err != nil {
+		if err == nil {
 			id = r.Id
 		}
 		errstring = fmt.Sprintf("%v", err)
