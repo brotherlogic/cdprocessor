@@ -36,6 +36,25 @@ type prodRipper struct {
 	dial   func(server, host string) (*grpc.ClientConn, error)
 }
 
+type master interface {
+	GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error)
+}
+
+type prodMaster struct {
+	dial func(server string) (*grpc.ClientConn, error)
+}
+
+func (p *prodMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
+	conn, err := p.dial("cdprocessor")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.cancel()
+
+	client := pb.NewCDProcessorClient(conn)
+	return client.GetRipped(ctx, req)
+}
+
 func (s *Server) resolve() string {
 	return s.Registry.Identifier
 }
@@ -210,6 +229,7 @@ type Server struct {
 	ripper      ripper
 	mp3dir      string
 	forceCheck  bool
+	master      master
 }
 
 // Init builds the server
@@ -220,6 +240,7 @@ func Init(dir string, mp3dir string) *Server {
 		getter: &prodGetter{},
 		dir:    dir,
 		mp3dir: mp3dir,
+		master: &prodMaster{},
 	}
 	s.rc = &prodRc{dial: s.DialMaster}
 	s.io = &prodIo{dir: dir, log: s.Log}

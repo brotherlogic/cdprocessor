@@ -16,6 +16,29 @@ import (
 	"github.com/brotherlogic/recordcollection/recordutils"
 )
 
+func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
+	ripped, err := s.master.GetRipped(ctx, &pbcdp.GetRippedRequest{})
+	localRip, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
+	if err != nil {
+		return localRip, err
+	}
+
+	for _, rip := range ripped.GetRipped() {
+		found := false
+		for _, local := range localRip.GetRipped() {
+			if local.Id == rip.Id {
+				found = true
+			}
+		}
+
+		if !found {
+			return rip, nil
+		}
+	}
+
+	return nil, nil
+}
+
 // verifies the status of the ripped cd
 func (s *Server) verify(ctx context.Context, ID int32) error {
 	record, err := s.getter.getRecord(ctx, ID)
