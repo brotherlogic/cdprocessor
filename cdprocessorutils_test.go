@@ -3,15 +3,33 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
+
+type testMaster struct {
+	fail  bool
+	found int32
+}
+
+func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
+	if p.fail {
+		return nil, fmt.Errorf("Built to fail")
+	}
+	return &pb.GetRippedResponse{
+		Ripped: []*pb.Rip{
+			&pb.Rip{Id: p.found},
+		},
+	}, nil
+}
 
 type testGetter struct {
 	fail     bool
@@ -210,5 +228,49 @@ func TestExpand(t *testing.T) {
 	s := expand("11")
 	if s != "11" {
 		t.Errorf("Poor expansion: %v", s)
+	}
+}
+
+func TestFindMissing(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.master = &testMaster{}
+
+	missing, err := s.findMissing(context.Background())
+
+	if err != nil {
+		t.Errorf("Failed: %v", err)
+	}
+
+	if missing == nil {
+		t.Errorf("Oops")
+	}
+}
+
+func TestFindMissingFail(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.master = &testMaster{fail: true}
+
+	missing, err := s.findMissing(context.Background())
+
+	if err == nil {
+		t.Errorf("Did not fail: %v", missing)
+	}
+}
+
+func TestFindMissingNone(t *testing.T) {
+	err := os.RemoveAll("testdata/mp31234")
+	err = os.RemoveAll("testdata/mp312345")
+
+	s := InitTestServer("testdata/")
+	s.master = &testMaster{found: int32(12345)}
+
+	missing, err := s.findMissing(context.Background())
+
+	if err != nil {
+		t.Errorf("Failed: %v", err)
+	}
+
+	if missing != nil {
+		t.Errorf("Found one: %v", missing)
 	}
 }

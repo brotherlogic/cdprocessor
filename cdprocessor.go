@@ -36,6 +36,25 @@ type prodRipper struct {
 	dial   func(server, host string) (*grpc.ClientConn, error)
 }
 
+type master interface {
+	GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error)
+}
+
+type prodMaster struct {
+	dial func(server string) (*grpc.ClientConn, error)
+}
+
+func (p *prodMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
+	conn, err := p.dial("cdprocessor")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := pb.NewCDProcessorClient(conn)
+	return client.GetRipped(ctx, req)
+}
+
 func (s *Server) resolve() string {
 	return s.Registry.Identifier
 }
@@ -210,6 +229,7 @@ type Server struct {
 	ripper      ripper
 	mp3dir      string
 	forceCheck  bool
+	master      master
 }
 
 // Init builds the server
@@ -220,6 +240,7 @@ func Init(dir string, mp3dir string) *Server {
 		getter: &prodGetter{},
 		dir:    dir,
 		mp3dir: mp3dir,
+		master: &prodMaster{},
 	}
 	s.rc = &prodRc{dial: s.DialMaster}
 	s.io = &prodIo{dir: dir, log: s.Log}
@@ -306,6 +327,14 @@ func (s *Server) GetState() []*pbg.State {
 		missing = int(miss.GetRelease().Id)
 	}
 
+	id := int32(0)
+	if !s.Registry.Master {
+		r, err := s.findMissing(context.Background())
+		if err != nil {
+			id = r.Id
+		}
+	}
+
 	return []*pbg.State{
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
@@ -316,6 +345,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "flacs", Value: flacs},
 		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
+		&pbg.State{Key: "missing_rip", Value: int64(id)},
 	}
 }
 
