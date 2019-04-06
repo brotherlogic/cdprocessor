@@ -9,9 +9,20 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
+
+type testMaster struct{}
+
+func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
+	return &pb.GetRippedResponse{
+		Ripped: []*pb.Rip{
+			&pb.Rip{Id: 123},
+		},
+	}, nil
+}
 
 type testGetter struct {
 	fail     bool
@@ -210,5 +221,20 @@ func TestExpand(t *testing.T) {
 	s := expand("11")
 	if s != "11" {
 		t.Errorf("Poor expansion: %v", s)
+	}
+}
+
+func TestFindMissing(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.master = &testMaster{}
+
+	missing, err := s.findMissing(context.Background())
+
+	if err != nil {
+		t.Errorf("Failed: %v", err)
+	}
+
+	if missing == nil {
+		t.Errorf("Oops")
 	}
 }
