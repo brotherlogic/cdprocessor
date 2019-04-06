@@ -238,3 +238,15 @@ func TestFindMissing(t *testing.T) {
 		t.Errorf("Oops")
 	}
 }
+
+func TestFindMissingFail(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.master = &testMaster{}
+	s.rc = &testRc{failGet: true}
+
+	missing, err := s.findMissing(context.Background())
+
+	if err == nil {
+		t.Errorf("Did not fail: %v", missing)
+	}
+}
