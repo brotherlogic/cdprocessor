@@ -110,7 +110,7 @@ func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, rec
 	return nil
 }
 
-func (s *Server) convertToMP3(ctx context.Context) {
+func (s *Server) convertToMP3(ctx context.Context) error {
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
@@ -118,13 +118,14 @@ func (s *Server) convertToMP3(ctx context.Context) {
 				s.Log(fmt.Sprintf("Ripping %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
 				s.buildConfig(ctx)
-				return
+				return nil
 			}
 		}
 	}
+	return nil
 }
 
-func (s *Server) convertToFlac(ctx context.Context) {
+func (s *Server) convertToFlac(ctx context.Context) error {
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
@@ -132,10 +133,11 @@ func (s *Server) convertToFlac(ctx context.Context) {
 				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac"))
 				s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
 				s.buildConfig(ctx)
-				return
+				return nil
 			}
 		}
 	}
+	return nil
 }
 
 func (s *Server) buildConfig(ctx context.Context) {
@@ -188,7 +190,7 @@ func (s *Server) buildConfig(ctx context.Context) {
 	s.rips = rips
 }
 
-func (s *Server) adjustExisting(ctx context.Context) {
+func (s *Server) adjustExisting(ctx context.Context) error {
 	t := time.Now()
 	m, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
@@ -210,13 +212,16 @@ func (s *Server) adjustExisting(ctx context.Context) {
 	}
 
 	s.lastRunTime = time.Now().Sub(t)
+
+	return nil
 }
 
-func (s *Server) logMissing(ctx context.Context) {
+func (s *Server) logMissing(ctx context.Context) error {
 	m, _ := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 
 	if len(m.Missing) > 0 {
 		s.RaiseIssue(ctx, "Rip CD", fmt.Sprintf("%v [%v]", m.Missing[0].GetRelease().Title, m.Missing[0].GetRelease().Id), false)
-		return
 	}
+
+	return nil
 }
