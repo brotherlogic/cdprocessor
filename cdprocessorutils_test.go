@@ -15,7 +15,8 @@ import (
 )
 
 type testMaster struct {
-	fail bool
+	fail  bool
+	found int32
 }
 
 func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
@@ -24,7 +25,7 @@ func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*
 	}
 	return &pb.GetRippedResponse{
 		Ripped: []*pb.Rip{
-			&pb.Rip{Id: 123},
+			&pb.Rip{Id: p.found},
 		},
 	}, nil
 }
@@ -252,5 +253,20 @@ func TestFindMissingFail(t *testing.T) {
 
 	if err == nil {
 		t.Errorf("Did not fail: %v", missing)
+	}
+}
+
+func TestFindMissingNone(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.master = &testMaster{found: int32(12345)}
+
+	missing, err := s.findMissing(context.Background())
+
+	if err != nil {
+		t.Errorf("Failed: %v", err)
+	}
+
+	if missing != nil {
+		t.Errorf("Found one: %v", missing)
 	}
 }

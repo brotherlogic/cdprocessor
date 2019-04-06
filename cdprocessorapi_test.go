@@ -57,7 +57,7 @@ func (i *testIo) readDir() ([]os.FileInfo, error) {
 }
 
 func (i *testIo) readSubdir(f string) ([]os.FileInfo, error) {
-	log.Printf("BANG %v", i.dir+f)
+	log.Printf("BANG %v", i.dir)
 	return ioutil.ReadDir(i.dir + f)
 }
 
@@ -82,7 +82,7 @@ func (i *testIo) convert(name string) (int32, error) {
 }
 
 func TestGetRipped(t *testing.T) {
-	s := InitTestServer("testdata")
+	s := InitTestServer("testdata/")
 	ripped, err := s.GetRipped(context.Background(), &pbcdp.GetRippedRequest{})
 	if err != nil {
 		t.Fatalf("Error getting ripped: %v", err)
