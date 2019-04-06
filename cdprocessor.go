@@ -49,7 +49,7 @@ func (p *prodMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	defer conn.cancel()
+	defer conn.Close()
 
 	client := pb.NewCDProcessorClient(conn)
 	return client.GetRipped(ctx, req)
@@ -327,6 +327,14 @@ func (s *Server) GetState() []*pbg.State {
 		missing = int(miss.GetRelease().Id)
 	}
 
+	id := int32(0)
+	if !s.Registry.Master {
+		r, err := s.findMissing(context.Background())
+		if err != nil {
+			id = r.Id
+		}
+	}
+
 	return []*pbg.State{
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
@@ -337,6 +345,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "flacs", Value: flacs},
 		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
+		&pbg.State{Key: "missing_rip", Value: int64(id)},
 	}
 }
 

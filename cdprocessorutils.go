@@ -20,7 +20,7 @@ func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
 	ripped, err := s.master.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 	localRip, err := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 	if err != nil {
-		return localRip, err
+		return nil, err
 	}
 
 	for _, rip := range ripped.GetRipped() {
