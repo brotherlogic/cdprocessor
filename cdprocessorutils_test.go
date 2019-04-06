@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"golang.org/x/net/context"
@@ -258,6 +259,8 @@ func TestFindMissingFail(t *testing.T) {
 
 func TestFindMissingNone(t *testing.T) {
 	s := InitTestServer("testdata/")
+	os.RemoveAll("testdata/mp31234")
+	os.RemoveAll("testdata/mp312345")
 	s.master = &testMaster{found: int32(12345)}
 
 	missing, err := s.findMissing(context.Background())
