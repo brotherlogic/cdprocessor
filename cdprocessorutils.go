@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -27,7 +26,6 @@ func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
 	for _, rip := range ripped.GetRipped() {
 		found := false
 		for _, local := range localRip.GetRipped() {
-			log.Printf("Thing")
 			if local.Id == rip.Id {
 				found = true
 			}
@@ -158,7 +156,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 				return
 			}
 
-			log.Printf("READING %v", f.Name())
 			trackFiles, _ := s.io.readSubdir(f.Name())
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
@@ -186,7 +183,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 				}
 			}
 
-			log.Printf("WHEE %v", id)
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
 	}
