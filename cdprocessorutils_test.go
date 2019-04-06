@@ -260,7 +260,8 @@ func TestFindMissingFail(t *testing.T) {
 func TestFindMissingNone(t *testing.T) {
 	s := InitTestServer("testdata/")
 	os.RemoveAll("testdata/mp31234")
-	os.RemoveAll("testdata/mp312345")
+	err := os.RemoveAll("testdata/mp312345")
+	log.Printf("%v", err)
 	s.master = &testMaster{found: int32(12345)}
 
 	missing, err := s.findMissing(context.Background())
