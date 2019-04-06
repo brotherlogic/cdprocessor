@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -154,7 +153,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 			id, err := s.io.convert(name)
 			if err != nil {
 				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
-				log.Printf("ERR %v", err)
 				return
 			}
 
@@ -189,7 +187,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 		}
 	}
 
-	log.Printf("RIP = %v", rips)
 	s.rips = rips
 }
 
