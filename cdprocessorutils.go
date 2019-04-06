@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -151,7 +150,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 	for _, f := range files {
 		if f.IsDir() && f.Name() != "lost+found" {
 			name := f.Name()
-			log.Printf("NAME = %v", name)
 			id, err := s.io.convert(name)
 			if err != nil {
 				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
