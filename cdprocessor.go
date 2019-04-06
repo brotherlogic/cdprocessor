@@ -328,11 +328,13 @@ func (s *Server) GetState() []*pbg.State {
 	}
 
 	id := int32(0)
+	errstring := ""
 	if !s.Registry.Master {
 		r, err := s.findMissing(context.Background())
 		if err != nil {
 			id = r.Id
 		}
+		errstring = fmt.Sprintf("%v", err)
 	}
 
 	return []*pbg.State{
@@ -346,6 +348,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
 		&pbg.State{Key: "missing_rip", Value: int64(id)},
+		&pbg.State{Key: "missing_err", Text: errstring},
 	}
 }
 
