@@ -14,9 +14,14 @@ import (
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
-type testMaster struct{}
+type testMaster struct {
+	fail bool
+}
 
 func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
+	if p.fail {
+		return nil, fmt.Errorf("Built to fail")
+	}
 	return &pb.GetRippedResponse{
 		Ripped: []*pb.Rip{
 			&pb.Rip{Id: 123},
@@ -241,8 +246,7 @@ func TestFindMissing(t *testing.T) {
 
 func TestFindMissingFail(t *testing.T) {
 	s := InitTestServer("testdata/")
-	s.master = &testMaster{}
-	s.rc = &testRc{failGet: true}
+	s.master = &testMaster{fail: true}
 
 	missing, err := s.findMissing(context.Background())
 
