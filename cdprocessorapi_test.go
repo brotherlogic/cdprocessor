@@ -71,7 +71,7 @@ func (i *testIo) convert(name string) (int32, int32, error) {
 		if err != nil {
 			return -1, -1, err
 		}
-		dval, err := strconv.Atoi(name[strings.Index(name, "_"):])
+		dval, err := strconv.Atoi(name[strings.Index(name, "_")+1:])
 		if err != nil {
 			return -1, -1, err
 		}
