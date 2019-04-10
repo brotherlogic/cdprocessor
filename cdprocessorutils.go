@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -153,7 +152,6 @@ func (s *Server) buildConfig(ctx context.Context) {
 			name := f.Name()
 			id, disk, err := s.io.convert(name)
 			if err != nil {
-				log.Printf("FUCK %v", err)
 				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
 				return
 			}
