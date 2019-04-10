@@ -61,24 +61,28 @@ func (i *testIo) readSubdir(f string) ([]os.FileInfo, error) {
 	return ioutil.ReadDir(i.dir + f)
 }
 
-func (i *testIo) convert(name string) (int32, error) {
+func (i *testIo) convert(name string) (int32, int32, error) {
 	if i.failConv {
-		return -1, fmt.Errorf("Build to fail")
+		return -1, -1, fmt.Errorf("Build to fail")
 	}
 
 	if strings.Contains(name, "_") {
 		val, err := strconv.Atoi(name[:strings.Index(name, "_")])
 		if err != nil {
-			return -1, err
+			return -1, -1, err
 		}
-		return int32(val), nil
+		dval, err := strconv.Atoi(name[strings.Index(name, "_"):])
+		if err != nil {
+			return -1, -1, err
+		}
+		return int32(val), int32(dval), nil
 	}
 
 	val, err := strconv.Atoi(name)
 	if err != nil {
-		return -1, err
+		return -1, -1, err
 	}
-	return int32(val), nil
+	return int32(val), 1, nil
 }
 
 func TestGetRipped(t *testing.T) {
