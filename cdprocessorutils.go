@@ -150,7 +150,7 @@ func (s *Server) buildConfig(ctx context.Context) {
 	for _, f := range files {
 		if f.IsDir() && f.Name() != "lost+found" {
 			name := f.Name()
-			id, err := s.io.convert(name)
+			id, disk, err := s.io.convert(name)
 			if err != nil {
 				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
 				return
@@ -169,7 +169,7 @@ func (s *Server) buildConfig(ctx context.Context) {
 						}
 					}
 					if foundTrack == nil {
-						foundTrack = &pbcdp.Track{TrackNumber: int32(trackNumber)}
+						foundTrack = &pbcdp.Track{TrackNumber: int32(trackNumber), Disk: disk}
 						tracks = append(tracks, foundTrack)
 					}
 
