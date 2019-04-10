@@ -40,7 +40,10 @@ func main() {
 			if err == nil {
 				fmt.Printf("%v: Got %v ripped records\n", e.Identifier, len(resp.GetRipped()))
 				for i, missing := range resp.GetRipped() {
-					fmt.Printf("%v. %v\n", i, missing.Id)
+					if len(missing.Tracks) == 0 {
+						fmt.Printf("MISSING TRACKS %v\n", missing.Id)
+					}
+					fmt.Printf("%v. %v (%v - %v)\n", i, missing.Id, len(missing.Tracks), missing.Tracks[0].Disk)
 				}
 			} else {
 				fmt.Printf("%v: Error: %v\n", e.Identifier, err)
