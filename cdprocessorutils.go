@@ -183,6 +183,9 @@ func (s *Server) buildConfig(ctx context.Context) {
 				}
 			}
 
+			if len(tracks) == 0 {
+				s.RaiseIssue(ctx, "Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks", id, disk), false)
+			}
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
 	}
