@@ -351,7 +351,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "flacs", Value: flacs},
 		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
-		&pbg.State{Key: "missing_rip", Value: int64(id)},
+		&pbg.State{Key: "missing_rip_id", Value: int64(id)},
 		&pbg.State{Key: "missing_err", Text: errstring},
 	}
 }
