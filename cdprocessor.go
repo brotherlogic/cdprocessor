@@ -366,6 +366,7 @@ func (s *Server) runLink(ctx context.Context) error {
 		err := s.makeLinks(ctx, rip.Id)
 		if err != nil {
 			s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
+			return err
 		}
 	}
 	return nil
