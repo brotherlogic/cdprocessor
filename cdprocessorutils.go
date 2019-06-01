@@ -69,13 +69,13 @@ func computeArtist(rec *pbgd.Release) string {
 	return str[:len(str)-2]
 }
 
-func (s *Server) makeLinks(ctx context.Context, ID int32) error {
+func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
 
-	if len(record.GetMetadata().CdPath) == 0 && record.GetRelease().FormatQuantity == 1 {
+	if (force || len(record.GetMetadata().CdPath) == 0) && record.GetRelease().FormatQuantity == 1 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := recordutils.TrackExtract(record.GetRelease())

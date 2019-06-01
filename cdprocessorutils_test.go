@@ -189,7 +189,7 @@ func TestFailOnLink(t *testing.T) {
 	tg := &testGetter{fail: true}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 1234)
+	err := s.makeLinks(context.Background(), 1234, false)
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -202,7 +202,7 @@ func TestLink(t *testing.T) {
 	tg := &testGetter{}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 12345)
+	err := s.makeLinks(context.Background(), 12345, false)
 
 	if err != nil {
 		t.Errorf("Failing link passed: %v", err)
@@ -216,7 +216,7 @@ func TestLinkForced(t *testing.T) {
 	tg := &testGetter{}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 1234)
+	err := s.makeLinks(context.Background(), 1234, false)
 
 	if err != nil {
 		t.Errorf("Failing link passed")
