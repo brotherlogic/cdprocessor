@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -57,7 +56,6 @@ func (i *testIo) readDir() ([]os.FileInfo, error) {
 }
 
 func (i *testIo) readSubdir(f string) ([]os.FileInfo, error) {
-	log.Printf("BANG %v", i.dir)
 	return ioutil.ReadDir(i.dir + f)
 }
 
@@ -144,5 +142,13 @@ func TestGetMissingFailGet(t *testing.T) {
 	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 	if err == nil {
 		t.Fatalf("Should have failed: %v", missing)
+	}
+}
+
+func TestUnkownForce(t *testing.T) {
+	s := InitTestServer("testdata/")
+	_, err := s.Force(context.Background(), &pbcdp.ForceRequest{})
+	if err == nil {
+		t.Errorf("Empty force should have failed")
 	}
 }

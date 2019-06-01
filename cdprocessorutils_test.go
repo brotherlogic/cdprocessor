@@ -92,14 +92,14 @@ func InitTestServer(dir string) *Server {
 }
 
 func TestAdjust(t *testing.T) {
-	s := InitTestServer("testdata")
+	s := InitTestServer("testdata/")
 	tg := &testGetter{}
 	s.getter = tg
 
 	s.adjustExisting(context.Background())
 
 	if tg.updates != 1 {
-		t.Errorf("Update has not run!")
+		t.Errorf("Update has not run: %v", tg.updates)
 	}
 }
 
@@ -272,5 +272,15 @@ func TestFindMissingNone(t *testing.T) {
 
 	if missing != nil {
 		t.Errorf("Found one: %v", missing)
+	}
+}
+
+func TestForceRecreate(t *testing.T) {
+	log.Printf("FORCING")
+	s := InitTestServer("testdata/")
+	s.getter = &testGetter{}
+	_, err := s.Force(context.Background(), &pb.ForceRequest{Type: pb.ForceRequest_RECREATE_LINKS, Id: int32(12345)})
+	if err != nil {
+		t.Errorf("Recreate links failed: %v", err)
 	}
 }
