@@ -53,6 +53,7 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 	return resp, nil
 }
 
+//Force the processor to do something
 func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.ForceResponse, error) {
 	switch req.Type {
 	case pbcdp.ForceRequest_RECREATE_LINKS:

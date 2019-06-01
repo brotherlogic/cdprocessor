@@ -146,3 +146,20 @@ func TestGetMissingFailGet(t *testing.T) {
 		t.Fatalf("Should have failed: %v", missing)
 	}
 }
+
+func TestUnkownForce(t *testing.T) {
+	s := InitTestServer("testdata/")
+	_, err := s.Force(context.Background(), &pbcdp.ForceRequest{})
+	if err == nil {
+		t.Errorf("Empty force should have failed")
+	}
+}
+
+func TestForceRecreate(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.getter = &testGetter{}
+	_, err := s.Force(context.Background(), &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(12345)})
+	if err != nil {
+		t.Errorf("Recreate links failed: %v", err)
+	}
+}
