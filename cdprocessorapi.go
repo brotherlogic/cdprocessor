@@ -57,7 +57,7 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.ForceResponse, error) {
 	switch req.Type {
 	case pbcdp.ForceRequest_RECREATE_LINKS:
-		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id)
+		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id, true)
 	}
 	return nil, fmt.Errorf("Unknow force request")
 
