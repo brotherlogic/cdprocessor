@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
@@ -49,4 +51,13 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 	}
 
 	return resp, nil
+}
+
+func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.ForceResponse, error) {
+	switch req.Type {
+	case pbcdp.ForceRequest_RECREATE_LINKS:
+		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id)
+	}
+	return nil, fmt.Errorf("Unknow force request")
+
 }

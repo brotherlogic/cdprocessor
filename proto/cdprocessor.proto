@@ -30,7 +30,19 @@ message GetMissingResponse {
   repeated recordcollection.Record missing = 1;
 }
 
+message ForceRequest {
+  enum ForceType {
+    UNKNOWN = 0;
+    RECREATE_LINKS = 1;
+  }
+  ForceType type = 1;
+  int32 id = 2;
+}
+
+message ForceResponse {}
+
 service CDProcessor {
   rpc GetRipped (GetRippedRequest) returns (GetRippedResponse);
   rpc GetMissing (GetMissingRequest) returns (GetMissingResponse);
+  rpc Force (ForceRequest) returns (ForceResponse);
 }
