@@ -96,7 +96,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, record *pbgd.Release) error {
 	// Verify that the track exists
 	adder := ""
-	if record.GetRelease().FormatQuantity > 1 {
+	if record.FormatQuantity > 1 {
 		adder = fmt.Sprintf("_%v", track.Disk)
 	}
 	if !s.fileExists(fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.Id, adder, expand(track.Position))) {
