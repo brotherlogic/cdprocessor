@@ -44,11 +44,11 @@ func main() {
 
 				if err == nil {
 					fmt.Printf("%v: Got %v ripped records\n", e.Identifier, len(resp.GetRipped()))
-					for i, missing := range resp.GetRipped() {
-						if len(missing.Tracks) == 0 {
-							fmt.Printf("MISSING TRACKS %v\n", missing.Id)
+					i, _ := strconv.Atoi(os.Args[2])
+					for _, missing := range resp.GetRipped() {
+						if missing.Id == int32(i) {
+							fmt.Printf("%v\n", missing)
 						}
-						fmt.Printf("%v. %v (%v - %v)\n", i, missing.Id, len(missing.Tracks), missing.Tracks[0].Disk)
 					}
 				} else {
 					fmt.Printf("%v: Error: %v\n", e.Identifier, err)
