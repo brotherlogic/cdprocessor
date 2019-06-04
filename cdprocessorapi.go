@@ -20,7 +20,7 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 	resp := &pbcdp.GetMissingResponse{}
 
 	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768} {
-		missing, err := s.rc.get(&pbrc.Record{Release: &pbgd.Release{FolderId: id}})
+		missing, err := s.rc.get(ctx, &pbrc.Record{Release: &pbgd.Release{FolderId: id}})
 		if err != nil {
 			return resp, err
 		}

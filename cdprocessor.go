@@ -129,8 +129,6 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, er
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
 	if err != nil {
@@ -151,8 +149,6 @@ func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
 	rc.log(fmt.Sprintf("Updated %v (%v)", rec.GetRelease().Id, err))
@@ -165,22 +161,20 @@ type io interface {
 }
 
 type rc interface {
-	get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error)
+	get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecordsResponse, error)
 }
 
 type prodRc struct {
 	dial func(server string) (*grpc.ClientConn, error)
 }
 
-func (rc *prodRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
+func (rc *prodRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
 	conn, err := rc.dial("recordcollection")
 	if err != nil {
 		return &pbrc.GetRecordsResponse{}, err
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: filter})
 }

@@ -31,7 +31,7 @@ type testRc struct {
 	failGet bool
 }
 
-func (rc *testRc) get(filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
+func (rc *testRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
 	if rc.failGet {
 		return &pbrc.GetRecordsResponse{}, fmt.Errorf("Built to fail")
 	}
