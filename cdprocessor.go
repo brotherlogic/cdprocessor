@@ -362,6 +362,7 @@ func (s *Server) runVerify(ctx context.Context) error {
 }
 
 func (s *Server) runLink(ctx context.Context) error {
+	s.Log(fmt.Sprintf("CONTEXT = %v", ctx))
 	for _, rip := range s.rips {
 		err := s.makeLinks(ctx, rip.Id, false)
 		if err != nil {
