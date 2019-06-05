@@ -79,6 +79,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := recordutils.TrackExtract(record.GetRelease())
+		s.Log(fmt.Sprintf("Building %v tracks", len(trackSet)))
 		for _, track := range trackSet {
 			err := s.buildLink(ctx, track, record.GetRelease())
 			if err != nil {
