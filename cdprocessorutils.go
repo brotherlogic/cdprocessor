@@ -51,7 +51,6 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path", record.GetRelease().Title, ID), false)
 	}
 
-	count := 0
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	if len(files) == 0 || err != nil {
 		s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir", ID), false)
