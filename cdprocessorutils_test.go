@@ -178,8 +178,8 @@ func TestVerifyMissingPath(t *testing.T) {
 
 	err := s.verify(context.Background(), 1234)
 
-	if err != nil {
-		t.Errorf("Verify failed: %v", err)
+	if err == nil {
+		t.Errorf("Verify did not fail")
 	}
 
 }
