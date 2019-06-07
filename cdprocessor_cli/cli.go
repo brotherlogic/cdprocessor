@@ -29,7 +29,7 @@ func main() {
 
 	registry := pbcdp.NewCDProcessorClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
 	defer cancel()
 
 	switch os.Args[1] {

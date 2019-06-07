@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -48,6 +49,17 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 
 	if len(record.GetMetadata().CdPath) == 0 {
 		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path", record.GetRelease().Title, ID), false)
+	}
+
+	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
+	if len(files) == 0 || err != nil {
+		s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir", ID), false)
+		return err
+	}
+
+	if len(files) != len(record.GetRelease().Tracklist) {
+		s.RaiseIssue(ctx, "Problem MP3 rip", fmt.Sprintf("%v has not got the right number of tracks", ID), false)
+		return fmt.Errorf("Tracklisting mismatch")
 	}
 
 	return nil

@@ -351,18 +351,18 @@ func (s *Server) GetState() []*pbg.State {
 }
 
 func (s *Server) runVerify(ctx context.Context) error {
-	s.verify(ctx, 1161277)
+	for _, rip := range s.rips {
+		s.verify(ctx, rip.Id)
+	}
 	return nil
 }
 
 func (s *Server) runLink(ctx context.Context) error {
 	for _, rip := range s.rips {
-		if rip.Id == 1997688 {
-			err := s.makeLinks(ctx, rip.Id, false)
-			if err != nil {
-				s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
-				return err
-			}
+		err := s.makeLinks(ctx, rip.Id, false)
+		if err != nil {
+			s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
+			return err
 		}
 	}
 	return nil

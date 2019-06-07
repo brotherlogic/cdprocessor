@@ -35,11 +35,15 @@ type testGetter struct {
 	fail     bool
 	updates  int
 	adjusted map[int32]bool
+	override *pbrc.Record
 }
 
 func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
 	if t.fail {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Built to fail"))
+	}
+	if t.override != nil {
+		return t.override, nil
 	}
 	filepath := ""
 	if t.adjusted[id] {
@@ -178,8 +182,8 @@ func TestVerifyMissingPath(t *testing.T) {
 
 	err := s.verify(context.Background(), 1234)
 
-	if err != nil {
-		t.Errorf("Verify failed: %v", err)
+	if err == nil {
+		t.Errorf("Verify did not fail")
 	}
 
 }
@@ -282,5 +286,29 @@ func TestForceRecreate(t *testing.T) {
 	_, err := s.Force(context.Background(), &pb.ForceRequest{Type: pb.ForceRequest_RECREATE_LINKS, Id: int32(12345)})
 	if err != nil {
 		t.Errorf("Recreate links failed: %v", err)
+	}
+}
+
+func TestVerifyTrackMismatch(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.getter = &testGetter{
+		override: &pbrc.Record{Release: &pbgd.Release{Id: 123}, Metadata: &pbrc.ReleaseMetadata{CdPath: "testmp3s/"}},
+	}
+	err := s.verify(context.Background(), int32(123))
+
+	if err == nil {
+		t.Errorf("Verify did not fail with tracklist mismatch")
+	}
+}
+
+func TestVerifyTrackMismatchFail(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.getter = &testGetter{
+		override: &pbrc.Record{Release: &pbgd.Release{Id: 123, Tracklist: []*pbgd.Track{&pbgd.Track{}}}, Metadata: &pbrc.ReleaseMetadata{CdPath: "testmp3s/"}},
+	}
+	err := s.verify(context.Background(), int32(123))
+
+	if err != nil {
+		t.Errorf("Verify did not fail with tracklist mismatch %v", err)
 	}
 }
