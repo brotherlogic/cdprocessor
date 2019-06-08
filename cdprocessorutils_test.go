@@ -49,17 +49,11 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 	if t.adjusted[id] {
 		filepath = fmt.Sprintf("%v", id)
 	}
-	return &pbrc.Record{Release: &pbgd.Release{
-		Id:             id,
-		FormatQuantity: 1,
-		Artists:        []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
-		Tracklist: []*pbgd.Track{
-			&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
+	return &pbrc.Record{Release: &pbgd.Release{Id: id,
+		FormatQuantity: 1, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
+		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
 			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
-				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}},
-			},
-		}},
-		Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
+				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
 	}, nil
 }
 
@@ -162,6 +156,16 @@ func TestRunMP3s(t *testing.T) {
 	}
 }
 
+func TestRunMP3sWithNothing(t *testing.T) {
+	s := InitTestServer("testempty/")
+	s.convertToMP3(context.Background())
+	s.convertToFlac(context.Background())
+
+	if s.ripCount != 0 || s.flacCount != 0 {
+		t.Errorf("No rips occured")
+	}
+}
+
 func TestFailOnVerify(t *testing.T) {
 	s := InitTestServer("testdata/")
 	tg := &testGetter{fail: true}
@@ -210,6 +214,24 @@ func TestLink(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Failing link passed: %v", err)
+	}
+
+}
+
+func TestLinkBuildLinkError(t *testing.T) {
+	s := InitTestServer("testdata/")
+	tg := &testGetter{override: &pbrc.Record{Release: &pbgd.Release{Id: 12345,
+		FormatQuantity: 2, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
+		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
+			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
+				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: "blah"},
+	}}
+	s.getter = tg
+
+	err := s.makeLinks(context.Background(), 12345, false)
+
+	if err == nil {
+		t.Errorf("Should have failed")
 	}
 
 }
