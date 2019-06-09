@@ -313,18 +313,6 @@ func TestForceRecreate(t *testing.T) {
 	}
 }
 
-func TestVerifyTrackMismatch(t *testing.T) {
-	s := InitTestServer("testdata/")
-	s.getter = &testGetter{
-		override: &pbrc.Record{Release: &pbgd.Release{Id: 123}, Metadata: &pbrc.ReleaseMetadata{CdPath: "testmp3s/"}},
-	}
-	err := s.verify(context.Background(), int32(123))
-
-	if err == nil {
-		t.Errorf("Verify did not fail with tracklist mismatch")
-	}
-}
-
 func TestVerifyTrackMismatchFail(t *testing.T) {
 	s := InitTestServer("testdata/")
 	s.getter = &testGetter{
