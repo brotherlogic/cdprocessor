@@ -51,6 +51,7 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 	}
 	return &pbrc.Record{Release: &pbgd.Release{Id: id,
 		FormatQuantity: 1, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
+		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
 			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
 				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
@@ -222,6 +223,7 @@ func TestLinkBuildLinkError(t *testing.T) {
 	s := InitTestServer("testdata/")
 	tg := &testGetter{override: &pbrc.Record{Release: &pbgd.Release{Id: 12345,
 		FormatQuantity: 2, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
+		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
 			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
 				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: "blah"},

@@ -93,9 +93,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		trackSet := recordutils.TrackExtract(record.GetRelease())
 		s.Log(fmt.Sprintf("Building %v tracks", len(trackSet)))
 		for _, track := range trackSet {
-			err := s.buildLink(ctx, track, record.GetRelease())
-			if err != nil {
-				return err
+			if track.Format == "CD" {
+				err := s.buildLink(ctx, track, record.GetRelease())
+				if err != nil {
+					return err
+				}
 			}
 		}
 
