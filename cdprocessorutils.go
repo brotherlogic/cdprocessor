@@ -57,11 +57,6 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 		return err
 	}
 
-	if len(files) != len(record.GetRelease().Tracklist) {
-		s.RaiseIssue(ctx, "Problem MP3 rip", fmt.Sprintf("%v has not got the right number of tracks", ID), false)
-		return fmt.Errorf("Tracklisting mismatch")
-	}
-
 	return nil
 }
 
