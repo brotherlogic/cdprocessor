@@ -30,7 +30,7 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 		for _, r := range missing.Records {
 			hasCD := false
 			for _, f := range r.GetRelease().GetFormats() {
-				if f.Name == "CD" || f.Name == "File" {
+				if f.Name == "CD" || f.Name == "File" || f.Name == "CDr" {
 					hasCD = true
 				}
 			}
