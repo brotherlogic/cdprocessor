@@ -19,7 +19,7 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (*pbcdp.GetMissingResponse, error) {
 	resp := &pbcdp.GetMissingResponse{}
 
-	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768} {
+	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105} {
 		missing, err := s.rc.get(ctx, &pbrc.Record{Release: &pbgd.Release{FolderId: id}})
 		if err != nil {
 			return resp, err
@@ -28,10 +28,9 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 		ripped, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 		for _, r := range missing.Records {
-
 			hasCD := false
 			for _, f := range r.GetRelease().GetFormats() {
-				if f.Name == "CD" {
+				if f.Name == "CD" || f.Name == "File" {
 					hasCD = true
 				}
 			}
