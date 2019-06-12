@@ -332,7 +332,7 @@ func (s *Server) GetState() []*pbg.State {
 		if err == nil {
 			id = r.Id
 		}
-		errstring = fmt.Sprintf("%v", err)
+		errstring = fmt.Sprintf("err = %v", err)
 	}
 
 	return []*pbg.State{
