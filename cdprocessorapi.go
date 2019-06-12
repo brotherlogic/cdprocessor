@@ -28,7 +28,6 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 		ripped, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 		for _, r := range missing.Records {
-
 			hasCD := false
 			for _, f := range r.GetRelease().GetFormats() {
 				if f.Name == "CD" || f.Name == "File" {
