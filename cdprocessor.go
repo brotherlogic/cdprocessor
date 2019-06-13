@@ -359,6 +359,8 @@ func (s *Server) runVerify(ctx context.Context) error {
 
 func (s *Server) runLink(ctx context.Context) error {
 	for _, rip := range s.rips {
+		s.Log(fmt.Sprintf("Processing %v", rip.Id))
+		time.Sleep(time.Second)
 		err := s.makeLinks(ctx, rip.Id, false)
 		if err != nil {
 			s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
