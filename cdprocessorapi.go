@@ -59,5 +59,4 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id, true)
 	}
 	return nil, fmt.Errorf("Unknow force request")
-
 }
