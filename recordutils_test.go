@@ -279,3 +279,25 @@ func TestRunExtractInfotainment(t *testing.T) {
 		t.Errorf("Bad disk extract %+v:", tracks[12+19-1])
 	}
 }
+
+func TestRunExtractLegend(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/2194660.data")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (16 + 13 + 11) {
+		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
+		for i, t := range tracks {
+			log.Printf("%v. %v", i, len(t.tracks))
+			for j, tr := range t.tracks {
+				log.Printf(" %v. %v", j, tr.Title)
+			}
+		}
+	}
+}
