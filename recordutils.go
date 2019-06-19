@@ -120,6 +120,18 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 			}
 		}
 	}
+
+	// Rebalance track numbers
+	currTrackRe := 1
+	currDiskRe := trackset[0].Disk
+	for i := range trackset {
+		if trackset[i].Disk != currDiskRe {
+			currTrackRe = 1
+			currDiskRe = trackset[i].Disk
+		}
+		trackset[i].Position = fmt.Sprintf("%v", currTrackRe)
+		currTrackRe++
+	}
 	return trackset
 }
 

@@ -300,4 +300,8 @@ func TestRunExtractLegend(t *testing.T) {
 			}
 		}
 	}
+
+	if tracks[16+13+11-1].Position != "11" {
+		t.Errorf("Bad track: %+v", tracks[16+13+11-1])
+	}
 }
