@@ -114,7 +114,7 @@ func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, rec
 	trackPath := fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.Id, adder, expand(track.Position))
 
 	if !s.fileExists(trackPath) {
-		return fmt.Errorf("Missing Track: %v", trackPath)
+		return fmt.Errorf("Missing Track: %v (from %+v)", trackPath, track)
 	}
 
 	title := recordutils.GetTitle(track)
