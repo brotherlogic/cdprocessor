@@ -14,7 +14,6 @@ import (
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
-	"github.com/brotherlogic/recordcollection/recordutils"
 )
 
 func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
@@ -86,7 +85,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		s.Log(fmt.Sprintf("Processing %v", ID))
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
-		trackSet := recordutils.TrackExtract(record.GetRelease())
+		trackSet := TrackExtract(record.GetRelease())
 		s.Log(fmt.Sprintf("Building %v tracks", len(trackSet)))
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" {
@@ -104,7 +103,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	return nil
 }
 
-func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, record *pbgd.Release) error {
+func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Release) error {
 	// Verify that the track exists
 	adder := ""
 	if record.FormatQuantity > 1 {
@@ -117,7 +116,7 @@ func (s *Server) buildLink(ctx context.Context, track *recordutils.TrackSet, rec
 		return fmt.Errorf("Missing Track: %v (from %+v)", trackPath, track)
 	}
 
-	title := recordutils.GetTitle(track)
+	title := GetTitle(track)
 	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", title), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
