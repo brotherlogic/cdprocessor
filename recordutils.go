@@ -36,6 +36,13 @@ func shouldMerge(t1, t2 *TrackSet) bool {
 		}
 	}
 
+	// Blah.1 and Blah.2 should be merged
+	elems1 := strings.Split(t1.tracks[0].Position, ".")
+	elems2 := strings.Split(t2.tracks[0].Position, ".")
+	if elems1[0] == elems2[0] {
+		return true
+	}
+
 	return false
 }
 
