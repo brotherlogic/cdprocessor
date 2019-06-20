@@ -304,8 +304,26 @@ func TestRunExtractLegend(t *testing.T) {
 	if tracks[16+13+11-1].Position != "11" {
 		t.Errorf("Bad track: %+v", tracks[16+13+11-1])
 	}
+}
 
-	for _, tl := range tracks {
-		log.Printf("%+v", tl)
+func TestRunExtractSensitive(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/2417842.data")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (14 + 16 + 19 + 16 + 15) {
+		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
+		for i, t := range tracks {
+			log.Printf("%v. %v", i, len(t.tracks))
+			for j, tr := range t.tracks {
+				log.Printf(" %v. %v", j, tr.Title)
+			}
+		}
 	}
 }
