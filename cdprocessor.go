@@ -338,7 +338,7 @@ func (s *Server) GetState() []*pbg.State {
 
 	return []*pbg.State{
 		&pbg.State{Key: "run_link_progress", Value: s.count},
-		&pbg.State{Key: "runk_link_total", Value: int64(len(s.rips))},
+		&pbg.State{Key: "run_link_total", Value: int64(len(s.rips))},
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
 		&pbg.State{Key: "missing_one", Value: int64(missing)},
