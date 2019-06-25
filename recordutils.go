@@ -16,34 +16,35 @@ type TrackSet struct {
 	Format   string
 }
 
-func shouldMerge(t1, t2 *TrackSet) bool {
+func shouldMerge(t1, t2 *TrackSet) (bool, string) {
 	matcher := regexp.MustCompile("^[a-z]")
 	if matcher.MatchString(t1.tracks[0].Position) && matcher.MatchString(t2.tracks[0].Position) {
-		return true
+		return true, "^[a-z]"
 	}
 
 	cdJoin := regexp.MustCompile("^\\d[A-Z]")
 	if cdJoin.MatchString(t1.tracks[0].Position) && cdJoin.MatchString(t2.tracks[0].Position) {
 		if t1.tracks[0].Position[0] == t2.tracks[0].Position[0] {
-			return true
+			return true, "^\\d[A-Z]"
 		}
 	}
 
 	if len(t1.tracks[0].Position) > 1 && len(t2.tracks[0].Position) > 1 {
 		combiner := regexp.MustCompile("[a-z]$")
 		if combiner.MatchString(t1.tracks[0].Position) && combiner.MatchString(t2.tracks[0].Position) {
-			return true
+			return true, "[a-z]$"
 		}
 	}
 
 	// Blah.1 and Blah.2 should be merged
 	elems1 := strings.Split(t1.tracks[0].Position, ".")
+	check1 := strings.Split(t1.tracks[0].Position, "-")
 	elems2 := strings.Split(t2.tracks[0].Position, ".")
-	if elems1[0] == elems2[0] {
-		return true
+	if elems1[0] == elems2[0] && (len(check1) == 1 || len(check1[0]) < len(elems1[0])) {
+		return true, "Both contain periods"
 	}
 
-	return false
+	return false, "No Merge"
 }
 
 func flatten(tracklist []*pbgd.Track) []*pbgd.Track {
@@ -119,7 +120,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	for found {
 		found = false
 		for i := range trackset[1:] {
-			if shouldMerge(trackset[i], trackset[i+1]) {
+			if val, _ := shouldMerge(trackset[i], trackset[i+1]); val {
 				trackset[i].tracks = append(trackset[i].tracks, trackset[i+1].tracks...)
 				trackset = append(trackset[:i+1], trackset[i+2:]...)
 				found = true

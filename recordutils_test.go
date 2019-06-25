@@ -327,3 +327,30 @@ func TestRunExtractSensitive(t *testing.T) {
 		}
 	}
 }
+
+func TestRunExtractWillie(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/3101236.data")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (15 + 2) {
+		for i, tr := range tracks {
+			log.Printf("%v. %v", i, len(tr.tracks))
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 17", len(tracks))
+	}
+
+	if tracks[15+2-1].Format == "CD" {
+		t.Errorf("Bad track: %+v", tracks[15+2-1])
+	}
+
+}
