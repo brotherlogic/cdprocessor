@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
@@ -69,7 +68,6 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 		}
 	}
 
-	log.Printf("formatCount %v", formatCounts)
 	if len(formatCounts) > 1 {
 		multiFormat = true
 	}
@@ -122,8 +120,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	for found {
 		found = false
 		for i := range trackset[1:] {
-			if val, mat := shouldMerge(trackset[i], trackset[i+1]); val {
-				log.Printf("MERGE: %v", mat)
+			if val, _ := shouldMerge(trackset[i], trackset[i+1]); val {
 				trackset[i].tracks = append(trackset[i].tracks, trackset[i+1].tracks...)
 				trackset = append(trackset[:i+1], trackset[i+2:]...)
 				found = true
