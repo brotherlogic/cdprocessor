@@ -228,6 +228,7 @@ type Server struct {
 	mp3dir      string
 	forceCheck  bool
 	master      master
+	count       int64
 }
 
 // Init builds the server
@@ -336,6 +337,8 @@ func (s *Server) GetState() []*pbg.State {
 	}
 
 	return []*pbg.State{
+		&pbg.State{Key: "run_link_progress", Value: s.count},
+		&pbg.State{Key: "runk_link_total", Value: int64(len(s.rips))},
 		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
 		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
 		&pbg.State{Key: "missing_one", Value: int64(missing)},
@@ -358,6 +361,7 @@ func (s *Server) runVerify(ctx context.Context) error {
 }
 
 func (s *Server) runLink(ctx context.Context) error {
+	s.count = int64(0)
 	for _, rip := range s.rips {
 		s.Log(fmt.Sprintf("Processing %v", rip.Id))
 		//time.Sleep(time.Second)
@@ -366,6 +370,7 @@ func (s *Server) runLink(ctx context.Context) error {
 			s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
 			return err
 		}
+		s.count++
 	}
 	return nil
 }
