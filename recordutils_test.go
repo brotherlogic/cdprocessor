@@ -354,3 +354,30 @@ func TestRunExtractWillie(t *testing.T) {
 	}
 
 }
+
+func TestRunExtractInAHole(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/4605230.data")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (11 + 11) {
+		for i, tr := range tracks {
+			log.Printf("%v. %v", i, len(tr.tracks))
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 22", len(tracks))
+	}
+
+	if tracks[11+11-1].Disk != "2" {
+		t.Errorf("Bad track: %+v", tracks[11+11-1])
+	}
+
+}
