@@ -381,3 +381,25 @@ func TestRunExtractInAHole(t *testing.T) {
 	}
 
 }
+
+func TestRunExtractFiveAlbums(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/4841901.data")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (12 + 18 + 7 + 15 + 14) {
+		for i, tr := range tracks {
+			log.Printf("%v. %v", i, len(tr.tracks))
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 22", len(tracks))
+	}
+}
