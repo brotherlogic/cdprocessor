@@ -384,6 +384,7 @@ func TestRunExtractInAHole(t *testing.T) {
 
 func TestRunExtractFiveAlbums(t *testing.T) {
 	data, err := ioutil.ReadFile("cdtests/4841901.data")
+
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
@@ -401,5 +402,60 @@ func TestRunExtractFiveAlbums(t *testing.T) {
 			}
 		}
 		t.Fatalf("Wrong number of tracks: %v - should be 22", len(tracks))
+	}
+
+}
+
+func TestRunExtractWitchTrials(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/603365.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (20 + 21) {
+		for i, tr := range tracks {
+			log.Printf("%v. %v", i, len(tr.tracks))
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 22", len(tracks))
+	}
+
+	if tracks[20+21-1].Disk != "2" {
+		t.Errorf("Bad track: %+v", tracks[20+21-1])
+	}
+}
+
+func TestRunExtractGruppo(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/782994.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (9 + 3) {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 12", len(tracks))
+	}
+
+	if tracks[3+9-1].Disk != "2" {
+		t.Errorf("Bad track: %+v", tracks[3+9-1])
 	}
 }
