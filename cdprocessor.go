@@ -364,7 +364,7 @@ func (s *Server) runLink(ctx context.Context) error {
 	s.count = int64(0)
 	for _, rip := range s.rips {
 		s.Log(fmt.Sprintf("Processing %v", rip.Id))
-		//time.Sleep(time.Second)
+		time.Sleep(time.Second)
 		err := s.makeLinks(ctx, rip.Id, false)
 		if err != nil {
 			s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
