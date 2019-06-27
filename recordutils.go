@@ -95,6 +95,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 			currStart = r.Tracklist[2].Position[0]
 		}
 	}
+
 	for _, track := range flatten(r.Tracklist) {
 		if track.TrackType == pbgd.Track_HEADING && multiFormat {
 			disk++
@@ -102,15 +103,18 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 			currFormat = track.Title
 		} else if track.TrackType == pbgd.Track_TRACK {
 			if track.Position[0] != currStart {
-				if track.Position[0] == 'C' || track.Position[0] == 'E' {
+				if track.Position[0] == 'C' || track.Position[0] == 'E' && !strings.HasPrefix(track.Position, "CD") {
 					disk++
 				}
 				currStart = track.Position[0]
 			}
-			if strings.Contains(track.Position, "-") && track.Position[0] != currDisk {
-				disk++
-				currTrack = 1
-				currDisk = track.Position[0]
+			if strings.Contains(track.Position, "-") {
+				elems := strings.Split(track.Position, "-")
+				if elems[0][len(elems[0])-1] != currDisk {
+					disk++
+					currTrack = 1
+					currDisk = elems[0][len(elems[0])-1]
+				}
 			}
 			if track.Position != "Video" && !strings.HasPrefix(track.Position, "DVD") {
 				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", disk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
