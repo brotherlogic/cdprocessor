@@ -455,7 +455,21 @@ func TestRunExtractGruppo(t *testing.T) {
 		t.Fatalf("Wrong number of tracks: %v - should be 12", len(tracks))
 	}
 
-	if tracks[3+9-1].Disk != "2" {
-		t.Errorf("Bad track: %+v", tracks[3+9-1])
+	if tracks[0].Disk != "1" {
+		t.Errorf("Bad first track: %+v", tracks[0])
 	}
+
+	if tracks[3+9-1].Disk != "2" || tracks[3+9-1].Position != "9" {
+		t.Errorf("Bad track: %+v", tracks[3+9-1])
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk, tr.Position)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 12", len(tracks))
+
+	}
+
+	log.Printf("%+v", tracks[len(tracks)-1])
 }
