@@ -52,7 +52,7 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	if len(files) == 0 || err != nil {
-		s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir", ID), false)
+		s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir: %v and %v", ID, len(files), err), false)
 		return err
 	}
 
