@@ -496,3 +496,30 @@ func TestRunExtractSleep(t *testing.T) {
 		t.Fatalf("Wrong number of tracks: %v", len(tracks))
 	}
 }
+
+func TestRunExtractFloyd(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/1060844.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != (11 + 11 + 9) {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v", len(tracks))
+	}
+
+	if tracks[0].Format != "CD" {
+		t.Errorf("Bad track: %+v", tracks[0])
+	}
+}
