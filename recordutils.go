@@ -117,6 +117,11 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 					disk++
 					currTrack = 1
 					currDisk = elems[0][len(elems[0])-1]
+					if strings.HasPrefix(track.Position, "CD") {
+						currFormat = "CD"
+					} else {
+						currFormat = "Vinyl"
+					}
 				}
 			}
 			if track.Position != "Video" && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
