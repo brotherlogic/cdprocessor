@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	pbgd "github.com/brotherlogic/godiscogs"
@@ -105,25 +106,52 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 			currTrack = 1
 			currFormat = track.Title
 		} else if track.TrackType == pbgd.Track_TRACK {
-			if track.Position[0] != currStart {
-				if track.Position[0] == 'C' || track.Position[0] == 'E' && !strings.HasPrefix(track.Position, "CD") {
-					disk++
-				}
+			if track.Position[0] != currStart && !multiFormat {
 				currStart = track.Position[0]
 			}
 			if strings.Contains(track.Position, "-") {
 				elems := strings.Split(track.Position, "-")
-				if elems[0][len(elems[0])-1] != currDisk {
-					disk++
-					currTrack = 1
-					currDisk = elems[0][len(elems[0])-1]
-					if strings.HasPrefix(track.Position, "CD") {
-						currFormat = "CD"
-					} else {
-						currFormat = "Vinyl"
+
+				if strings.HasPrefix(elems[0], "LP") {
+					if len(elems[0]) != 2 && elems[0][2] != currDisk {
+						if elems[0][2] != currDisk {
+							disk++
+							currDisk = elems[0][2]
+						}
+					}
+				}
+				if strings.HasPrefix(elems[0], "7\"") || strings.HasPrefix(elems[0], "4.72\"") {
+					if currFormat != "7inch" {
+						disk++
+						currTrack = 1
+						currFormat = "7inch"
+					}
+				}
+				if strings.HasPrefix(elems[0], "CD") {
+					if currFormat != "CD" {
+						disk++
+						currTrack = 1
+						if len(elems[0]) > 2 {
+							currDisk = elems[0][2]
+						}
+					}
+					currFormat = "CD"
+
+					if len(elems[0]) != 2 && elems[0][2] != currDisk {
+						disk++
+						currDisk = elems[0][2]
+					}
+				}
+				_, err := strconv.Atoi(elems[0])
+				if err == nil {
+					if currDisk != elems[0][0] {
+						disk++
+						currTrack = 1
+						currDisk = elems[0][0]
 					}
 				}
 			}
+
 			if track.Position != "Video" && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
 				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", disk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
 				currTrack++
