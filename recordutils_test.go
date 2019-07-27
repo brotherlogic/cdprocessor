@@ -585,3 +585,30 @@ func TestRunExtractIsotach(t *testing.T) {
 	}
 
 }
+
+func TestRunExtractSndtrak(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/13723675.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 9 {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v", len(tracks))
+	}
+
+	if tracks[0].Format != "File" {
+		t.Errorf("Bad track: %+v", tracks[0])
+	}
+}
