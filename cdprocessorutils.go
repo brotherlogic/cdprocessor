@@ -88,7 +88,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		trackSet := TrackExtract(record.GetRelease())
 		s.Log(fmt.Sprintf("Building %v tracks", len(trackSet)))
 		for _, track := range trackSet {
-			if track.Format == "CD" || track.Format == "CDr" {
+			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
 				err := s.buildLink(ctx, track, record.GetRelease())
 				if err != nil {
 					return err
