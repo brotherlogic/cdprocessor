@@ -94,6 +94,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 					return err
 				}
 			}
+			s.Log(fmt.Sprintf("Skipping %v because it's the wrong format", track))
 		}
 
 		record.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
