@@ -53,6 +53,7 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	if len(files) == 0 || err != nil {
 		s.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: record.GetRelease().Id})
+		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		if len(files) == 0 || err != nil {
 			s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir: %v and %v", ID, len(files), err), false)
 			return err
