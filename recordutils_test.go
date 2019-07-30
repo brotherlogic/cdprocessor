@@ -612,3 +612,30 @@ func TestRunExtractSndtrak(t *testing.T) {
 		t.Errorf("Bad track: %+v", tracks[0])
 	}
 }
+
+func TestRunExtractBrainticket(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/2262574.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 4 {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v", len(tracks))
+	}
+
+	if tracks[3].Format != "CD" {
+		t.Errorf("Bad track: %+v", tracks[3])
+	}
+}
