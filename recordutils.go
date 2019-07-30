@@ -32,8 +32,10 @@ func shouldMerge(t1, t2 *TrackSet) (bool, string) {
 
 	if len(t1.tracks[0].Position) > 1 && len(t2.tracks[0].Position) > 1 {
 		combiner := regexp.MustCompile("[a-z]$")
-		if combiner.MatchString(t1.tracks[0].Position) && combiner.MatchString(t2.tracks[0].Position) {
-			return true, "[a-z]$"
+		if combiner.MatchString(t1.tracks[0].Position) && combiner.MatchString(t2.tracks[0].Position) && t1.tracks[0].Position[0] == t2.tracks[0].Position[0] {
+			if t1.tracks[len(t1.tracks)-1].Position[len(t1.tracks[len(t1.tracks)-1].Position)-1] == t2.tracks[len(t2.tracks)-1].Position[len(t2.tracks[len(t2.tracks)-1].Position)-1]-1 {
+				return true, "[a-z]$"
+			}
 		}
 	}
 
