@@ -76,9 +76,6 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	}
 
 	disk := 1
-	if multiFormat && r.Tracklist[0].TrackType == pbgd.Track_HEADING {
-		disk = 0
-	}
 
 	currTrack := 1
 	if multiFormat {
@@ -103,11 +100,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	}
 
 	for _, track := range flatten(r.Tracklist) {
-		if track.TrackType == pbgd.Track_HEADING && multiFormat {
-			disk++
-			currTrack = 1
-			currFormat = track.Title
-		} else if track.TrackType == pbgd.Track_TRACK {
+		if track.TrackType == pbgd.Track_TRACK {
 			if track.Position[0] != currStart && !multiFormat {
 				currStart = track.Position[0]
 			}
