@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	pbgd "github.com/brotherlogic/godiscogs"
@@ -75,18 +74,24 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 		multiFormat = true
 	}
 
-	disk := 1
-
 	currTrack := 1
-	if multiFormat {
-		currTrack = 1
-	}
 
 	currFormat := r.GetFormats()[0].Name
 	if currFormat == "Box Set" {
 		currFormat = r.GetFormats()[1].Name
 	}
-	currDisk := "1"[0]
+
+	disk := 1
+	if multiFormat {
+		currTrack = 1
+		disk = 0
+		currFormat = ""
+	}
+	if strings.Contains(r.Tracklist[0].Position, "-") || strings.Contains(r.Tracklist[1].Position, "-") {
+		disk = 0
+	}
+
+	currDisk := "0"[0]
 
 	currStart := "A"[0]
 	if r.Tracklist[0].TrackType == pbgd.Track_TRACK {
@@ -107,42 +112,17 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 			if strings.Contains(track.Position, "-") {
 				elems := strings.Split(track.Position, "-")
 
-				if strings.HasPrefix(elems[0], "LP") {
-					if len(elems[0]) != 2 && elems[0][2] != currDisk {
-						if elems[0][2] != currDisk {
-							disk++
-							currDisk = elems[0][2]
-						}
-					}
-				}
-				if strings.HasPrefix(elems[0], "7\"") || strings.HasPrefix(elems[0], "4.72\"") {
-					if currFormat != "7inch" {
-						disk++
-						currTrack = 1
-						currFormat = "7inch"
-					}
-				}
-				if strings.HasPrefix(elems[0], "CD") {
-					if currFormat != "CD" {
-						disk++
-						currTrack = 1
-						if len(elems[0]) > 2 {
-							currDisk = elems[0][2]
-						}
-					}
-					currFormat = "CD"
+				if currDisk != elems[0][len(elems[0])-1] {
+					disk++
+					currDisk = elems[0][len(elems[0])-1]
 
-					if len(elems[0]) != 2 && elems[0][2] != currDisk {
-						disk++
-						currDisk = elems[0][2]
-					}
-				}
-				_, err := strconv.Atoi(elems[0])
-				if err == nil {
-					if currDisk != elems[0][0] {
-						disk++
-						currTrack = 1
-						currDisk = elems[0][0]
+					matcher := regexp.MustCompile("(.*)?(\\d+)")
+					matches := matcher.FindStringSubmatch(elems[0])
+
+					if len(matches) == 3 && len(matches[1]) > 0 {
+						currFormat = matches[1]
+					} else if multiFormat {
+						currFormat = elems[0]
 					}
 				}
 			}

@@ -183,18 +183,14 @@ func TestRunExtractSunRa(t *testing.T) {
 
 	tracks := TrackExtract(record.GetRelease())
 
-	if len(tracks) != 12 {
-		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
-		for i, t := range tracks {
-			log.Printf("%v. %v", i, len(t.tracks))
-			for j, tr := range t.tracks {
-				log.Printf(" %v. %v", j, tr.Title)
+	if len(tracks) != 12 || tracks[6].Position != "1" || tracks[6].Disk != "2" {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
 			}
 		}
-	}
-
-	if tracks[6].Position != "1" || tracks[6].Disk != "2" {
-		t.Errorf("Format was not extracted %+v", tracks[6])
+		t.Errorf("Bad spec")
 	}
 }
 
@@ -219,7 +215,7 @@ func TestRunExtractBehindCounter(t *testing.T) {
 		}
 	}
 
-	if tracks[0].Format != "Vinyl" || tracks[0].Disk != "1" {
+	if tracks[0].Format != "LP" || tracks[0].Disk != "1" {
 		t.Errorf("First track poor extract: %+v", tracks[0])
 	}
 
@@ -241,15 +237,17 @@ func TestRunExtractARMAchines(t *testing.T) {
 
 	if len(tracks) != 100 {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
-		for i, t := range tracks {
-			log.Printf("%v. %v", i, len(t.tracks))
-			for j, tr := range t.tracks {
-				log.Printf(" %v. %v", j, tr.Title)
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
 			}
 		}
+
 	}
 
 	if tracks[99].Disk != "10" {
+		t.Errorf("Bad disk extract %+v:", tracks[0])
 		t.Errorf("Bad disk extract %+v:", tracks[99])
 	}
 }
@@ -525,7 +523,7 @@ func TestRunExtractFloyd(t *testing.T) {
 }
 
 func TestRunExtractBunker(t *testing.T) {
-	data, err := ioutil.ReadFile("cdtests//10768822.data")
+	data, err := ioutil.ReadFile("cdtests/10768822.data")
 
 	if err != nil {
 		t.Fatalf("Error: %v", err)
@@ -547,7 +545,7 @@ func TestRunExtractBunker(t *testing.T) {
 	}
 
 	if tracks[0].Format != "Vinyl" {
-		t.Errorf("Bad track: %+v", tracks[0])
+		t.Errorf("Bad track format: %+v", tracks[0])
 	}
 	if tracks[len(tracks)-1].Format != "CD" {
 		t.Errorf("Bad track: %+v", tracks[len(tracks)-1])
@@ -577,7 +575,7 @@ func TestRunExtractIsotach(t *testing.T) {
 		t.Fatalf("Wrong number of tracks: %v", len(tracks))
 	}
 
-	if tracks[0].Format != "Vinyl" {
+	if tracks[0].Format != "LP" {
 		t.Errorf("Bad track: %+v", tracks[0])
 	}
 	if tracks[len(tracks)-1].Format != "CD" || tracks[len(tracks)-1].Disk != "2" {
@@ -660,5 +658,28 @@ func TestRunExtractGrosskopf(t *testing.T) {
 			}
 		}
 		t.Fatalf("Wrong number of tracks: %v", len(tracks))
+	}
+}
+
+func TestRunExtractKreepers(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/5675438.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 11 || tracks[len(tracks)-1].Format != "CD" || tracks[len(tracks)-1].Disk != "6" {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Errorf("Bad spec")
 	}
 }
