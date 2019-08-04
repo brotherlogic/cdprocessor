@@ -135,11 +135,13 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, er
 		return nil, err
 	}
 
-	if len(resp.GetRecords()) == 0 {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
+	for _, rec := range resp.GetRecords() {
+		if rec.GetMetadata().Category != pbrc.ReleaseMetadata_GOOGLE_PLAY {
+			return rec, nil
+		}
 	}
 
-	return resp.GetRecords()[0], nil
+	return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
 }
 
 func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
