@@ -14,6 +14,7 @@ import (
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
 func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
@@ -41,13 +42,23 @@ func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
 
 // verifies the status of the ripped cd
 func (s *Server) verify(ctx context.Context, ID int32) error {
-	record, err := s.getter.getRecord(ctx, ID)
+	records, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
+	for _, record := range records {
+		err := s.verifyRecord(ctx, record)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
 	if len(record.GetMetadata().CdPath) == 0 {
-		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, ID, record.GetMetadata()), false)
+		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, record.GetRelease().Id, record.GetMetadata()), false)
 	}
 
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
@@ -55,7 +66,7 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 		s.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: record.GetRelease().Id})
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		if len(files) == 0 || err != nil {
-			s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir: %v and %v", ID, len(files), err), false)
+			s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir: %v and %v", record.GetRelease().Id, len(files), err), false)
 			return err
 		}
 	}
@@ -80,10 +91,12 @@ func computeArtist(rec *pbgd.Release) string {
 }
 
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
-	record, err := s.getter.getRecord(ctx, ID)
+	records, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
+
+	record := records[0]
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
@@ -218,13 +231,14 @@ func (s *Server) adjustExisting(ctx context.Context) error {
 	m, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 	for _, r := range m.Ripped {
-		rec, err := s.getter.getRecord(ctx, r.Id)
+		recs, err := s.getter.getRecord(ctx, r.Id)
 		if err != nil {
 			e, ok := status.FromError(err)
 			if !ok || e.Code() == codes.InvalidArgument {
 				s.RaiseIssue(ctx, "Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err), false)
 			}
-		} else {
+		}
+		for _, rec := range recs {
 			if rec.GetMetadata().FilePath == "" {
 				rec.GetMetadata().FilePath = r.Path
 				s.getter.updateRecord(ctx, rec)

@@ -38,24 +38,24 @@ type testGetter struct {
 	override *pbrc.Record
 }
 
-func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
+func (t *testGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error) {
 	if t.fail {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Built to fail"))
 	}
 	if t.override != nil {
-		return t.override, nil
+		return []*pbrc.Record{t.override}, nil
 	}
 	filepath := ""
 	if t.adjusted[id] {
 		filepath = fmt.Sprintf("%v", id)
 	}
-	return &pbrc.Record{Release: &pbgd.Release{Id: id,
+	return []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{Id: id,
 		FormatQuantity: 1, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
 		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
 			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
 				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
-	}, nil
+	}}, nil
 }
 
 func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
