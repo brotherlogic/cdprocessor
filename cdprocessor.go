@@ -113,7 +113,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 }
 
 type getter interface {
-	getRecord(ctx context.Context, id int32) (*pbrc.Record, error)
+	getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error)
 	updateRecord(ctx context.Context, rec *pbrc.Record)
 }
 
@@ -122,7 +122,7 @@ type prodGetter struct {
 	log  func(in string)
 }
 
-func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
+func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error) {
 	conn, err := rc.dial("recordcollection")
 	if err != nil {
 		return nil, err
@@ -135,10 +135,8 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, er
 		return nil, err
 	}
 
-	for _, rec := range resp.GetRecords() {
-		if rec.GetMetadata().Category != pbrc.ReleaseMetadata_GOOGLE_PLAY {
-			return rec, nil
-		}
+	if len(resp.GetRecords()) > 0 {
+		return resp.GetRecords(), nil
 	}
 
 	return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
