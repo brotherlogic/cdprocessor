@@ -114,7 +114,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 
 type getter interface {
 	getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error)
-	updateRecord(ctx context.Context, rec *pbrc.Record)
+	updateRecord(ctx context.Context, rec *pbrc.Record) error
 }
 
 type prodGetter struct {
@@ -142,16 +142,17 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
 }
 
-func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
+func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error {
 	conn, err := rc.dial("recordcollection")
 	if err != nil {
-		return
+		return err
 	}
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
 	rc.log(fmt.Sprintf("Updated %v (%v)", rec.GetRelease().Id, err))
+	return err
 }
 
 type io interface {

@@ -58,12 +58,13 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, e
 	}}, nil
 }
 
-func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) {
+func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error {
 	t.updates++
 	if t.adjusted == nil {
 		t.adjusted = make(map[int32]bool)
 	}
 	t.adjusted[rec.GetRelease().Id] = true
+	return nil
 }
 
 type testRipper struct{}
