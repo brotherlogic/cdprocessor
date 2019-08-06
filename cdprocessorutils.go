@@ -112,8 +112,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 			}
 		}
 
-		record.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
-		s.getter.updateRecord(ctx, record)
+		// We need to update *all* the associated records
+		for _, rec := range records {
+			rec.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
+			s.getter.updateRecord(ctx, rec)
+		}
 	}
 
 	return nil
