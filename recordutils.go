@@ -127,7 +127,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 				}
 			}
 
-			if track.Position != "Video" && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
+			if !strings.HasPrefix(track.Position, "Video") && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
 				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", disk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
 				currTrack++
 			}
