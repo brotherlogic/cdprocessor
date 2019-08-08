@@ -47,17 +47,11 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 		return err
 	}
 
-	ids := []int32{}
 	for _, record := range records {
 		err := s.verifyRecord(ctx, record)
 		if err != nil {
-			ids = append(ids, record.GetRelease().Id)
+			return err
 		}
-	}
-
-	if len(ids) > 0 {
-		s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
-		return fmt.Errorf("Error verifying certain records")
 	}
 
 	return nil
