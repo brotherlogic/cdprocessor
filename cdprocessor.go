@@ -354,9 +354,16 @@ func (s *Server) GetState() []*pbg.State {
 }
 
 func (s *Server) runVerify(ctx context.Context) error {
+	ids := []int32{}
 	for _, rip := range s.rips {
-		s.verify(ctx, rip.Id)
+		err := s.verify(ctx, rip.Id)
+		if err != nil {
+			ids = append(ids, rip.Id)
+		}
 	}
+
+	s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
+
 	return nil
 }
 
