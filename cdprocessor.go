@@ -362,7 +362,9 @@ func (s *Server) runVerify(ctx context.Context) error {
 		}
 	}
 
-	s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
+	if len(ids) > 0 {
+		s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
+	}
 
 	return nil
 }
