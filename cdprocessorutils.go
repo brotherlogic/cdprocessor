@@ -56,7 +56,7 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 	}
 
 	if len(ids) > 0 {
-		s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues"), false)
+		s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
 		return fmt.Errorf("Error verifying certain records")
 	}
 
