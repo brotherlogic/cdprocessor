@@ -68,7 +68,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		s.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: record.GetRelease().Id})
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		if len(files) == 0 || err != nil {
-			return err
+			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v files (%v)", len(files), err))
 		}
 	}
 

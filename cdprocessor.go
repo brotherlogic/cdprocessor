@@ -357,7 +357,8 @@ func (s *Server) runVerify(ctx context.Context) error {
 	ids := []int32{}
 	for _, rip := range s.rips {
 		err := s.verify(ctx, rip.Id)
-		if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.DataLoss {
 			ids = append(ids, rip.Id)
 		}
 	}
