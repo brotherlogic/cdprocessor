@@ -116,7 +116,10 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		// We need to update *all* the associated records
 		for _, rec := range records {
 			rec.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
-			s.getter.updateRecord(ctx, rec)
+			err := s.getter.updateRecord(ctx, rec)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
