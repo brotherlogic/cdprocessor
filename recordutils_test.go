@@ -706,3 +706,26 @@ func TestRunExtractVannier(t *testing.T) {
 		t.Errorf("Bad spec")
 	}
 }
+
+func TestRunExtractFoster(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/4422735.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 22 || tracks[0].Format == "CD" || tracks[0].Disk != "1" {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Errorf("Bad spec")
+	}
+}

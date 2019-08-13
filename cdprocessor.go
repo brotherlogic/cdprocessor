@@ -283,7 +283,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 	}
 
 	if masterCount < v.Version.Value {
-		return fmt.Errorf("Not enough rips: %v", masterCount)
+		return fmt.Errorf("Not enough rips: %v vs %v", masterCount, v.Version.Value)
 	}
 
 	return nil
@@ -355,9 +355,19 @@ func (s *Server) GetState() []*pbg.State {
 }
 
 func (s *Server) runVerify(ctx context.Context) error {
+	ids := []int32{}
 	for _, rip := range s.rips {
-		s.verify(ctx, rip.Id)
+		err := s.verify(ctx, rip.Id)
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.DataLoss {
+			ids = append(ids, rip.Id)
+		}
 	}
+
+	if len(ids) > 0 {
+		s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
+	}
+
 	return nil
 }
 
@@ -394,10 +404,10 @@ func main() {
 	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
-	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute*1)
-	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute*1)
-	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Minute*5)
-	server.RegisterRepeatingTask(server.runLink, "run_link", time.Minute*5)
+	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Hour)
+	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Hour)
+	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Hour)
+	server.RegisterRepeatingTask(server.runLink, "run_link", time.Hour)
 
 	server.Serve()
 }

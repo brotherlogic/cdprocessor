@@ -65,7 +65,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	multiFormat := false
 	formatCounts := make(map[string]int)
 	for _, form := range r.GetFormats() {
-		if form.GetName() != "Box Set" {
+		if form.GetName() != "Box Set" && form.GetName() != "All Media" {
 			formatCounts[form.GetName()]++
 		}
 	}
@@ -127,7 +127,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 				}
 			}
 
-			if track.Position != "Video" && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
+			if !strings.HasPrefix(track.Position, "Video") && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
 				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", disk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
 				currTrack++
 			}

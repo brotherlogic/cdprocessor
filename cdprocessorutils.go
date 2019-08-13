@@ -46,12 +46,14 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 	if err != nil {
 		return err
 	}
+
 	for _, record := range records {
 		err := s.verifyRecord(ctx, record)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -66,8 +68,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		s.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: record.GetRelease().Id})
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		if len(files) == 0 || err != nil {
-			s.RaiseIssue(ctx, "Problem MP3", fmt.Sprintf("%v has not CD dir: %v and %v", record.GetRelease().Id, len(files), err), false)
-			return err
+			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v files (%v)", len(files), err))
 		}
 	}
 
