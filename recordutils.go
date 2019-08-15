@@ -77,7 +77,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	currTrack := 1
 
 	currFormat := r.GetFormats()[0].Name
-	if currFormat == "Box Set" {
+	if currFormat == "Box Set" || currFormat == "All Media" {
 		currFormat = r.GetFormats()[1].Name
 	}
 
