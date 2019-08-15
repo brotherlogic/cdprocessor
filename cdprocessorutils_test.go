@@ -32,10 +32,11 @@ func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*
 }
 
 type testGetter struct {
-	fail     bool
-	updates  int
-	adjusted map[int32]bool
-	override *pbrc.Record
+	fail       bool
+	failUpdate bool
+	updates    int
+	adjusted   map[int32]bool
+	override   *pbrc.Record
 }
 
 func (t *testGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error) {
@@ -59,6 +60,9 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, e
 }
 
 func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error {
+	if t.failUpdate {
+		return fmt.Errorf("Built to fail")
+	}
 	t.updates++
 	if t.adjusted == nil {
 		t.adjusted = make(map[int32]bool)
@@ -200,6 +204,19 @@ func TestFailOnLink(t *testing.T) {
 	s.getter = tg
 
 	err := s.makeLinks(context.Background(), 1234, false)
+
+	if err == nil {
+		t.Errorf("Failing verify passed")
+	}
+
+}
+
+func TestFailOnLinkUpdate(t *testing.T) {
+	s := InitTestServer("testdata/")
+	tg := &testGetter{failUpdate: true}
+	s.getter = tg
+
+	err := s.makeLinks(context.Background(), 12345, false)
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
