@@ -99,7 +99,13 @@ func TestRunExtractTatay(t *testing.T) {
 	}
 
 	if !found {
-		t.Errorf("Track 13 was not found")
+		t.Errorf("Track 13 was not found: %+v", tracks[len(tracks)-1])
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
 	}
 
 }
@@ -215,8 +221,8 @@ func TestRunExtractBehindCounter(t *testing.T) {
 		}
 	}
 
-	if tracks[0].Format != "LP" || tracks[0].Disk != "1" {
-		t.Errorf("First track poor extract: %+v", tracks[0])
+	if tracks[0].Format != "Vinyl" || tracks[0].Disk != "1" {
+		t.Errorf("First track poor extract (LP, D1): %+v", tracks[0])
 	}
 
 	if tracks[38].Position != "10" || tracks[38].Format != "CD" || tracks[38].Disk != "5" {
@@ -348,7 +354,7 @@ func TestRunExtractWillie(t *testing.T) {
 	}
 
 	if tracks[15+2-1].Format == "CD" {
-		t.Errorf("Bad track: %+v", tracks[15+2-1])
+		t.Errorf("Bad track (should be Vinyl): %+v", tracks[15+2-1])
 	}
 
 }
@@ -458,15 +464,13 @@ func TestRunExtractGruppo(t *testing.T) {
 	}
 
 	if tracks[3+9-1].Disk != "2" || tracks[3+9-1].Position != "9" {
-		t.Errorf("Bad track: %+v", tracks[3+9-1])
+		t.Errorf("Bad track (2, 9): %+v", tracks[3+9-1])
 		for i, tr := range tracks {
 			log.Printf("%v. %v (%v-%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk, tr.Position)
 			for j, trs := range tr.tracks {
 				log.Printf(" %v. %v", j, trs.Title)
 			}
 		}
-		t.Fatalf("Wrong number of tracks: %v - should be 12", len(tracks))
-
 	}
 
 	log.Printf("%+v", tracks[len(tracks)-1])
@@ -575,7 +579,7 @@ func TestRunExtractIsotach(t *testing.T) {
 		t.Fatalf("Wrong number of tracks: %v", len(tracks))
 	}
 
-	if tracks[0].Format != "LP" {
+	if tracks[0].Format != "Vinyl" {
 		t.Errorf("Bad track: %+v", tracks[0])
 	}
 	if tracks[len(tracks)-1].Format != "CD" || tracks[len(tracks)-1].Disk != "2" {
@@ -743,6 +747,29 @@ func TestRunExtractHex(t *testing.T) {
 	tracks := TrackExtract(record.GetRelease())
 
 	if len(tracks) != 20 || tracks[0].Format != "CD" || tracks[0].Disk != "1" {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Errorf("Bad spec")
+	}
+}
+
+func TestRunExtractDarkscorch(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/5872963.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 35 || tracks[34].Format != "CD" || tracks[34].Disk != "4" {
 		for i, tr := range tracks {
 			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
 			for j, trs := range tr.tracks {
