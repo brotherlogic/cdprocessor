@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	pbgd "github.com/brotherlogic/godiscogs"
@@ -14,6 +15,55 @@ type TrackSet struct {
 	Position string
 	Disk     string
 	Format   string
+}
+
+func getDisk(pos string) int {
+	disk := 1
+	if pos[0] == 'C' || pos[0] == 'D' {
+		disk = 2
+	} else if pos[0] == 'E' || pos[0] == 'F' {
+		disk = 3
+	}
+	return disk
+
+}
+
+func getFormatAndDisk(t *pbgd.Track) (string, int) {
+	matcher := regexp.MustCompile("^[A-Z]\\d+")
+	if matcher.MatchString(t.Position) {
+		return "Vinyl", getDisk(t.Position)
+	}
+
+	if strings.HasPrefix(t.Position, "CD") {
+		if len(t.Position) > 2 {
+			parts := strings.Split(t.Position, "-")
+			disk, _ := strconv.Atoi(parts[0][2:])
+			return "CD", disk
+		}
+	}
+
+	if strings.Contains(t.Position, "-") {
+		baselines := strings.Split(t.Position, "-")
+		matcher = regexp.MustCompile("^\\d+")
+		if matcher.MatchString(baselines[0]) && !strings.Contains(baselines[0], "\"") {
+			disk, _ := strconv.Atoi(baselines[0])
+			return "CD", disk
+		}
+
+		if strings.HasPrefix(baselines[0], "7\"") {
+			if len(baselines[0]) > 2 {
+				disk, _ := strconv.Atoi(baselines[0][2:])
+				return "Vinyl", disk
+			}
+		}
+
+		if baselines[0] == "Vinyl" || strings.HasPrefix(baselines[0], "LP") ||
+			strings.HasPrefix(baselines[0], "4.72") {
+			return "Vinyl", getDisk(baselines[1])
+		}
+	}
+
+	return "Unknown", -1
 }
 
 func shouldMerge(t1, t2 *TrackSet) (bool, string) {
@@ -62,73 +112,34 @@ func flatten(tracklist []*pbgd.Track) []*pbgd.Track {
 func TrackExtract(r *pbgd.Release) []*TrackSet {
 	trackset := make([]*TrackSet, 0)
 
-	multiFormat := false
-	formatCounts := make(map[string]int)
+	baseFormat := ""
 	for _, form := range r.GetFormats() {
 		if form.GetName() != "Box Set" && form.GetName() != "All Media" {
-			formatCounts[form.GetName()]++
+			baseFormat = form.GetName()
 		}
 	}
 
-	if len(formatCounts) > 1 {
-		multiFormat = true
-	}
-
+	currDisk := 0
+	readDisk := 0
+	currFormat := ""
 	currTrack := 1
-
-	currFormat := r.GetFormats()[0].Name
-	if currFormat == "Box Set" || currFormat == "All Media" {
-		currFormat = r.GetFormats()[1].Name
-	}
-
-	disk := 1
-	if multiFormat {
-		currTrack = 1
-		disk = 0
-		currFormat = ""
-	}
-	if strings.Contains(r.Tracklist[0].Position, "-") || strings.Contains(r.Tracklist[1].Position, "-") {
-		disk = 0
-	}
-
-	currDisk := "0"[0]
-
-	currStart := "A"[0]
-	if r.Tracklist[0].TrackType == pbgd.Track_TRACK {
-		currStart = r.Tracklist[0].Position[0]
-	} else {
-		if r.Tracklist[1].TrackType == pbgd.Track_TRACK {
-			currStart = r.Tracklist[1].Position[0]
-		} else {
-			currStart = r.Tracklist[2].Position[0]
-		}
-	}
-
 	for _, track := range flatten(r.Tracklist) {
 		if track.TrackType == pbgd.Track_TRACK {
-			if track.Position[0] != currStart && !multiFormat {
-				currStart = track.Position[0]
+			format, disk := getFormatAndDisk(track)
+			if format == "Unknown" {
+				format = baseFormat
 			}
-			if strings.Contains(track.Position, "-") {
-				elems := strings.Split(track.Position, "-")
-
-				if currDisk != elems[0][len(elems[0])-1] {
-					disk++
-					currDisk = elems[0][len(elems[0])-1]
-
-					matcher := regexp.MustCompile("(.*)?(\\d+)")
-					matches := matcher.FindStringSubmatch(elems[0])
-
-					if len(matches) == 3 && len(matches[1]) > 0 {
-						currFormat = matches[1]
-					} else if multiFormat {
-						currFormat = elems[0]
-					}
-				}
+			if format != currFormat {
+				currFormat = format
+				readDisk = disk
+				currDisk++
+			} else if readDisk != disk {
+				currDisk++
+				readDisk = disk
 			}
 
 			if !strings.HasPrefix(track.Position, "Video") && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") {
-				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", disk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
+				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", currDisk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
 				currTrack++
 			}
 		}
