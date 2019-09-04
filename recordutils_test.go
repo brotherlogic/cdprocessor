@@ -769,7 +769,7 @@ func TestRunExtractDarkscorch(t *testing.T) {
 
 	tracks := TrackExtract(record.GetRelease())
 
-	if len(tracks) != 35 || tracks[34].Format != "CD" || tracks[34].Disk != "4" {
+	if len(tracks) != 35 || tracks[19].Format != "CD" || tracks[19].Disk != "4" || tracks[18].Format == "CD" {
 		for i, tr := range tracks {
 			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
 			for j, trs := range tr.tracks {
