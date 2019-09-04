@@ -130,6 +130,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
+	rc.log(fmt.Sprintf("Getting Record %v", id))
 	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
 	if err != nil {
 		return nil, err
@@ -166,6 +167,7 @@ type rc interface {
 }
 
 type prodRc struct {
+	log  func(s string)
 	dial func(server string) (*grpc.ClientConn, error)
 }
 
@@ -177,6 +179,7 @@ func (rc *prodRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecord
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
+	rc.log(fmt.Sprintf("Getting record %v", filter))
 	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: filter})
 }
 
@@ -241,7 +244,7 @@ func Init(dir string, mp3dir string) *Server {
 		dir:    dir,
 		mp3dir: mp3dir,
 	}
-	s.rc = &prodRc{dial: s.DialMaster}
+	s.rc = &prodRc{dial: s.DialMaster, log: s.Log}
 	s.io = &prodIo{dir: dir, log: s.Log}
 	s.getter = &prodGetter{log: s.Log, dial: s.DialMaster}
 	s.ripper = &prodRipper{log: s.Log, server: s.resolve, dial: s.DialServer}
@@ -373,6 +376,7 @@ func (s *Server) runVerify(ctx context.Context) error {
 
 func (s *Server) runLink(ctx context.Context) error {
 	s.count = int64(0)
+	s.Log(fmt.Sprintf("Running links with %v", len(s.rips)))
 	for _, rip := range s.rips {
 		time.Sleep(time.Second)
 		err := s.makeLinks(ctx, rip.Id, false)
