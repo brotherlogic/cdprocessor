@@ -133,6 +133,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	if time.Now().Sub(rc.lastUpdate) < time.Second*2 {
 		time.Sleep(time.Second * 2)
 	}
+	rc.lastUpdate = time.Now()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	rc.log(fmt.Sprintf("Getting Record %v", id))
