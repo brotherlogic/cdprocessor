@@ -116,6 +116,9 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	for _, form := range r.GetFormats() {
 		if form.GetName() != "Box Set" && form.GetName() != "All Media" {
 			baseFormat = form.GetName()
+			if baseFormat == "CDr" {
+				baseFormat = "CD"
+			}
 		}
 	}
 
