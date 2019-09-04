@@ -118,8 +118,9 @@ type getter interface {
 }
 
 type prodGetter struct {
-	dial func(server string) (*grpc.ClientConn, error)
-	log  func(in string)
+	dial       func(server string) (*grpc.ClientConn, error)
+	log        func(in string)
+	lastUpdate time.Time
 }
 
 func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error) {
@@ -128,6 +129,10 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 		return nil, err
 	}
 	defer conn.Close()
+
+	if time.Now().Sub(rc.lastUpdate) < time.Second*2 {
+		time.Sleep(time.Second * 2)
+	}
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	rc.log(fmt.Sprintf("Getting Record %v", id))
