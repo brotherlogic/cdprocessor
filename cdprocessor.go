@@ -130,15 +130,12 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	}
 	defer conn.Close()
 
-	rc.log(fmt.Sprintf("Elapsed %v", time.Now().Sub(rc.lastUpdate)))
 	if time.Now().Sub(rc.lastUpdate) < time.Second*5 {
-		rc.log(fmt.Sprintf("SLeeping"))
 		time.Sleep(time.Second * 5)
 	}
 	rc.lastUpdate = time.Now()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	rc.log(fmt.Sprintf("Getting Record %v", id))
 	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
 	if err != nil {
 		return nil, err
@@ -160,7 +157,6 @@ func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error 
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
-	rc.log(fmt.Sprintf("Updated %v (%v)", rec.GetRelease().Id, err))
 	return err
 }
 
@@ -187,7 +183,6 @@ func (rc *prodRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecord
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	rc.log(fmt.Sprintf("Getting record %v", filter))
 	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: filter})
 }
 
@@ -340,12 +335,10 @@ func (s *Server) runVerify(ctx context.Context) error {
 
 func (s *Server) runLink(ctx context.Context) error {
 	s.count = int64(0)
-	s.Log(fmt.Sprintf("Running links with %v", len(s.rips)))
 	for _, rip := range s.rips {
 		time.Sleep(time.Second)
 		err := s.makeLinks(ctx, rip.Id, false)
 		if err != nil {
-			s.Log(fmt.Sprintf("Link error: (%v), %v", rip, err))
 			return err
 		}
 		s.count++
