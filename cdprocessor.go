@@ -304,56 +304,12 @@ func (s *Server) writeCount(ctx context.Context) error {
 
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
-	r, _ := s.GetRipped(context.Background(), &pb.GetRippedRequest{})
-	m, _ := s.GetMissing(context.Background(), &pb.GetMissingRequest{})
-
-	wavs := int64(0)
-	mp3s := int64(0)
-	flacs := int64(0)
-	for _, rip := range r.Ripped {
-		for _, t := range rip.Tracks {
-			if len(t.WavPath) > 0 {
-				wavs++
-			}
-			if len(t.Mp3Path) > 0 {
-				mp3s++
-			}
-			if len(t.FlacPath) > 0 {
-				flacs++
-			}
-
-		}
-	}
-
-	missing := 0
-	for _, miss := range m.Missing {
-		missing = int(miss.GetRelease().Id)
-	}
-
-	id := int32(0)
-	errstring := ""
-	if !s.Registry.Master {
-		r, err := s.findMissing(context.Background())
-		if err == nil {
-			id = r.Id
-		}
-		errstring = fmt.Sprintf("err = %v", err)
-	}
-
 	return []*pbg.State{
 		&pbg.State{Key: "run_link_progress", Value: s.count},
 		&pbg.State{Key: "run_link_total", Value: int64(len(s.rips))},
-		&pbg.State{Key: "count", Value: int64(len(r.Ripped))},
-		&pbg.State{Key: "missing", Value: int64(len(m.Missing))},
-		&pbg.State{Key: "missing_one", Value: int64(missing)},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
-		&pbg.State{Key: "wavs", Value: wavs},
-		&pbg.State{Key: "mp3s", Value: mp3s},
-		&pbg.State{Key: "flacs", Value: flacs},
 		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
-		&pbg.State{Key: "missing_rip_id", Value: int64(id)},
-		&pbg.State{Key: "missing_err", Text: errstring},
 	}
 }
 
