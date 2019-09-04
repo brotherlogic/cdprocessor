@@ -29,7 +29,7 @@ func getDisk(pos string) int {
 }
 
 func getFormatAndDisk(t *pbgd.Track) (string, int) {
-	matcher := regexp.MustCompile("^[A-Z]\\d+")
+	matcher := regexp.MustCompile("^[A-Z]\\d*$")
 	if matcher.MatchString(t.Position) {
 		return "Vinyl", getDisk(t.Position)
 	}
