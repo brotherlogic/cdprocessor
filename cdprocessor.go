@@ -130,6 +130,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	}
 	defer conn.Close()
 
+	rc.log(fmt.Sprintf("Elapsed %v", time.Now().Sub(rc.lastUpdate)))
 	if time.Now().Sub(rc.lastUpdate) < time.Second*2 {
 		time.Sleep(time.Second * 2)
 	}
