@@ -311,8 +311,8 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "run_link_progress", Value: s.count},
 		&pbg.State{Key: "run_link_total", Value: int64(len(s.rips))},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
-		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 		&pbg.State{Key: "flacrips", Value: s.flacCount},
+		&pbg.State{Key: "mp3rips", Value: s.ripCount},
 	}
 }
 
