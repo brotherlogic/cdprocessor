@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	ip, port, err := utils.Resolve("cdprocessor")
+	ip, port, err := utils.Resolve("cdprocessor", "cdprocessor-cli")
 
 	if err != nil {
 		log.Fatalf("Unable to locate cdprocessor server: %v", err)
