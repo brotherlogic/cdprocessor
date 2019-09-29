@@ -365,8 +365,8 @@ func main() {
 	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
-	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Hour)
-	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Hour)
+	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute)
+	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute)
 	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Hour)
 	server.RegisterRepeatingTask(server.runLink, "run_link", time.Hour)
 
