@@ -136,7 +136,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	rc.lastUpdate = time.Now()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
+	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Caller: "cdprocessor-getrecord", Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (rc *prodRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecord
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: filter})
+	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Caller: "cdprocessor-get", Filter: filter})
 }
 
 type prodIo struct {
