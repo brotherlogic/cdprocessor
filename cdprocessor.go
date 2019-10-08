@@ -18,7 +18,6 @@ import (
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbe "github.com/brotherlogic/executor/proto"
-	pbgd "github.com/brotherlogic/godiscogs"
 	pbg "github.com/brotherlogic/goserver/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pbvs "github.com/brotherlogic/versionserver/proto"
@@ -136,13 +135,21 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	rc.lastUpdate = time.Now()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Caller: "cdprocessor-getrecord", Filter: &pbrc.Record{Release: &pbgd.Release{Id: id}}})
+	resp, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_MasterId{id}})
 	if err != nil {
 		return nil, err
 	}
 
-	if len(resp.GetRecords()) > 0 {
-		return resp.GetRecords(), nil
+	if len(resp.GetInstanceIds()) > 0 {
+		records := []*pbrc.Record{}
+		for _, id := range resp.GetInstanceIds() {
+			rec, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: id})
+			if err != nil {
+				return nil, err
+			}
+			records = append(records, rec.GetRecord())
+		}
+		return records, nil
 	}
 
 	return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
