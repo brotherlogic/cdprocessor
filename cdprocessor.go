@@ -174,7 +174,7 @@ type io interface {
 }
 
 type rc interface {
-	get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecordsResponse, error)
+	getRecordsInFolder(ctx context.Context, folder int32) ([]*pbrc.Record, error)
 }
 
 type prodRc struct {
@@ -182,15 +182,29 @@ type prodRc struct {
 	dial func(server string) (*grpc.ClientConn, error)
 }
 
-func (rc *prodRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
+func (rc *prodRc) getRecordsInFolder(ctx context.Context, folder int32) ([]*pbrc.Record, error) {
 	conn, err := rc.dial("recordcollection")
 	if err != nil {
-		return &pbrc.GetRecordsResponse{}, err
+		return nil, err
 	}
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	return client.GetRecords(ctx, &pbrc.GetRecordsRequest{Caller: "cdprocessor-get", Filter: filter})
+	ids, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_FolderId{folder}})
+	if err != nil {
+		return nil, err
+	}
+
+	recs := []*pbrc.Record{}
+	for _, id := range ids.GetInstanceIds() {
+		rec, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: id})
+		if err != nil {
+			return nil, err
+		}
+		recs = append(recs, rec.GetRecord())
+	}
+
+	return recs, nil
 }
 
 type prodIo struct {
