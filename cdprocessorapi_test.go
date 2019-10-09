@@ -31,14 +31,14 @@ type testRc struct {
 	failGet bool
 }
 
-func (rc *testRc) get(ctx context.Context, filter *pbrc.Record) (*pbrc.GetRecordsResponse, error) {
+func (rc *testRc) getRecordsInFolder(ctx context.Context, folder int32) ([]*pbrc.Record, error) {
 	if rc.failGet {
-		return &pbrc.GetRecordsResponse{}, fmt.Errorf("Built to fail")
+		return nil, fmt.Errorf("Built to fail")
 	}
-	return &pbrc.GetRecordsResponse{Records: []*pbrc.Record{
+	return []*pbrc.Record{
 		&pbrc.Record{Release: &pbgd.Release{Id: 12345, Formats: []*pbgd.Format{&pbgd.Format{Name: "CD"}}}},
 		&pbrc.Record{Release: &pbgd.Release{Id: 12346, Formats: []*pbgd.Format{&pbgd.Format{Name: "CD"}}}},
-	}}, nil
+	}, nil
 }
 
 type testIo struct {

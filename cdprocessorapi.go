@@ -6,8 +6,6 @@ import (
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
-	pbgd "github.com/brotherlogic/godiscogs"
-	pbrc "github.com/brotherlogic/recordcollection/proto"
 )
 
 //GetRipped returns the ripped cds
@@ -20,14 +18,14 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 	resp := &pbcdp.GetMissingResponse{}
 
 	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105} {
-		missing, err := s.rc.get(ctx, &pbrc.Record{Release: &pbgd.Release{FolderId: id}})
+		missing, err := s.rc.getRecordsInFolder(ctx, id)
 		if err != nil {
 			return resp, err
 		}
 
 		ripped, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
-		for _, r := range missing.Records {
+		for _, r := range missing {
 			hasCD := false
 			for _, f := range r.GetRelease().GetFormats() {
 				if f.Name == "CD" || f.Name == "File" || f.Name == "CDr" {
