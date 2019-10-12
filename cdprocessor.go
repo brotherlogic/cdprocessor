@@ -135,7 +135,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	rc.lastUpdate = time.Now()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	resp, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_MasterId{id}})
+	resp, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_ReleaseId{id}})
 	if err != nil {
 		return nil, err
 	}
