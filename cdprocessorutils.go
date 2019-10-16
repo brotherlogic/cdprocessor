@@ -92,6 +92,12 @@ func computeArtist(rec *pbgd.Release) string {
 }
 
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
+	if val, ok := s.config.LastProcessTime[ID]; ok {
+		if time.Now().Sub(time.Unix(val, 0)) < time.Hour*24 {
+			return fmt.Errorf("This has been linked recently")
+		}
+	}
+
 	records, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
@@ -124,6 +130,8 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		}
 	}
 
+	s.config.LastProcessTime[ID] = time.Now().Unix()
+	s.save(ctx)
 	return nil
 }
 
