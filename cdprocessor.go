@@ -23,6 +23,11 @@ import (
 	pbvs "github.com/brotherlogic/versionserver/proto"
 )
 
+const (
+	// KEY - where the config is stored
+	KEY = "/github.com/brotherlogic/cdprocessor/config"
+)
+
 type ripper interface {
 	ripToMp3(ctx context.Context, pathIn, pathOut string)
 	ripToFlac(ctx context.Context, pathIn, pathOut string)
@@ -257,6 +262,7 @@ type Server struct {
 	forceCheck  bool
 	master      master
 	count       int64
+	config      *pb.Config
 }
 
 // Init builds the server
@@ -275,6 +281,22 @@ func Init(dir string, mp3dir string) *Server {
 	s.master = &prodMaster{dial: s.DialMaster}
 
 	return s
+}
+
+func (s *Server) save(ctx context.Context) {
+	s.KSclient.Save(ctx, KEY, s.config)
+}
+
+func (s *Server) load(ctx context.Context) error {
+	config := &pb.Config{}
+	data, _, err := s.KSclient.Read(ctx, KEY, config)
+
+	if err != nil {
+		return err
+	}
+
+	s.config = data.(*pb.Config)
+	return nil
 }
 
 // DoRegister does RPC registration
@@ -313,7 +335,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 		return fmt.Errorf("Not enough rips: %v vs %v", masterCount, v.Version.Value)
 	}
 
-	return nil
+	return s.load(ctx)
 }
 
 func (s *Server) writeCount(ctx context.Context) error {

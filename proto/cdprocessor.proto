@@ -4,6 +4,10 @@ package cdprocessor;
 
 import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
 
+message Config {
+  map<int32,int64> last_process_time = 1;
+}
+
 message GetRippedRequest {}
 
 message Track {
