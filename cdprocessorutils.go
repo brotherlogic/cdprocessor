@@ -100,6 +100,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	record := records[0]
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
+		s.Log(fmt.Sprintf("Making links for %v", ID))
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := TrackExtract(record.GetRelease())
