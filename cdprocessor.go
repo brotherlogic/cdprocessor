@@ -388,7 +388,7 @@ func (s *Server) runLink(ctx context.Context) error {
 	for _, rip := range s.rips {
 		err := s.makeLinks(ctx, rip.Id, false)
 		st := status.Convert(err)
-		if st.Code() != codes.ResourceExhausted || err != nil {
+		if st.Code() != codes.ResourceExhausted && err != nil {
 			return err
 		}
 		s.count++
