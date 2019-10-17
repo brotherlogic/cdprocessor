@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -92,6 +94,8 @@ func InitTestServer(dir string) *Server {
 	s.SkipLog = true
 	s.buildConfig(context.Background())
 	s.ripper = &testRipper{}
+	s.config = &pb.Config{LastProcessTime: make(map[int32]int64)}
+	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	return s
 }
 
@@ -202,6 +206,18 @@ func TestFailOnLink(t *testing.T) {
 	s := InitTestServer("testdata/")
 	tg := &testGetter{fail: true}
 	s.getter = tg
+
+	err := s.makeLinks(context.Background(), 1234, false)
+
+	if err == nil {
+		t.Errorf("Failing verify passed")
+	}
+
+}
+
+func TestFailOnLinkTime(t *testing.T) {
+	s := InitTestServer("testdata/")
+	s.config.LastProcessTime[1234] = time.Now().Unix()
 
 	err := s.makeLinks(context.Background(), 1234, false)
 

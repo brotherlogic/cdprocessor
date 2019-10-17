@@ -19,6 +19,7 @@ import (
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbe "github.com/brotherlogic/executor/proto"
 	pbg "github.com/brotherlogic/goserver/proto"
+	"github.com/brotherlogic/goserver/utils"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pbvs "github.com/brotherlogic/versionserver/proto"
 )
@@ -296,6 +297,11 @@ func (s *Server) load(ctx context.Context) error {
 	}
 
 	s.config = data.(*pb.Config)
+
+	if s.config.LastProcessTime == nil {
+		s.config.LastProcessTime = make(map[int32]int64)
+	}
+
 	return nil
 }
 
@@ -351,6 +357,7 @@ func (s *Server) writeCount(ctx context.Context) error {
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
 	return []*pbg.State{
+		&pbg.State{Key: "mapper", Value: int64(len(s.config.LastProcessTime))},
 		&pbg.State{Key: "run_link_progress", Value: s.count},
 		&pbg.State{Key: "run_link_total", Value: int64(len(s.rips))},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
@@ -392,6 +399,7 @@ func main() {
 	var quiet = flag.Bool("quiet", false, "Show all output")
 	var dir = flag.String("dir", "/media/music/rips/", "Base directory for storage location")
 	var mp3dir = flag.String("mp3", "/media/music/mp3s/", "Base directory for all mp3s location")
+	var init = flag.Bool("init", false, "Prep server")
 	flag.Parse()
 
 	//Turn off logging
@@ -404,6 +412,18 @@ func main() {
 	server.Register = server
 
 	server.RegisterServer("cdprocessor", false)
+
+	if *init {
+		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor")
+		defer cancel()
+
+		mapper := make(map[int32]int64)
+		mapper[1] = 1
+		err := server.KSclient.Save(ctx, KEY, &pb.Config{LastProcessTime: mapper})
+		fmt.Printf("Initialised: %v\n", err)
+		return
+	}
+
 	//server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
 	//server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
 	//server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
