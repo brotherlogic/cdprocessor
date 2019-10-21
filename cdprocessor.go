@@ -356,8 +356,12 @@ func (s *Server) writeCount(ctx context.Context) error {
 
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
+	lent := int64(0)
+	if s.config != nil {
+		lent = int64(len(s.config.LastProcessTime))
+	}
 	return []*pbg.State{
-		&pbg.State{Key: "mapper", Value: int64(len(s.config.LastProcessTime))},
+		&pbg.State{Key: "mapper", Value: lent},
 		&pbg.State{Key: "run_link_progress", Value: s.count},
 		&pbg.State{Key: "run_link_total", Value: int64(len(s.rips))},
 		&pbg.State{Key: "adjust", Value: int64(s.adjust)},
