@@ -436,6 +436,7 @@ func main() {
 	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute)
 	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Hour)
 	server.RegisterRepeatingTask(server.runLink, "run_link", time.Minute)
+	server.RegisterRepeatingTask(server.buildConfig, "build_config", time.Hour)
 
 	server.Serve()
 }
