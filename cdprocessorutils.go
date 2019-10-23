@@ -189,10 +189,10 @@ func (s *Server) convertToFlac(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) buildConfig(ctx context.Context) {
+func (s *Server) buildConfig(ctx context.Context) error {
 	files, err := s.io.readDir()
 	if err != nil {
-		return
+		return err
 	}
 
 	rips := []*pbcdp.Rip{}
@@ -202,7 +202,7 @@ func (s *Server) buildConfig(ctx context.Context) {
 			id, disk, err := s.io.convert(name)
 			if err != nil {
 				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
-				return
+				return err
 			}
 
 			trackFiles, _ := s.io.readSubdir(f.Name())
@@ -240,6 +240,7 @@ func (s *Server) buildConfig(ctx context.Context) {
 	}
 
 	s.rips = rips
+	return nil
 }
 
 func (s *Server) adjustExisting(ctx context.Context) error {
