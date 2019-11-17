@@ -92,6 +92,7 @@ func InitTestServer(dir string) *Server {
 	s.io = &testIo{dir: dir}
 	s.rc = &testRc{}
 	s.SkipLog = true
+	s.SkipIssue = true
 	s.buildConfig(context.Background())
 	s.ripper = &testRipper{}
 	s.config = &pb.Config{LastProcessTime: make(map[int32]int64)}
