@@ -86,7 +86,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	if err != nil {
 		pr.log(fmt.Sprintf("MP3ed: %v", err))
 	}
-	pr.log(fmt.Sprintf("MP3: %v", resp.CommandOutput))
+	pr.log(fmt.Sprintf("MP3: %v", resp))
 }
 
 func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
