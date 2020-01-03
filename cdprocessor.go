@@ -416,7 +416,10 @@ func main() {
 	server.PrepServer()
 	server.Register = server
 
-	server.RegisterServer("cdprocessor", false)
+	err := server.RegisterServerV2("cdprocessor", false, false)
+	if err != nil {
+		return
+	}
 
 	if *init {
 		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor")
