@@ -338,7 +338,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 	}
 
 	if masterCount < v.Version.Value {
-		return fmt.Errorf("Not enough rips: %v vs %v", masterCount, v.Version.Value)
+		return status.Errorf(codes.Unavailable, "Not enough rips: %v vs %v", masterCount, v.Version.Value)
 	}
 
 	return s.load(ctx)
