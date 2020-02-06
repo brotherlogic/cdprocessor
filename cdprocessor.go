@@ -114,7 +114,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 	if err != nil {
 		pr.log(fmt.Sprintf("Flaced: %v", err))
 	}
-	pr.log(fmt.Sprintf("FLAC: %v", resp.CommandOutput))
+	pr.log(fmt.Sprintf("FLAC: %v", resp))
 }
 
 type getter interface {
