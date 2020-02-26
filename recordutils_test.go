@@ -873,3 +873,28 @@ func TestRunExtractKnot(t *testing.T) {
 
 	log.Printf("WHAT %+v", tracks[len(tracks)-1])
 }
+
+func TestRunExtractBaird(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/4192928.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 12 || tracks[11].Position != "16" {
+		for i, tr := range tracks {
+			log.Printf("%v-%v. %v (%v-%v)", i, tr.Position, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Errorf("Bad spec")
+	}
+
+	log.Printf("WHAT %+v", tracks[len(tracks)-1])
+}

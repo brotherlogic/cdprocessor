@@ -93,7 +93,7 @@ func computeArtist(rec *pbgd.Release) string {
 
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	if val, ok := s.config.LastProcessTime[ID]; ok {
-		if time.Now().Sub(time.Unix(val, 0)) < time.Hour*24 {
+		if time.Now().Sub(time.Unix(val, 0)) < time.Hour*24 && !force {
 			return status.Error(codes.ResourceExhausted, "This has been linked recently")
 		}
 	}
