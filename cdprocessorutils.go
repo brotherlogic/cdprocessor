@@ -122,8 +122,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 
 		// We need to update *all* the associated records
 		for _, rec := range records {
-			rec.GetMetadata().CdPath = fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id)
-			err := s.getter.updateRecord(ctx, rec)
+			err := s.getter.updateRecord(ctx, rec.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
 			if err != nil {
 				return err
 			}
@@ -257,8 +256,7 @@ func (s *Server) adjustExisting(ctx context.Context) error {
 		}
 		for _, rec := range recs {
 			if rec.GetMetadata().FilePath == "" {
-				rec.GetMetadata().FilePath = r.Path
-				s.getter.updateRecord(ctx, rec)
+				s.getter.updateRecord(ctx, rec.GetRelease().GetInstanceId(), "", r.Path)
 				s.adjust++
 				break
 			}
