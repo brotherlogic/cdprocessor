@@ -886,14 +886,14 @@ func TestRunExtractBaird(t *testing.T) {
 
 	tracks := TrackExtract(record.GetRelease())
 
-	if len(tracks) != 12 || tracks[11].Position != "16" {
+	if len(tracks) != 18 || tracks[11].Position != "2" {
 		for i, tr := range tracks {
 			log.Printf("%v-%v. %v (%v-%v)", i, tr.Position, len(tr.tracks), tr.Format, tr.Disk)
 			for j, trs := range tr.tracks {
 				log.Printf(" %v. %v", j, trs.Title)
 			}
 		}
-		t.Errorf("Bad spec")
+		t.Errorf("Bad spec: %v -> %v", len(tracks), tracks[11].Position)
 	}
 
 	log.Printf("WHAT %+v", tracks[len(tracks)-1])

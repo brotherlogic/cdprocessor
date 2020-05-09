@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	pbgd "github.com/brotherlogic/godiscogs"
 	"github.com/brotherlogic/goserver"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -119,7 +120,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 
 type getter interface {
 	getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error)
-	updateRecord(ctx context.Context, rec *pbrc.Record) error
+	updateRecord(ctx context.Context, id int32, cdpath, filepath string) error
 }
 
 type prodGetter struct {
@@ -161,7 +162,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 	return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
 }
 
-func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error {
+func (rc *prodGetter) updateRecord(ctx context.Context, instanceID int32, cdpath, filepath string) error {
 	conn, err := rc.dial("recordcollection")
 	if err != nil {
 		return err
@@ -169,7 +170,7 @@ func (rc *prodGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error 
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Update: rec})
+	_, err = client.UpdateRecord(ctx, &pbrc.UpdateRecordRequest{Reason: "cdprocessor update", Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{CdPath: cdpath, FilePath: filepath}}})
 	return err
 }
 

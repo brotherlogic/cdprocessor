@@ -52,7 +52,7 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, e
 	if t.adjusted[id] {
 		filepath = fmt.Sprintf("%v", id)
 	}
-	return []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{Id: id,
+	return []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{Id: id, InstanceId: id,
 		FormatQuantity: 1, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
 		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
@@ -61,7 +61,8 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, e
 	}}, nil
 }
 
-func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error {
+func (t *testGetter) updateRecord(ctx context.Context, id int32, cdpath, filepath string) error {
+	log.Printf("HERE %v", id)
 	if t.failUpdate {
 		return fmt.Errorf("Built to fail")
 	}
@@ -69,7 +70,7 @@ func (t *testGetter) updateRecord(ctx context.Context, rec *pbrc.Record) error {
 	if t.adjusted == nil {
 		t.adjusted = make(map[int32]bool)
 	}
-	t.adjusted[rec.GetRelease().Id] = true
+	t.adjusted[id] = true
 	return nil
 }
 
