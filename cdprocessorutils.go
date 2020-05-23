@@ -15,6 +15,15 @@ import (
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	needsRip = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "cdprocessor_rips",
+		Help: "The number of records needing a rip",
+	})
 )
 
 func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
@@ -271,6 +280,7 @@ func (s *Server) adjustExisting(ctx context.Context) error {
 func (s *Server) logMissing(ctx context.Context) error {
 	m, _ := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
 
+	needsRip.Set(float64(len(m.Missing)))
 	if len(m.Missing) > 0 {
 		s.RaiseIssue(ctx, "Rip CD", fmt.Sprintf("%v [%v]", m.Missing[0].GetRelease().Title, m.Missing[0].GetRelease().Id), false)
 	}
