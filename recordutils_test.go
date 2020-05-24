@@ -898,3 +898,28 @@ func TestRunExtractBaird(t *testing.T) {
 
 	log.Printf("WHAT %+v", tracks[len(tracks)-1])
 }
+
+func TestRunExtractHaint(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/12182265.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 4 {
+		for i, tr := range tracks {
+			log.Printf("%v-%v. %v (%v-%v)", i, tr.Position, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Errorf("Bad spec: %v -> %v", len(tracks), tracks[1].Position)
+	}
+
+	log.Printf("WHAT %+v", tracks[len(tracks)-1])
+}
