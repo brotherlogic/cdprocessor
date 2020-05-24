@@ -50,7 +50,7 @@ func getFormatAndDisk(t *pbgd.Track) (string, int) {
 			return "CD", disk
 		}
 
-		if strings.HasPrefix(baselines[0], "7\"") {
+		if strings.HasPrefix(baselines[0], "7\"") || strings.HasPrefix(baselines[0], "5\"") {
 			if len(baselines[0]) > 2 {
 				disk, _ := strconv.Atoi(baselines[0][2:])
 				return "Vinyl", disk
