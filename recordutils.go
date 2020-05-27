@@ -153,12 +153,14 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 	found := true
 	for found {
 		found = false
-		for i := range trackset[1:] {
-			if val, _ := shouldMerge(trackset[i], trackset[i+1]); val {
-				trackset[i].tracks = append(trackset[i].tracks, trackset[i+1].tracks...)
-				trackset = append(trackset[:i+1], trackset[i+2:]...)
-				found = true
-				break
+		if len(trackset) > 1 {
+			for i := range trackset[1:] {
+				if val, _ := shouldMerge(trackset[i], trackset[i+1]); val {
+					trackset[i].tracks = append(trackset[i].tracks, trackset[i+1].tracks...)
+					trackset = append(trackset[:i+1], trackset[i+2:]...)
+					found = true
+					break
+				}
 			}
 		}
 	}
