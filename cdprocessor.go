@@ -39,7 +39,7 @@ type ripper interface {
 type prodRipper struct {
 	server func() string
 	log    func(s string)
-	dial   func(server, host string) (*grpc.ClientConn, error)
+	dial   func(ctx context.Context, server, host string) (*grpc.ClientConn, error)
 }
 
 type master interface {
@@ -47,11 +47,11 @@ type master interface {
 }
 
 type prodMaster struct {
-	dial func(server string) (*grpc.ClientConn, error)
+	dial func(ctx context.Context, server string) (*grpc.ClientConn, error)
 }
 
 func (p *prodMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*pb.GetRippedResponse, error) {
-	conn, err := p.dial("cdprocessor")
+	conn, err := p.dial(ctx, "cdprocessor")
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (s *Server) fileExists(file string) bool {
 }
 
 func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
-	conn, err := pr.dial("executor", pr.server())
+	conn, err := pr.dial(ctx, "executor", pr.server())
 	if err != nil {
 		return
 	}
@@ -91,7 +91,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 }
 
 func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
-	conn, err := pr.dial("executor", pr.server())
+	conn, err := pr.dial(ctx, "executor", pr.server())
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
 }
 
 func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
-	conn, err := pr.dial("executor", pr.server())
+	conn, err := pr.dial(ctx, "executor", pr.server())
 	if err != nil {
 		return
 	}
@@ -124,13 +124,13 @@ type getter interface {
 }
 
 type prodGetter struct {
-	dial       func(server string) (*grpc.ClientConn, error)
+	dial       func(ctx context.Context, server string) (*grpc.ClientConn, error)
 	log        func(in string)
 	lastUpdate time.Time
 }
 
 func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error) {
-	conn, err := rc.dial("recordcollection")
+	conn, err := rc.dial(ctx, "recordcollection")
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, 
 }
 
 func (rc *prodGetter) updateRecord(ctx context.Context, instanceID int32, cdpath, filepath string) error {
-	conn, err := rc.dial("recordcollection")
+	conn, err := rc.dial(ctx, "recordcollection")
 	if err != nil {
 		return err
 	}
@@ -186,11 +186,11 @@ type rc interface {
 
 type prodRc struct {
 	log  func(s string)
-	dial func(server string) (*grpc.ClientConn, error)
+	dial func(ctx context.Context, server string) (*grpc.ClientConn, error)
 }
 
 func (rc *prodRc) getRecordsInFolder(ctx context.Context, folder int32) ([]*pbrc.Record, error) {
-	conn, err := rc.dial("recordcollection")
+	conn, err := rc.dial(ctx, "recordcollection")
 	if err != nil {
 		return nil, err
 	}
@@ -276,11 +276,11 @@ func Init(dir string, mp3dir string) *Server {
 		dir:    dir,
 		mp3dir: mp3dir,
 	}
-	s.rc = &prodRc{dial: s.DialMaster, log: s.Log}
+	s.rc = &prodRc{dial: s.FDialServer, log: s.Log}
 	s.io = &prodIo{dir: dir, log: s.Log}
-	s.getter = &prodGetter{log: s.Log, dial: s.DialMaster}
-	s.ripper = &prodRipper{log: s.Log, server: s.resolve, dial: s.DialServer}
-	s.master = &prodMaster{dial: s.DialMaster}
+	s.getter = &prodGetter{log: s.Log, dial: s.FDialServer}
+	s.ripper = &prodRipper{log: s.Log, server: s.resolve, dial: s.FDialSpecificServer}
+	s.master = &prodMaster{dial: s.FDialServer}
 
 	return s
 }
@@ -326,7 +326,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 	s.buildConfig(ctx)
 
 	masterCount := int64(len(s.rips))
-	conn, err := s.DialMaster("versionserver")
+	conn, err := s.FDialServer(ctx, "versionserver")
 	if err != nil {
 		return err
 	}
@@ -346,7 +346,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 }
 
 func (s *Server) writeCount(ctx context.Context) error {
-	conn, err := s.DialMaster("versionserver")
+	conn, err := s.FDialServer(ctx, "versionserver")
 	if err == nil {
 		defer conn.Close()
 		client := pbvs.NewVersionServerClient(conn)
