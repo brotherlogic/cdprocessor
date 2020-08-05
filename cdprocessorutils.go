@@ -69,7 +69,7 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
 	if len(record.GetMetadata().CdPath) == 0 {
-		s.RaiseIssue(ctx, "Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, record.GetRelease().Id, record.GetMetadata()), false)
+		s.RaiseIssue("Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, record.GetRelease().Id, record.GetMetadata()))
 	}
 
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
@@ -241,7 +241,7 @@ func (s *Server) buildConfig(ctx context.Context) error {
 			}
 
 			if len(tracks) == 0 {
-				s.RaiseIssue(ctx, "Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks", id, disk), false)
+				s.RaiseIssue("Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks", id, disk))
 			}
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
@@ -260,7 +260,7 @@ func (s *Server) adjustExisting(ctx context.Context) error {
 		if err != nil {
 			e, ok := status.FromError(err)
 			if !ok || e.Code() == codes.InvalidArgument {
-				s.RaiseIssue(ctx, "Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err), false)
+				s.RaiseIssue("Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err))
 			}
 		}
 		for _, rec := range recs {
@@ -282,7 +282,7 @@ func (s *Server) logMissing(ctx context.Context) error {
 
 	needsRip.Set(float64(len(m.Missing)))
 	if len(m.Missing) > 0 {
-		s.RaiseIssue(ctx, "Rip CD", fmt.Sprintf("%v [%v]", m.Missing[0].GetRelease().Title, m.Missing[0].GetRelease().Id), false)
+		s.RaiseIssue("Rip CD", fmt.Sprintf("%v [%v]", m.Missing[0].GetRelease().Title, m.Missing[0].GetRelease().Id))
 	}
 
 	return nil
