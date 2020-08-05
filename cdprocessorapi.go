@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
+	rcpb "github.com/brotherlogic/recordcollection/proto"
 )
 
 //GetRipped returns the ripped cds
@@ -57,4 +58,9 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id, true)
 	}
 	return nil, fmt.Errorf("Unknow force request")
+}
+
+//ClientUpdate on an updated record
+func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
+	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), true)
 }
