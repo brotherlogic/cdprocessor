@@ -382,7 +382,7 @@ func (s *Server) runVerify(ctx context.Context) error {
 	}
 
 	if len(ids) > 0 {
-		s.RaiseIssue(ctx, "Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids), false)
+		s.RaiseIssue("Problematic rips", fmt.Sprintf("The following ids (%v) are having issues", ids))
 	}
 
 	return nil
@@ -417,7 +417,7 @@ func main() {
 	server.PrepServer()
 	server.Register = server
 
-	err := server.RegisterServerV2("cdprocessor", false, false)
+	err := server.RegisterServerV2("cdprocessor", false, true)
 	if err != nil {
 		return
 	}
@@ -432,15 +432,6 @@ func main() {
 		fmt.Printf("Initialised: %v\n", err)
 		return
 	}
-
-	server.RegisterRepeatingTask(server.logMissing, "log_missing", time.Hour)
-	server.RegisterRepeatingTask(server.writeCount, "write_count", time.Hour)
-	server.RegisterRepeatingTask(server.adjustExisting, "adjust_existing", time.Hour)
-	server.RegisterRepeatingTask(server.convertToMP3, "rip_mp3s", time.Minute)
-	server.RegisterRepeatingTask(server.convertToFlac, "rip_flacss", time.Minute)
-	server.RegisterRepeatingTask(server.runVerify, "run_verify", time.Hour)
-	server.RegisterRepeatingTask(server.runLink, "run_link", time.Minute)
-	server.RegisterRepeatingTask(server.buildConfig, "build_config", time.Hour)
 
 	server.Serve()
 }
