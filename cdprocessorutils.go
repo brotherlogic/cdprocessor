@@ -51,19 +51,12 @@ func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
 
 // verifies the status of the ripped cd
 func (s *Server) verify(ctx context.Context, ID int32) error {
-	records, err := s.getter.getRecord(ctx, ID)
+	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
 
-	for _, record := range records {
-		err := s.verifyRecord(ctx, record)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return s.verifyRecord(ctx, record)
 }
 
 func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
@@ -101,18 +94,10 @@ func computeArtist(rec *pbgd.Release) string {
 }
 
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
-	if val, ok := s.config.LastProcessTime[ID]; ok {
-		if time.Now().Sub(time.Unix(val, 0)) < time.Hour*24 && !force {
-			return status.Error(codes.ResourceExhausted, "This has been linked recently")
-		}
-	}
-
-	records, err := s.getter.getRecord(ctx, ID)
+	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
-
-	record := records[0]
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
 		s.Log(fmt.Sprintf("Making links for %v", ID))
@@ -129,17 +114,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 			}
 		}
 
-		// We need to update *all* the associated records
-		for _, rec := range records {
-			err := s.getter.updateRecord(ctx, rec.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
-			if err != nil {
-				return err
-			}
-		}
+		return s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
 	}
 
-	s.config.LastProcessTime[ID] = time.Now().Unix()
-	s.save(ctx)
 	return nil
 }
 
@@ -256,20 +233,17 @@ func (s *Server) adjustExisting(ctx context.Context) error {
 	m, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 	for _, r := range m.Ripped {
-		recs, err := s.getter.getRecord(ctx, r.Id)
+		rec, err := s.getter.getRecord(ctx, r.Id)
 		if err != nil {
 			e, ok := status.FromError(err)
 			if !ok || e.Code() == codes.InvalidArgument {
 				s.RaiseIssue("Nil Record Fail", fmt.Sprintf("Nil record?: %v -> %v", r.Id, err))
 			}
 		}
-		for _, rec := range recs {
-			if rec.GetMetadata().FilePath == "" {
-				s.getter.updateRecord(ctx, rec.GetRelease().GetInstanceId(), "", r.Path)
-				s.adjust++
-				break
-			}
-		}
+
+		s.getter.updateRecord(ctx, rec.GetRelease().GetInstanceId(), "", r.Path)
+		s.adjust++
+		break
 	}
 
 	s.lastRunTime = time.Now().Sub(t)
