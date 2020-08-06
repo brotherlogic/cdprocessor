@@ -120,7 +120,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 }
 
 type getter interface {
-	getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error)
+	getRecord(ctx context.Context, id int32) (*pbrc.Record, error)
 	updateRecord(ctx context.Context, id int32, cdpath, filepath string) error
 }
 
@@ -130,37 +130,20 @@ type prodGetter struct {
 	lastUpdate time.Time
 }
 
-func (rc *prodGetter) getRecord(ctx context.Context, id int32) ([]*pbrc.Record, error) {
+func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
 	conn, err := rc.dial(ctx, "recordcollection")
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
 
-	if time.Now().Sub(rc.lastUpdate) < time.Second*5 {
-		time.Sleep(time.Second * 5)
-	}
-	rc.lastUpdate = time.Now()
-
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	resp, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_ReleaseId{id}})
+	resp, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: id})
 	if err != nil {
 		return nil, err
 	}
 
-	if len(resp.GetInstanceIds()) > 0 {
-		records := []*pbrc.Record{}
-		for _, id := range resp.GetInstanceIds() {
-			rec, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: id})
-			if err != nil {
-				return nil, err
-			}
-			records = append(records, rec.GetRecord())
-		}
-		return records, nil
-	}
-
-	return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unable to locate record %v", id))
+	return resp.GetRecord(), err
 }
 
 func (rc *prodGetter) updateRecord(ctx context.Context, instanceID int32, cdpath, filepath string) error {
