@@ -100,11 +100,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
-		s.Log(fmt.Sprintf("Making links for %v", ID))
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := TrackExtract(record.GetRelease())
-		s.Log(fmt.Sprintf("Building %v tracks", len(trackSet)))
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
 				err := s.buildLink(ctx, track, record.GetRelease())
@@ -149,7 +147,6 @@ func (s *Server) convertToMP3(ctx context.Context) error {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
 				s.ripCount++
-				s.Log(fmt.Sprintf("Ripping %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3"))
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
 				s.buildConfig(ctx)
 				return nil
@@ -164,7 +161,6 @@ func (s *Server) convertToFlac(ctx context.Context) error {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
 				s.flacCount++
-				s.Log(fmt.Sprintf("Flaccing %v -> %v", s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac"))
 				s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
 				s.buildConfig(ctx)
 				return nil
