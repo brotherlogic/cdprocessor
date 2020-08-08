@@ -99,6 +99,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return err
 	}
 
+	// Don't process digital CDs
+	if record.GetMetadata().GetGoalFolder() == 268147 {
+		return nil
+	}
+
 	if force || len(record.GetMetadata().CdPath) == 0 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
