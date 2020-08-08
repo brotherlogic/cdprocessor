@@ -100,7 +100,8 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	// Don't process digital CDs
-	if record.GetMetadata().GetGoalFolder() == 268147 {
+	if record.GetMetadata().GetGoalFolder() == 268147 ||
+		record.GetMetadata().GetGoalFolder() == 1433217 {
 		return nil
 	}
 
