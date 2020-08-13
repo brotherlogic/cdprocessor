@@ -9,7 +9,6 @@ import (
 
 	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 
@@ -18,19 +17,16 @@ import (
 )
 
 func main() {
-	ip, port, err := utils.Resolve("cdprocessor", "cdprocessor-cli")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	defer cancel()
 
+	conn, err := utils.LFDialServer(ctx, "cdprocessor")
 	if err != nil {
-		log.Fatalf("Unable to locate cdprocessor server: %v", err)
+		log.Fatalf("Pah: %v", err)
 	}
-
-	conn, _ := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
 	defer conn.Close()
 
 	registry := pbcdp.NewCDProcessorClient(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
-	defer cancel()
 
 	switch os.Args[1] {
 	case "force":
@@ -41,7 +37,7 @@ func main() {
 		resp, err := registry.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 		if err == nil {
-			fmt.Printf("%v: Got %v ripped records\n", ip, len(resp.GetRipped()))
+			fmt.Printf("Got %v ripped records\n", len(resp.GetRipped()))
 			i, _ := strconv.Atoi(os.Args[2])
 			for _, missing := range resp.GetRipped() {
 				if missing.Id == int32(i) {
@@ -49,7 +45,7 @@ func main() {
 				}
 			}
 		} else {
-			fmt.Printf("%v: Error: %v\n", ip, err)
+			fmt.Printf("Error: %v\n", err)
 		}
 	case "missing":
 		resp, err := registry.GetMissing(ctx, &pbcdp.GetMissingRequest{})
