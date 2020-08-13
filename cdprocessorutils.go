@@ -105,6 +105,17 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return nil
 	}
 
+	match := false
+	for _, folder := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105} {
+		if record.GetRelease().GetFolderId() == folder {
+			match = true
+		}
+	}
+
+	if !match {
+		return nil
+	}
+
 	if force || len(record.GetMetadata().CdPath) == 0 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
@@ -121,7 +132,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
 	}
 
-	return nil
+	return s.verifyRecord(ctx, record)
 }
 
 func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Release) error {
