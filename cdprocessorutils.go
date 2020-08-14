@@ -66,6 +66,19 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
+	count := 0
+	trackSet := TrackExtract(record.GetRelease())
+	for _, track := range trackSet {
+		if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
+			count++
+		}
+	}
+
+	if count == 0 {
+		count = len(trackSet)
+	}
+
+	s.Log(fmt.Sprintf("Processing: %v", len(files)))
 	if len(files) == 0 || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
@@ -81,22 +94,11 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
 
-		count := 0
-		trackSet := TrackExtract(record.GetRelease())
-		for _, track := range trackSet {
-			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
-				count++
-			}
-		}
-
-		if count == 0 {
-			count = len(trackSet)
-		}
-
-		if len(files) == count || err != nil {
+		if len(files) != count || err != nil {
 			s.RaiseIssue(fmt.Sprintf("CD Rip Needd for %v", record.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", record.GetRelease().GetId()))
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files (%v)", len(files), count, err))
 		}
+
 	}
 
 	return nil
