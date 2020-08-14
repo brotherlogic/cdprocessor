@@ -134,10 +134,15 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	match := false
-	for _, folder := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105} {
-		if record.GetRelease().GetFolderId() == folder {
-			match = true
+	if record.GetMetadata().GetGoalFolder() != 242018 && record.GetMetadata().GetGoalFolder() != 1782105 && record.GetMetadata().GetGoalFolder() != 288751 {
+		// Not a cd or a bandcamp or cd boxset
+		for _, format := range record.GetRelease().GetFormats() {
+			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "Cdr" {
+				match = true
+			}
 		}
+	} else {
+		match = true
 	}
 
 	if !match {
