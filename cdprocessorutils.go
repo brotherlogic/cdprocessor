@@ -78,7 +78,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		count = len(trackSet)
 	}
 
-	s.Log(fmt.Sprintf("Processing: %v", len(files)))
+	s.Log(fmt.Sprintf("Processing: %v / %v", len(files), count))
 	if len(files) == 0 || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
@@ -96,6 +96,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
 		if len(files) != count || err != nil {
 			s.RaiseIssue(fmt.Sprintf("CD Rip Needd for %v", record.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", record.GetRelease().GetId()))
+			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files (%v)", len(files), count, err))
 		}
 
@@ -147,8 +148,14 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := TrackExtract(record.GetRelease())
+		noTracks := false
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
+				noTracks = true
+			}
+		}
+		for _, track := range trackSet {
+			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" || !noTracks {
 				err := s.buildLink(ctx, track, record.GetRelease())
 				if err != nil {
 					return err
