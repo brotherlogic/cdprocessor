@@ -80,9 +80,18 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
-		if len(files) == 0 || err != nil {
+
+		count := 0
+		trackSet := TrackExtract(record.GetRelease())
+		for _, track := range trackSet {
+			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
+				count++
+			}
+		}
+
+		if len(files) == count || err != nil {
 			s.RaiseIssue(fmt.Sprintf("CD Rip Needd for %v", record.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", record.GetRelease().GetId()))
-			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v files (%v)", len(files), err))
+			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files (%v)", len(files), count, err))
 		}
 	}
 
