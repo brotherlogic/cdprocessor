@@ -78,7 +78,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		count = len(trackSet)
 	}
 
-	s.Log(fmt.Sprintf("Processing: %v / %v", len(files), count))
+	s.Log(fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
 	if len(files) == 0 || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
