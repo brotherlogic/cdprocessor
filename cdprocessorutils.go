@@ -67,9 +67,19 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	if len(files) == 0 || err != nil {
-		_, err := s.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: record.GetRelease().Id})
-		s.Log(fmt.Sprintf("Error running force: %v", err))
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
+		err = s.buildConfig(ctx)
+		if err != nil {
+			s.Log(fmt.Sprintf("Bad config building: %v", err))
+		}
+		err = s.convertToMP3(ctx)
+		if err != nil {
+			s.Log(fmt.Sprintf("Bad ripping: %v", err))
+		}
+		err = s.convertToFlac(ctx)
+		if err != nil {
+			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
+		}
 		if len(files) == 0 || err != nil {
 			s.RaiseIssue(fmt.Sprintf("CD Rip Needd for %v", record.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", record.GetRelease().GetId()))
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v files (%v)", len(files), err))
