@@ -100,7 +100,7 @@ func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	pr.log(fmt.Sprintf("Running %v", command))
-	_, err = client.Execute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: command[0], Parameters: command[1:]}})
+	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: command[0], Parameters: command[1:]}})
 	return err
 }
 
