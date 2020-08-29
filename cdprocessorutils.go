@@ -151,6 +151,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
+		os.MkdirAll(fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), os.ModePerm)
 
 		trackSet := TrackExtract(record.GetRelease())
 		noTracks := false
