@@ -381,7 +381,7 @@ func main() {
 	var quiet = flag.Bool("quiet", false, "Show all output")
 	var dir = flag.String("dir", "/media/raid/music/rips/", "Base directory for storage location")
 	var mp3dir = flag.String("mp3", "/media/raid/music/mp3s/", "Base directory for all mp3s location")
-	var flacdir = flag.String("mp3", "/media/raid/music/flacs/", "Base directory for all flacs location")
+	var flacdir = flag.String("flac", "/media/raid/music/flacs/", "Base directory for all flacs location")
 	var init = flag.Bool("init", false, "Prep server")
 	flag.Parse()
 
