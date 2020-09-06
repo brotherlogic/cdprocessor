@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"golang.org/x/net/context"
 
@@ -62,5 +63,8 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 
 //ClientUpdate on an updated record
 func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
+	t := time.Now()
+	s.Log(fmt.Sprintf("Processing update: %v", req))
+	defer func() { s.Log(fmt.Sprintf("Processed update: %v -> %v", req, time.Now().Sub(t))) }()
 	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
 }
