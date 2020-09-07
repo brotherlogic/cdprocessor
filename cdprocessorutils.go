@@ -130,6 +130,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
 		record.GetMetadata().GetGoalFolder() == 1433217 {
+		s.Log(fmt.Sprintf("Not processing digital CD (%v)", ID))
 		return nil
 	}
 
@@ -145,7 +146,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		match = true
 	}
 
+	// This is not a CD we can process
 	if !match {
+		s.Log(fmt.Sprintf("Don't think %v is a CD", record.GetRelease().GetInstanceId()))
 		return nil
 	}
 

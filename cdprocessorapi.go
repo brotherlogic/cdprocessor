@@ -65,8 +65,7 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
 	t := time.Now()
 	s.Log(fmt.Sprintf("Processing update: %v", req))
-	s.buildConfig(ctx)
-	s.Log(fmt.Sprintf("Built config in %v", time.Now().Sub(t)))
+
 	defer func() {
 		time.Sleep(time.Second * 2)
 		s.Log(fmt.Sprintf("Processed update: %v -> %v", req, time.Now().Sub(t)))
