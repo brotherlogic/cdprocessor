@@ -214,6 +214,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 }
 
 func (s *Server) convertToMP3(ctx context.Context, id int32) error {
+	s.Log(fmt.Sprintf("Running convert: %v -> %v", id, len(s.rips)))
 	found := false
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
