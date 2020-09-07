@@ -66,5 +66,5 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	t := time.Now()
 	s.Log(fmt.Sprintf("Processing update: %v", req))
 	defer func() { s.Log(fmt.Sprintf("Processed update: %v -> %v", req, time.Now().Sub(t))) }()
-	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
+	return &rcpb.ClientUpdateResponse{}, nil //s.makeLinks(ctx, req.GetInstanceId(), false)
 }
