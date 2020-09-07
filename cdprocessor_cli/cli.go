@@ -11,6 +11,7 @@ import (
 	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 
 	//Needed to pull in gzip encoding init
 	_ "google.golang.org/grpc/encoding/gzip"
@@ -29,6 +30,13 @@ func main() {
 	registry := pbcdp.NewCDProcessorClient(conn)
 
 	switch os.Args[1] {
+	case "sforce":
+		val, _ := strconv.Atoi(os.Args[2])
+		client := pbrc.NewClientUpdateServiceClient(conn)
+		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
+
+		fmt.Printf("%v and %v\n", resp, err)
+
 	case "force":
 		val, _ := strconv.Atoi(os.Args[2])
 		resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(val)})
