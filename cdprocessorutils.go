@@ -85,11 +85,11 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad config building: %v", err))
 		}
-		err = s.convertToMP3(ctx)
+		err = s.convertToMP3(ctx, record.GetRelease().GetId())
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad ripping: %v", err))
 		}
-		err = s.convertToFlac(ctx)
+		err = s.convertToFlac(ctx, record.GetRelease().GetId())
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
@@ -213,9 +213,14 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 	return nil
 }
 
-func (s *Server) convertToMP3(ctx context.Context) error {
+func (s *Server) convertToMP3(ctx context.Context, id int32) error {
+	found := false
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
+			if rip.Id == id {
+				s.Log(fmt.Sprintf("Found rip: %v", t))
+				found = true
+			}
 			if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
 				s.ripCount++
 				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
@@ -224,10 +229,14 @@ func (s *Server) convertToMP3(ctx context.Context) error {
 			}
 		}
 	}
+	if !found {
+		return fmt.Errorf("Unable to locate rip for %v", id)
+	}
+
 	return nil
 }
 
-func (s *Server) convertToFlac(ctx context.Context) error {
+func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
