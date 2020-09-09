@@ -81,7 +81,9 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	s.Log(fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
+		t := time.Now()
 		err = s.buildConfig(ctx)
+		s.Log(fmt.Sprintf("Built config in %v", time.Now().Sub(t)))
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad config building: %v", err))
 		}
@@ -239,7 +241,13 @@ func (s *Server) convertToMP3(ctx context.Context, id int32) error {
 }
 
 func (s *Server) convertToFlac(ctx context.Context, id int32) error {
+	found := false
 	for _, rip := range s.rips {
+		if rip.Id == id {
+			s.Log(fmt.Sprintf("Found rip: %v", id))
+			found = true
+		}
+
 		for _, t := range rip.Tracks {
 			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
 				s.flacCount++
@@ -248,6 +256,10 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 				return nil
 			}
 		}
+	}
+
+	if !found {
+		s.Log(fmt.Sprintf("Did not find any flacs for %v", id))
 	}
 	return nil
 }
