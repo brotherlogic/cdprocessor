@@ -241,6 +241,7 @@ func (s *Server) convertToMP3(ctx context.Context, id int32) error {
 }
 
 func (s *Server) convertToFlac(ctx context.Context, id int32) error {
+	time.Sleep(time.Second * 2)
 	found := false
 	for _, rip := range s.rips {
 		if rip.Id == id {
