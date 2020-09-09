@@ -79,6 +79,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 
 	s.Log(fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
+	time.Sleep(time.Second * 2)
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		t := time.Now()
