@@ -250,14 +250,14 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 		if rip.Id == id {
 			s.Log(fmt.Sprintf("Found rip: %v", id))
 			found = true
-		}
 
-		for _, t := range rip.Tracks {
-			if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
-				s.flacCount++
-				s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
-				s.buildConfig(ctx)
-				return nil
+			for _, t := range rip.Tracks {
+				if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
+					s.flacCount++
+					s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
+					s.buildConfig(ctx)
+					return nil
+				}
 			}
 		}
 	}
