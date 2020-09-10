@@ -227,12 +227,13 @@ func (s *Server) convertToMP3(ctx context.Context, id int32) error {
 			if rip.Id == id {
 				s.Log(fmt.Sprintf("Found rip: %v", t))
 				found = true
-			}
-			if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
-				s.ripCount++
-				s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
-				s.buildConfig(ctx)
-				return nil
+
+				if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
+					s.ripCount++
+					s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
+					s.buildConfig(ctx)
+					return nil
+				}
 			}
 		}
 	}
