@@ -65,6 +65,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		s.RaiseIssue("Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, record.GetRelease().Id, record.GetMetadata()))
 	}
 
+	t := time.Now()
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	count := 0
 	trackSet := TrackExtract(record.GetRelease())
@@ -73,6 +74,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 			count++
 		}
 	}
+	s.Log(fmt.Sprintf("Read dir and built trackset in %v", time.Now().Sub(t)))
 
 	if count == 0 {
 		count = len(trackSet)
@@ -88,11 +90,15 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad config building: %v", err))
 		}
+		t = time.Now()
 		err = s.convertToMP3(ctx, record.GetRelease().GetId())
+		s.Log(fmt.Sprintf("MP3 conversion in %v", time.Now().Sub(t)))
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad ripping: %v", err))
 		}
+		t = time.Now()
 		err = s.convertToFlac(ctx, record.GetRelease().GetId())
+		s.Log(fmt.Sprintf("Flac conversion in %v", time.Now().Sub(t)))
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
@@ -125,10 +131,12 @@ func computeArtist(rec *pbgd.Release) string {
 }
 
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
+	t := time.Now()
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
+	s.Log(fmt.Sprintf("Got record in %v", time.Now().Sub(t)))
 
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
@@ -158,12 +166,16 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	if force || len(record.GetMetadata().CdPath) == 0 {
 
 		if len(record.GetMetadata().CdPath) == 0 {
+			t := time.Now()
 			s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
+			s.Log(fmt.Sprintf("Updated record in %v", time.Now().Sub(t)))
 		}
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 		os.MkdirAll(fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), os.ModePerm)
 
+		t := time.Now()
 		trackSet := TrackExtract(record.GetRelease())
+		s.Log(fmt.Sprintf("Extracted tracks in %v", time.Now().Sub(t)))
 		noTracks := false
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
