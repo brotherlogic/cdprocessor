@@ -88,7 +88,6 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	if err != nil {
 		pr.log(fmt.Sprintf("MP3ed: %v", err))
 	}
-	pr.log(fmt.Sprintf("MP3: %v", resp))
 }
 
 func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
@@ -116,7 +115,6 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 	if err != nil {
 		pr.log(fmt.Sprintf("Flaced: %v", err))
 	}
-	pr.log(fmt.Sprintf("FLAC: %v", resp))
 }
 
 type getter interface {
