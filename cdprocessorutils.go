@@ -230,14 +230,10 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 }
 
 func (s *Server) convertToMP3(ctx context.Context, id int32) error {
-	time.Sleep(time.Second * 2)
-	s.Log(fmt.Sprintf("Running convert: %v -> %v", id, len(s.rips)))
-	time.Sleep(time.Second * 2)
 	found := false
 	for _, rip := range s.rips {
 		for _, t := range rip.Tracks {
 			if rip.Id == id {
-				s.Log(fmt.Sprintf("Found rip: %v", t))
 				found = true
 
 				if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
@@ -261,7 +257,6 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 	found := false
 	for _, rip := range s.rips {
 		if rip.Id == id {
-			s.Log(fmt.Sprintf("Found rip: %v", id))
 			found = true
 
 			for _, t := range rip.Tracks {
