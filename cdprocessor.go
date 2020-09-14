@@ -398,7 +398,7 @@ func main() {
 	}
 
 	if *init {
-		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor")
+		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor2")
 		defer cancel()
 
 		mapper := make(map[int32]int64)
