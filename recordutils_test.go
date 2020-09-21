@@ -923,3 +923,24 @@ func TestRunExtractHaint(t *testing.T) {
 
 	log.Printf("WHAT %+v", tracks[len(tracks)-1])
 }
+
+func TestRunExtractBestShow(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/6897665.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 153 {
+		t.Errorf("Bad tracks: %v", len(tracks))
+	}
+
+	for _, t := range tracks {
+		log.Printf("%+v", t)
+	}
+}
