@@ -88,7 +88,7 @@ func (tr *testRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 	log.Printf("Ripping %v -> %v", pathIn, pathOut)
 }
 func InitTestServer(dir string) *Server {
-	s := Init(dir, dir+"mp3")
+	s := Init(dir, dir+"mp3", dir+"flac")
 	s.io = &testIo{dir: dir}
 	s.rc = &testRc{}
 	s.getter = &testGetter{}
@@ -160,8 +160,8 @@ func TestMultiAdjustPasses(t *testing.T) {
 
 func TestRunMP3s(t *testing.T) {
 	s := InitTestServer("testdata/")
-	s.convertToMP3(context.Background())
-	s.convertToFlac(context.Background())
+	s.convertToMP3(context.Background(), 123)
+	s.convertToFlac(context.Background(), 123)
 
 	if s.ripCount != 1 || s.flacCount != 1 {
 		t.Errorf("No rips occured")
@@ -170,8 +170,8 @@ func TestRunMP3s(t *testing.T) {
 
 func TestRunMP3sWithNothing(t *testing.T) {
 	s := InitTestServer("testempty/")
-	s.convertToMP3(context.Background())
-	s.convertToFlac(context.Background())
+	s.convertToMP3(context.Background(), 123)
+	s.convertToFlac(context.Background(), 123)
 
 	if s.ripCount != 0 || s.flacCount != 0 {
 		t.Errorf("No rips occured")

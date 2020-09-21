@@ -84,9 +84,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	time.Sleep(time.Second * 2)
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
-		t := time.Now()
 		err = s.buildConfig(ctx)
-		s.Log(fmt.Sprintf("Built config in %v", time.Now().Sub(t)))
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad config building: %v", err))
 		}
@@ -131,12 +129,10 @@ func computeArtist(rec *pbgd.Release) string {
 }
 
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
-	t := time.Now()
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
-	s.Log(fmt.Sprintf("Got record in %v", time.Now().Sub(t)))
 
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
