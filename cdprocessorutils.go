@@ -134,6 +134,17 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return err
 	}
 
+	//Only process things in the listening pile
+	err = s.runLinks(ctx, ID, force, record)
+	if record.GetRelease().GetFolderId() != 812802 {
+		return nil
+	}
+
+	return err
+}
+
+func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record) error {
+
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
 		record.GetMetadata().GetGoalFolder() == 1433217 {
