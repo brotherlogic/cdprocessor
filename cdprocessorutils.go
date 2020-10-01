@@ -90,13 +90,13 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		}
 		t = time.Now()
 		err = s.convertToMP3(ctx, record.GetRelease().GetId())
-		s.Log(fmt.Sprintf("MP3 conversion in %v", time.Now().Sub(t)))
+		s.Log(fmt.Sprintf("MP3 (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad ripping: %v", err))
 		}
 		t = time.Now()
 		err = s.convertToFlac(ctx, record.GetRelease().GetId())
-		s.Log(fmt.Sprintf("Flac conversion in %v", time.Now().Sub(t)))
+		s.Log(fmt.Sprintf("Flac (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
