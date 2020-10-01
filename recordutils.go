@@ -23,6 +23,10 @@ func getDisk(pos string) int {
 		disk = 2
 	} else if pos[0] == 'E' || pos[0] == 'F' {
 		disk = 3
+	} else if pos[0] == 'G' || pos[0] == 'H' {
+		disk = 4
+	} else if pos[0] == 'I' || pos[0] == 'J' {
+		disk = 5
 	}
 	return disk
 

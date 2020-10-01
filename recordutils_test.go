@@ -944,3 +944,28 @@ func TestRunExtractBestShow(t *testing.T) {
 		log.Printf("%+v", t)
 	}
 }
+
+func TestRunExtractSyl(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/4291874.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 81 {
+		t.Errorf("Bad tracks: %v", len(tracks))
+	}
+
+	for _, t := range tracks {
+		ts := ""
+		for _, tr := range t.tracks {
+			ts += " " + tr.GetTitle()
+		}
+		log.Printf("%+v -> %v", t, ts)
+	}
+}
