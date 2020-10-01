@@ -157,10 +157,12 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		// Not a cd or a bandcamp or cd boxset
 		for _, format := range record.GetRelease().GetFormats() {
 			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "Cdr" {
+				s.Log(fmt.Sprintf("Matched %v on the format: %v", ID, format))
 				match = true
 			}
 		}
 	} else {
+		s.Log(fmt.Sprintf("Matched %v since it has the right goal folder: %v", ID, record.GetMetadata().GetGoalFolder()))
 		match = true
 	}
 
@@ -244,6 +246,7 @@ func (s *Server) convertToMP3(ctx context.Context, id int32) error {
 				found = true
 
 				if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
+					s.Log(fmt.Sprintf("Missing MP3: %v", s.dir+t.WavPath))
 					s.ripCount++
 					s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
 					s.buildConfig(ctx)
@@ -268,6 +271,7 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 
 			for _, t := range rip.Tracks {
 				if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
+					s.Log(fmt.Sprintf("Missing MP3: %v", s.dir+t.WavPath))
 					s.flacCount++
 					s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
 					s.buildConfig(ctx)
