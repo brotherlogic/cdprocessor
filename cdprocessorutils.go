@@ -236,7 +236,9 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", track.Disk), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=title=%v", title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.Title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
-	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v/cover.jpg", s.dir, record.Id), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
+	if len(record.GetImages()) > 0 {
+		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v/cover.jpg", s.dir, record.Id), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
+	}
 	//s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=\"%v\"", record.Title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 
 	return nil
