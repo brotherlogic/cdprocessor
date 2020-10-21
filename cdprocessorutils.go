@@ -230,14 +230,16 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 	if len(record.GetImages()) > 0 {
 		s.ripper.runCommand(ctx, []string{"wget", record.GetImages()[0].GetUri(), "-O", fmt.Sprintf("%v%v/cover.jpg", s.dir, record.Id)})
 	}
+	oldfile := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position))
+	//newfile := fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))
 	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=artist=%v", computeArtist(record)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=tracknumber=%v", track.Position), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", track.Disk), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=title=%v", title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
-	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.Title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.Title), oldfile})
 	if len(record.GetImages()) > 0 {
-		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v/cover.jpg", s.dir, record.Id), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
+		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v/cover.jpg", s.dir, record.Id), oldfile})
 	}
 	//s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=\"%v\"", record.Title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 
