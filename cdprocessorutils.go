@@ -153,7 +153,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 	}
 
 	match := false
-	if record.GetMetadata().GetGoalFolder() != 242018 && record.GetMetadata().GetGoalFolder() != 1782105 && record.GetMetadata().GetGoalFolder() != 288751 {
+	if record.GetMetadata().GetGoalFolder() != 242018 && record.GetMetadata().GetGoalFolder() != 1782105 && record.GetMetadata().GetGoalFolder() != 288751 && record.GetMetadata().GetGoalFolder() != 2274270 {
 		// Not a cd or a bandcamp or cd boxset
 		for _, format := range record.GetRelease().GetFormats() {
 			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "Cdr" {
