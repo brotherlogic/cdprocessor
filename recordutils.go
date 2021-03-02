@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -43,6 +44,24 @@ func getFormatAndDisk(t *pbgd.Track) (string, int) {
 			parts := strings.Split(t.Position, "-")
 			disk, _ := strconv.Atoi(parts[0][2:])
 			return "CD", disk
+		}
+	}
+
+	if strings.HasPrefix(t.Position, "DVD") {
+		if len(t.Position) > 2 {
+			parts := strings.Split(t.Position, "-")
+			disk, _ := strconv.Atoi(parts[0][3:])
+			log.Printf("DISK %v from %v", disk, parts[0][3:])
+			return "DVD", disk
+		}
+	}
+
+	if strings.HasPrefix(t.Position, "BR") {
+		if len(t.Position) > 2 {
+			parts := strings.Split(t.Position, "-")
+			disk, _ := strconv.Atoi(parts[0][2:])
+			log.Printf("DISK %v from %v", disk, parts[0][2:])
+			return "BR", disk
 		}
 	}
 
