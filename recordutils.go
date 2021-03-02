@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -43,6 +44,24 @@ func getFormatAndDisk(t *pbgd.Track) (string, int) {
 			parts := strings.Split(t.Position, "-")
 			disk, _ := strconv.Atoi(parts[0][2:])
 			return "CD", disk
+		}
+	}
+
+	if strings.HasPrefix(t.Position, "DVD") {
+		if len(t.Position) > 2 {
+			parts := strings.Split(t.Position, "-")
+			disk, _ := strconv.Atoi(parts[0][3:])
+			log.Printf("DISK %v from %v", disk, parts[0][3:])
+			return "DVD", disk
+		}
+	}
+
+	if strings.HasPrefix(t.Position, "BR") {
+		if len(t.Position) > 2 {
+			parts := strings.Split(t.Position, "-")
+			disk, _ := strconv.Atoi(parts[0][2:])
+			log.Printf("DISK %v from %v", disk, parts[0][2:])
+			return "BR", disk
 		}
 	}
 
@@ -146,7 +165,7 @@ func TrackExtract(r *pbgd.Release) []*TrackSet {
 				readDisk = disk
 			}
 
-			if !strings.HasPrefix(track.Position, "Video") && !strings.HasPrefix(track.Position, "DVD") && !strings.HasPrefix(track.Position, "BD") && !strings.HasPrefix(track.Position, "BR") {
+			if !strings.HasPrefix(track.Position, "Video") {
 				trackset = append(trackset, &TrackSet{Format: currFormat, Disk: fmt.Sprintf("%v", currDisk), tracks: []*pbgd.Track{track}, Position: fmt.Sprintf("%v", currTrack)})
 				currTrack++
 			}

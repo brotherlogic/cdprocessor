@@ -969,3 +969,23 @@ func TestRunExtractSyl(t *testing.T) {
 		log.Printf("%+v -> %v", t, ts)
 	}
 }
+
+func TestRunExtractPF(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/9218307.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease())
+
+	if len(tracks) != 387 {
+		t.Errorf("Bad tracks: %v", len(tracks))
+		for _, t := range tracks {
+			log.Printf("TRACK %v - %v [%v]", t.Disk, t.Position, t.Format)
+		}
+	}
+}
