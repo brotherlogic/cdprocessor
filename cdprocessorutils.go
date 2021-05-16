@@ -206,6 +206,14 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 	return s.verifyRecord(ctx, record)
 }
 
+func prepend(val string) string {
+	if len(val) == 1 {
+		return fmt.Sprintf("0%v", val)
+	} else {
+		return fmt.Sprintf("%v", val)
+	}
+}
+
 func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Release) error {
 	// Verify that the track exists
 	adder := ""
@@ -235,7 +243,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=artist=%v", computeArtist(record)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=tracknumber=%v", track.Position), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
-	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", track.Disk), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", prepend(track.Disk)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=title=%v", title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.Title), oldfile})
 	if len(record.GetImages()) > 0 {
