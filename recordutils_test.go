@@ -982,7 +982,7 @@ func TestRunExtractPF(t *testing.T) {
 
 	tracks := TrackExtract(record.GetRelease())
 
-	if len(tracks) != 147 {
+	if len(tracks) != 146 {
 		t.Errorf("Bad tracks: %v", len(tracks))
 		for _, t := range tracks {
 			log.Printf("TRACK %v - %v [%v]", t.Disk, t.Position, t.Format)
