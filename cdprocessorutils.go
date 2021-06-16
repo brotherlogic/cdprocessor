@@ -322,7 +322,7 @@ func (s *Server) buildConfig(ctx context.Context) error {
 			trackFiles, _ := s.io.readSubdir(f.Name())
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
-				if !tf.IsDir() {
+				if !tf.IsDir() && strings.Contains(tf.Name(), "track") {
 					trackNumber, _ := strconv.Atoi(tf.Name()[5:7])
 
 					var foundTrack *pbcdp.Track
