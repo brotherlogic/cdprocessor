@@ -261,7 +261,7 @@ func (s *Server) convertToMP3(ctx context.Context, id int32) error {
 			if rip.Id == id {
 				found = true
 
-				if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 {
+				if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 && strings.Contains(t.WavPath, "track") {
 					s.Log(fmt.Sprintf("Missing MP3: %v", s.dir+t.WavPath))
 					s.ripCount++
 					s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
@@ -286,7 +286,7 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 			found = true
 
 			for _, t := range rip.Tracks {
-				if len(t.WavPath) > 0 && len(t.FlacPath) == 0 {
+				if len(t.WavPath) > 0 && len(t.FlacPath) == 0 && strings.Contains(t.WavPath, "track") {
 					s.Log(fmt.Sprintf("Missing FLAC: %v", s.dir+t.WavPath))
 					s.flacCount++
 					s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
