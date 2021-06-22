@@ -62,5 +62,6 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 
 //ClientUpdate on an updated record
 func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
-	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
+	return &rcpb.ClientUpdateResponse{}, nil
+	//return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
 }
