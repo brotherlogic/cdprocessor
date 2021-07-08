@@ -134,6 +134,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return err
 	}
 
+	// Skip boxed records
+	if record.GetMetadata().GetBoxState() != pbrc.ReleaseMetadata_BOX_UNKNOWN &&
+		record.GetMetadata().GetBoxState() != pbrc.ReleaseMetadata_OUT_OF_BOX {
+		return nil
+	}
+
 	//Only process things in the listening pile
 	err = s.runLinks(ctx, ID, force, record)
 	if record.GetRelease().GetFolderId() != 812802 {
