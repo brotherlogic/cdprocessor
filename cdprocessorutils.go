@@ -174,7 +174,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 
 	// This is not a CD we can process
 	if !match {
-		s.Log(fmt.Sprintf("Don't think %v is a CD", record.GetRelease().GetInstanceId()))
+		s.Log(fmt.Sprintf("Don't think %v is a rippable format", record.GetRelease().GetInstanceId()))
 		return nil
 	}
 
