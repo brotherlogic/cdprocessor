@@ -140,7 +140,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return nil
 	}
 
-	//Only process things in the listening pile
+	//Only fail if we're not in the listening pile
 	err = s.runLinks(ctx, ID, force, record)
 	if record.GetRelease().GetFolderId() != 812802 {
 		return nil
@@ -180,9 +180,9 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
 
-		if len(record.GetMetadata().CdPath) == 0 {
+		if len(record.GetMetadata().CdPath) == 0 || strings.Contains(record.GetMetadata().CdPath, "flac") {
 			t := time.Now()
-			s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
+			s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), "")
 			s.Log(fmt.Sprintf("Updated record in %v", time.Now().Sub(t)))
 		}
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
@@ -227,7 +227,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 		adder = fmt.Sprintf("_%v", track.Disk)
 	}
 
-	trackPath := fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.Id, adder, expand(track.Position))
+	trackPath := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position))
 
 	if !s.fileExists(trackPath) {
 		return fmt.Errorf("Missing Track: %v (from %+v -> %v+)", trackPath, track, track.tracks[0])
