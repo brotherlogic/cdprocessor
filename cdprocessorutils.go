@@ -190,7 +190,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 
 		t := time.Now()
 		trackSet := TrackExtract(record.GetRelease())
-		s.Log(fmt.Sprintf("Extracted tracks in %v", time.Now().Sub(t)))
+		s.Log(fmt.Sprintf("Extracted the tracks in %v", time.Now().Sub(t)))
 		noTracks := false
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
