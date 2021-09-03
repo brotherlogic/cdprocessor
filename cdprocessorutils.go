@@ -168,7 +168,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 			}
 		}
 	} else {
-		s.Log(fmt.Sprintf("Matched %v since it has the right goal folder: %v ( -> %v)", ID, record.GetMetadata().GetGoalFolder(), force))
+		s.Log(fmt.Sprintf("Matched %v since it has the right goal folder: %v ( => %v)", ID, record.GetMetadata().GetGoalFolder(), force))
 		match = true
 	}
 
@@ -206,7 +206,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 			}
 		}
 
-		return s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), "")
+		return s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), "")
 	}
 
 	return s.verifyRecord(ctx, record)
