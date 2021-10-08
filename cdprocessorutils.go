@@ -131,6 +131,9 @@ func computeArtist(rec *pbgd.Release) string {
 func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
+		if status.Convert(err).Code() == codes.OutOfRange {
+			return nil
+		}
 		return err
 	}
 
