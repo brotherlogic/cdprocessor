@@ -104,7 +104,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		if len(files) != count || err != nil {
 			s.RaiseIssue(fmt.Sprintf("CD Rip Needd for %v", record.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", record.GetRelease().GetId()))
 			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
-			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files (%v)", len(files), count, err))
+			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files for %v: (%v)", len(files), count, record.GetRelease().GetId(), err))
 		}
 
 	}
