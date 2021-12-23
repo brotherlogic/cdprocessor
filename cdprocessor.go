@@ -99,7 +99,7 @@ func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	//pr.log(fmt.Sprintf("Running %v", command))
-	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{DeleteOnComplete: true, Binary: command[0], Parameters: command[1:]}})
+	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: command[0], Parameters: command[1:]}})
 	return err
 }
 
@@ -111,7 +111,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 	defer conn.Close()
 
 	client := pbe.NewExecutorServiceClient(conn)
-	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{DeleteOnComplete: true, Binary: "flac", Parameters: []string{"--best", pathIn}}})
+	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
 	if err != nil {
 		pr.log(fmt.Sprintf("Flaced: %v", err))
 	}
