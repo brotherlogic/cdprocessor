@@ -162,7 +162,11 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 	}
 
 	match := false
-	if record.GetMetadata().GetGoalFolder() != 242018 && record.GetMetadata().GetGoalFolder() != 1782105 && record.GetMetadata().GetGoalFolder() != 288751 && record.GetMetadata().GetGoalFolder() != 2274270 {
+	if record.GetMetadata().GetGoalFolder() != 242018 &&
+		record.GetMetadata().GetGoalFolder() != 1782105 &&
+		record.GetMetadata().GetGoalFolder() != 288751 &&
+		record.GetMetadata().GetGoalFolder() != 2274270 &&
+		record.GetMetadata().GetGoalFolder() != 565206 {
 		// Not a cd or a bandcamp or cd boxset
 		for _, format := range record.GetRelease().GetFormats() {
 			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "CDr" {
@@ -192,7 +196,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		os.MkdirAll(fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), os.ModePerm)
 
 		t := time.Now()
-		trackSet := TrackExtract(record.GetRelease())
+		trackSet := TrackExtract(record.GetRelease(), record.GetMetadata().GetGoalFolder() == 565206)
 		s.Log(fmt.Sprintf("Extracted the tracks in %v", time.Now().Sub(t)))
 		noTracks := false
 		for _, track := range trackSet {

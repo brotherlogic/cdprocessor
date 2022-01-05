@@ -133,8 +133,27 @@ func flatten(tracklist []*pbgd.Track) []*pbgd.Track {
 }
 
 //TrackExtract extracts a trackset from a release
-func TrackExtract(r *pbgd.Release) []*TrackSet {
+func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 	trackset := make([]*TrackSet, 0)
+
+	if tape {
+		return []*TrackSet{
+			&TrackSet{Disk: "1",
+				Format: "Tape",
+				tracks: []*pbgd.Track{
+					&pbgd.Track{Title: "Side A"},
+				},
+				Position: "1",
+			},
+			&TrackSet{Disk: "1",
+				Format: "Tape",
+				tracks: []*pbgd.Track{
+					&pbgd.Track{Title: "Side B"},
+				},
+				Position: "2",
+			},
+		}
+	}
 
 	baseFormat := ""
 	for _, form := range r.GetFormats() {
