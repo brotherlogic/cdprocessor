@@ -68,7 +68,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	t := time.Now()
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	count := 0
-	trackSet := TrackExtract(record.GetRelease())
+	trackSet := TrackExtract(record.GetRelease(), record.GetMetadata().GetGoalFolder() == 565206)
 	for _, track := range trackSet {
 		if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
 			count++
