@@ -85,9 +85,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
-	if err != nil {
-		pr.log(fmt.Sprintf("MP3ed: %v", err))
-	}
+	pr.log(fmt.Sprintf("MP3ed: %v", err))
 }
 
 func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
@@ -112,9 +110,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
-	if err != nil {
-		pr.log(fmt.Sprintf("Flaced: %v", err))
-	}
+	pr.log(fmt.Sprintf("Flaced: %v", err))
 }
 
 type getter interface {
