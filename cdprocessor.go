@@ -282,6 +282,10 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 		config.LastProcessTime = make(map[int32]int64)
 	}
 
+	if config.IssueMapping == nil {
+		config.IssueMapping = make(map[int32]int32)
+	}
+
 	return config, nil
 }
 
