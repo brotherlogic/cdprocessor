@@ -243,7 +243,6 @@ type Server struct {
 	forceCheck  bool
 	master      master
 	count       int64
-	config      *pb.Config
 }
 
 // Init builds the server
@@ -265,25 +264,25 @@ func Init(dir string, mp3dir string, flacdir string) *Server {
 	return s
 }
 
-func (s *Server) save(ctx context.Context) {
-	s.KSclient.Save(ctx, KEY, s.config)
+func (s *Server) save(ctx context.Context, config *pb.Config) error {
+	return s.KSclient.Save(ctx, KEY, config)
 }
 
-func (s *Server) load(ctx context.Context) error {
+func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 	config := &pb.Config{}
 	data, _, err := s.KSclient.Read(ctx, KEY, config)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	s.config = data.(*pb.Config)
+	config = data.(*pb.Config)
 
-	if s.config.LastProcessTime == nil {
-		s.config.LastProcessTime = make(map[int32]int64)
+	if config.LastProcessTime == nil {
+		config.LastProcessTime = make(map[int32]int64)
 	}
 
-	return nil
+	return config, nil
 }
 
 // DoRegister does RPC registration
@@ -304,26 +303,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
-	s.buildConfig(ctx)
-
-	masterCount := int64(len(s.rips))
-	conn, err := s.FDialServer(ctx, "versionserver")
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	client := pbvs.NewVersionServerClient(conn)
-	v, err := client.GetVersion(ctx, &pbvs.GetVersionRequest{Key: "github.com.brotherlogic.cdprocessor"})
-	if err != nil {
-		return err
-	}
-
-	if masterCount < v.Version.Value {
-		return status.Errorf(codes.Unavailable, "Not enough rips: %v vs %v", masterCount, v.Version.Value)
-	}
-
-	return s.load(ctx)
+	return nil
 }
 
 func (s *Server) writeCount(ctx context.Context) error {

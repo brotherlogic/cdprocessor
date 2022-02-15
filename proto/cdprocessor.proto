@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package cdprocessor;
 
+option go_package = "github.com/brotherlogic/cdprocessor/proto";
+
 import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
 
 message Config {
   map<int32,int64> last_process_time = 1;
+  map<int32,int32> issue_mapping = 2;
 }
 
 message GetRippedRequest {}

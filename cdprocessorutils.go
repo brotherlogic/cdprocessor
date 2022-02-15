@@ -101,8 +101,13 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
 
+		config, err2 := s.load(ctx)
+		if err2 != nil {
+			return err2
+		}
+		s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
+
 		if len(files) != count || err != nil {
-			s.RaiseIssue(fmt.Sprintf("CD Rip Needd for %v", record.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", record.GetRelease().GetId()))
 			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files for %v: (%v)", len(files), count, record.GetRelease().GetId(), err))
 		}
@@ -367,6 +372,30 @@ func (s *Server) buildConfig(ctx context.Context) error {
 	}
 
 	s.rips = rips
+	return nil
+}
+
+func (s *Server) adjustAlert(ctx context.Context, config *pbcdp.Config, r *pbrc.Record, needs bool) error {
+	number, alreadySeen := config.GetIssueMapping()[r.GetRelease().GetId()]
+	if needs && !alreadySeen {
+		issue, err := s.ImmediateIssue(ctx, fmt.Sprintf("CD Rip Needd for %v", r.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", r.GetRelease().GetId()))
+		if err != nil {
+			return err
+		}
+		config.IssueMapping[r.GetRelease().GetId()] = issue.GetNumber()
+
+		return s.save(ctx, config)
+	}
+
+	if alreadySeen && !needs {
+		err := s.DeleteIssue(ctx, number)
+		if err != nil {
+			return err
+		}
+		delete(config.IssueMapping, r.GetRelease().GetId())
+		return s.save(ctx, config)
+	}
+
 	return nil
 }
 
