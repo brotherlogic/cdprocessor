@@ -81,6 +81,11 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 
 	s.Log(fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
+	config, err2 := s.load(ctx)
+	if err2 != nil {
+		return err2
+	}
+	s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
 	time.Sleep(time.Second * 2)
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
@@ -100,12 +105,6 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		if err != nil {
 			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
 		}
-
-		config, err2 := s.load(ctx)
-		if err2 != nil {
-			return err2
-		}
-		s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
 
 		if len(files) != count || err != nil {
 			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
