@@ -141,6 +141,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return err
 	}
 
+	// Skip SOLD_ARCHIVE records
+	if record.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_SOLD_ARCHIVE {
+		return nil
+	}
+
 	// Skip boxed records
 	if record.GetMetadata().GetBoxState() != pbrc.ReleaseMetadata_BOX_UNKNOWN &&
 		record.GetMetadata().GetBoxState() != pbrc.ReleaseMetadata_OUT_OF_BOX {
