@@ -364,7 +364,7 @@ func (s *Server) buildConfig(ctx context.Context) error {
 			}
 
 			if len(tracks) == 0 {
-				s.RaiseIssue("Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks", id, disk))
+				s.RaiseIssue("Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks (%v)", id, disk, fmt.Sprintf("https://www.discogs.com/madeup/release/%v", id)))
 			}
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
