@@ -84,7 +84,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	defer conn.Close()
 
 	client := pbe.NewExecutorServiceClient(conn)
-	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{ReadyForDeletion: true, Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
+	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
 	pr.log(fmt.Sprintf("MP3ed: %v", err))
 }
 
@@ -109,7 +109,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 	defer conn.Close()
 
 	client := pbe.NewExecutorServiceClient(conn)
-	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{ReadyForDeletion: true, Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
+	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
 	pr.log(fmt.Sprintf("Flaced: %v", err))
 }
 
