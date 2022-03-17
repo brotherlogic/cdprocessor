@@ -394,7 +394,7 @@ func (s *Server) adjustAlert(ctx context.Context, config *pbcdp.Config, r *pbrc.
 
 	if alreadySeen && !needs {
 		err := s.DeleteIssue(ctx, number)
-		if err != nil {
+		if err != nil && status.Convert(err).Code() != codes.NotFound {
 			return err
 		}
 		delete(config.IssueMapping, r.GetRelease().GetId())
