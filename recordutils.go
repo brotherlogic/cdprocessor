@@ -137,6 +137,38 @@ func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 	trackset := make([]*TrackSet, 0)
 
 	if tape {
+		if r.GetFormatQuantity() == 2 {
+			return []*TrackSet{
+				&TrackSet{Disk: "1",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side A"},
+					},
+					Position: "1",
+				},
+				&TrackSet{Disk: "1",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side B"},
+					},
+					Position: "2",
+				},
+				&TrackSet{Disk: "1",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side C"},
+					},
+					Position: "3",
+				},
+				&TrackSet{Disk: "1",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side D"},
+					},
+					Position: "4",
+				},
+			}
+		}
 		return []*TrackSet{
 			&TrackSet{Disk: "1",
 				Format: "Tape",
