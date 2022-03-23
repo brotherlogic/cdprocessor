@@ -153,14 +153,14 @@ func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 					},
 					Position: "2",
 				},
-				&TrackSet{Disk: "1",
+				&TrackSet{Disk: "2",
 					Format: "Tape",
 					tracks: []*pbgd.Track{
 						&pbgd.Track{Title: "Side C"},
 					},
 					Position: "3",
 				},
-				&TrackSet{Disk: "1",
+				&TrackSet{Disk: "2",
 					Format: "Tape",
 					tracks: []*pbgd.Track{
 						&pbgd.Track{Title: "Side D"},
