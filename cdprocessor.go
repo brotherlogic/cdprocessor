@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -375,6 +376,11 @@ func main() {
 	err := server.RegisterServerV2("cdprocessor", false, true)
 	if err != nil {
 		return
+	}
+
+	_, err = exec.Command("sudo", "apt", "-y", "install", "eyed3").Output()
+	if err != nil {
+		log.Fatalf("Unable to install eyed3: %v", err)
 	}
 
 	if *init {
