@@ -262,7 +262,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Re
 	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.Title), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
 	s.ripper.runCommand(ctx, []string{"eyeD3", fmt.Sprintf("--set-text-frame=TPOS:\"%v/%v\"", track.Disk, record.FormatQuantity), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
-	s.ripper.runCommand(ctx, []string{"lame", "--ti", fmt.Sprintf("%v%v%v/cover.jpg", s.dir, record.Id, adder), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"lame", "--ti", fmt.Sprintf("%v%v%v/cover.jpg", s.dir, record.Id, adder), oldmp3, oldmp3})
 	s.CtxLog(ctx, fmt.Sprintf("Running %v", []string{"lame", "--ti", fmt.Sprintf("%v%v%v/cover.jpg", s.dir, record.Id, adder), oldmp3, oldmp3}))
 
 	oldfile := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position))
