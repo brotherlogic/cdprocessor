@@ -384,7 +384,7 @@ func main() {
 		mapper := make(map[int32]int64)
 		mapper[1] = 1
 		err := server.KSclient.Save(ctx, KEY, &pb.Config{LastProcessTime: mapper})
-		fmt.Printf("Initialised: %v\n", err)
+		fmt.Printf("Inits: %v\n", err)
 		return
 	}
 
