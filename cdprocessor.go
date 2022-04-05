@@ -378,10 +378,11 @@ func main() {
 		return
 	}
 
-	_, err = exec.Command("sudo", "apt", "-y", "install", "eyed3").Output()
+	output, err := exec.Command("sudo", "apt", "-y", "install", "eyed3").Output()
 	if err != nil {
 		log.Fatalf("Unable to install eyed3: %v", err)
 	}
+	server.Log(fmt.Sprintf("Installed: %v", string(output)))
 
 	if *init {
 		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor")
