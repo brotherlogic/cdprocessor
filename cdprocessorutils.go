@@ -241,6 +241,7 @@ func prepend(val string) string {
 }
 
 func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Release) error {
+	s.CtxLog(ctx, fmt.Sprintf("Building links: %v", track))
 	// Verify that the track exists
 	adder := ""
 	if record.FormatQuantity > 1 {
