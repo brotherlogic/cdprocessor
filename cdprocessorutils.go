@@ -156,7 +156,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 
 	//Only fail if we're not in the listening pile
 	err = s.runLinks(ctx, ID, force, record)
+	s.CtxLog(ctx, fmt.Sprintf("Error on run links: %v", err))
 	if record.GetRelease().GetFolderId() != 812802 {
+		s.verifyRecord(ctx, record)
 		return nil
 	}
 
