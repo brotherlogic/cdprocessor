@@ -143,7 +143,8 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	// Skip SOLD_ARCHIVE records
-	if record.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_SOLD_ARCHIVE {
+	if !force && record.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_SOLD_ARCHIVE {
+		s.CtxLog(ctx, "Skipping because it's SOLD_ARCHIVE")
 		return nil
 	}
 
