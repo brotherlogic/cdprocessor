@@ -148,6 +148,13 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return nil
 	}
 
+	// Skip records which aren't release yet
+	val, err := time.Parse("2 Jan 2006", record.GetRelease().GetReleased())
+	s.CtxLog(ctx, fmt.Sprintf("Got %v, %v", val, err))
+	if err == nil && val.After(time.Now()) {
+		s.CtxLog(ctx, "Skipping because it's UNRELEASED")
+	}
+
 	// Skip boxed records
 	if record.GetMetadata().GetBoxState() != pbrc.ReleaseMetadata_BOX_UNKNOWN &&
 		record.GetMetadata().GetBoxState() != pbrc.ReleaseMetadata_OUT_OF_BOX {
