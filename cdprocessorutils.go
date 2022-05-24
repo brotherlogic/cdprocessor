@@ -149,7 +149,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	// Skip records which aren't release yet
-	val, err := time.Parse("2 Jan 2006", record.GetRelease().GetReleased())
+	val, err := time.Parse("2006-01-02", record.GetRelease().GetReleased())
 	s.CtxLog(ctx, fmt.Sprintf("Got %v, %v", val, err))
 	if err == nil && val.After(time.Now()) {
 		s.CtxLog(ctx, "Skipping because it's UNRELEASED")
