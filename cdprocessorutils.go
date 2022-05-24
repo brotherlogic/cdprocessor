@@ -153,6 +153,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	s.CtxLog(ctx, fmt.Sprintf("Got %v, %v", val, err))
 	if err == nil && val.After(time.Now()) {
 		s.CtxLog(ctx, "Skipping because it's UNRELEASED")
+		return nil
 	}
 
 	// Skip boxed records
