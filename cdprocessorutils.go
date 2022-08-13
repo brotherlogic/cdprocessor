@@ -402,7 +402,7 @@ func (s *Server) adjustAlert(ctx context.Context, config *pbcdp.Config, r *pbrc.
 	number, alreadySeen := config.GetIssueMapping()[r.GetRelease().GetId()]
 	s.CtxLog(ctx, fmt.Sprintf("ALERT %v and %v for %v from %v (%v)", number, alreadySeen, r.GetRelease().GetId(), config.GetIssueMapping(), needs))
 	if needs && !alreadySeen {
-		issue, err := s.ImmediateIssue(ctx, fmt.Sprintf("CD Rip Need for %v", r.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", r.GetRelease().GetId()))
+		issue, err := s.ImmediateIssue(ctx, fmt.Sprintf("CD Rip Need for %v", r.GetRelease().GetTitle()), fmt.Sprintf("https://www.discogs.com/madeup/release/%v", r.GetRelease().GetId()), false)
 		if err != nil {
 			return err
 		}

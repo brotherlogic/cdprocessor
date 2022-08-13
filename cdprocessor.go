@@ -370,10 +370,10 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 	server := Init(*dir, *mp3dir, *flacdir)
-	server.PrepServer()
+	server.PrepServer("cdprocessor")
 	server.Register = server
 
-	err := server.RegisterServerV2("cdprocessor", false, true)
+	err := server.RegisterServerV2(false)
 	if err != nil {
 		return
 	}
