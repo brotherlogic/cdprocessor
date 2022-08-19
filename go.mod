@@ -3,12 +3,12 @@ module github.com/brotherlogic/cdprocessor
 go 1.16
 
 require (
-	github.com/brotherlogic/datastore v0.0.0-20220812180257-4c8dc33e044f // indirect
-	github.com/brotherlogic/executor v0.0.0-20220805154954-fa3b55ad9ac4
-	github.com/brotherlogic/godiscogs v0.0.0-20220722012105-93cf4f2124d9
-	github.com/brotherlogic/goserver v0.0.0-20220802151516-4b60a60b3020
-	github.com/brotherlogic/keystore v0.0.0-20220808171152-90fd987cfec3
-	github.com/brotherlogic/recordcollection v0.0.0-20220805153136-807a2c0e0cdf
+	github.com/brotherlogic/executor v0.0.0-20220819183033-34ecaff4af8d
+	github.com/brotherlogic/godiscogs v0.0.0-20220814182128-f8eecacc4756
+	github.com/brotherlogic/goserver v0.0.0-20220819181159-c728a3f047e7
+	github.com/brotherlogic/keystore v0.0.0-20220819184703-b20531b6d3f2
+	github.com/brotherlogic/lock v0.0.0-20220819185709-0b26582b143b // indirect
+	github.com/brotherlogic/recordcollection v0.0.0-20220819183913-42d5cb327ee0
 	github.com/brotherlogic/versionserver v0.0.0-20200424225322-e02615d8678f
 	github.com/golang/protobuf v1.5.2
 	github.com/prometheus/client_golang v1.13.0
