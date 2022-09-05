@@ -40,7 +40,7 @@ type ripper interface {
 
 type prodRipper struct {
 	server func() string
-	log    func(s string)
+	log    func(ctx context.Context, s string)
 	dial   func(ctx context.Context, server, host string) (*grpc.ClientConn, error)
 }
 
@@ -86,7 +86,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "lame", Parameters: []string{pathIn, pathOut}}})
-	pr.log(fmt.Sprintf("MP3ed: %v", err))
+	pr.log(ctx, fmt.Sprintf("MP3ed: %v", err))
 }
 
 func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
@@ -111,7 +111,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: "flac", Parameters: []string{"--best", pathIn}}})
-	pr.log(fmt.Sprintf("Flaced: %v", err))
+	pr.log(ctx, fmt.Sprintf("Flaced: %v", err))
 }
 
 type getter interface {
@@ -121,7 +121,7 @@ type getter interface {
 
 type prodGetter struct {
 	dial       func(ctx context.Context, server string) (*grpc.ClientConn, error)
-	log        func(in string)
+	log        func(ctx context.Context, in string)
 	lastUpdate time.Time
 }
 
@@ -164,7 +164,7 @@ type rc interface {
 }
 
 type prodRc struct {
-	log  func(s string)
+	log  func(ctx context.Context, s string)
 	dial func(ctx context.Context, server string) (*grpc.ClientConn, error)
 }
 
@@ -195,7 +195,7 @@ func (rc *prodRc) getRecordsInFolder(ctx context.Context, folder int32) ([]*pbrc
 
 type prodIo struct {
 	dir string
-	log func(s string)
+	log func(ctx context.Context, s string)
 }
 
 func (i *prodIo) readDir() ([]os.FileInfo, error) {
@@ -256,10 +256,10 @@ func Init(dir string, mp3dir string, flacdir string) *Server {
 		mp3dir:  mp3dir,
 		flacdir: flacdir,
 	}
-	s.rc = &prodRc{dial: s.FDialServer, log: s.Log}
-	s.io = &prodIo{dir: dir, log: s.Log}
-	s.getter = &prodGetter{log: s.Log, dial: s.FDialServer}
-	s.ripper = &prodRipper{log: s.Log, server: s.resolve, dial: s.FDialSpecificServer}
+	s.rc = &prodRc{dial: s.FDialServer, log: s.CtxLog}
+	s.io = &prodIo{dir: dir, log: s.CtxLog}
+	s.getter = &prodGetter{log: s.CtxLog, dial: s.FDialServer}
+	s.ripper = &prodRipper{log: s.CtxLog, server: s.resolve, dial: s.FDialSpecificServer}
 	s.master = &prodMaster{dial: s.FDialServer}
 
 	return s
@@ -382,7 +382,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to install eyed3: %v", err)
 	}
-	server.Log(fmt.Sprintf("Installed: %v", string(output)))
+	ctx, cancel := utils.ManualContext("cdproc", time.Minute)
+	server.CtxLog(ctx, fmt.Sprintf("Installed: %v", string(output)))
+	cancel()
 
 	if *init {
 		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor")

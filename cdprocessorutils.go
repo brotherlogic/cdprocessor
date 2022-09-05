@@ -74,13 +74,13 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 			count++
 		}
 	}
-	s.Log(fmt.Sprintf("Read dir and built trackset in %v", time.Now().Sub(t)))
+	s.CtxLog(ctx, fmt.Sprintf("Read dir and built trackset in %v", time.Now().Sub(t)))
 
 	if count == 0 {
 		count = len(trackSet)
 	}
 
-	s.Log(fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
+	s.CtxLog(ctx, fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
 	config, err2 := s.load(ctx)
 	if err2 != nil {
 		return err2
@@ -92,19 +92,19 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
 		if err != nil {
-			s.Log(fmt.Sprintf("Bad config building: %v", err))
+			s.CtxLog(ctx, fmt.Sprintf("Bad config building: %v", err))
 		}
 		t = time.Now()
 		err = s.convertToMP3(ctx, record.GetRelease().GetId())
-		s.Log(fmt.Sprintf("MP3 (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
+		s.CtxLog(ctx, fmt.Sprintf("MP3 (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
 		if err != nil {
-			s.Log(fmt.Sprintf("Bad ripping: %v", err))
+			s.CtxLog(ctx, fmt.Sprintf("Bad ripping: %v", err))
 		}
 		t = time.Now()
 		err = s.convertToFlac(ctx, record.GetRelease().GetId())
-		s.Log(fmt.Sprintf("Flac (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
+		s.CtxLog(ctx, fmt.Sprintf("Flac (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
 		if err != nil {
-			s.Log(fmt.Sprintf("Bad flaccing: %v", err))
+			s.CtxLog(ctx, fmt.Sprintf("Bad flaccing: %v", err))
 		}
 
 		if len(files) != count || err != nil {
@@ -177,7 +177,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
 		record.GetMetadata().GetGoalFolder() == 1433217 {
-		s.Log(fmt.Sprintf("Not processing digital CD (%v)", ID))
+		s.CtxLog(ctx, fmt.Sprintf("Not processing digital CD (%v)", ID))
 		return nil
 	}
 
@@ -190,18 +190,18 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		// Not a cd or a bandcamp or cd boxset
 		for _, format := range record.GetRelease().GetFormats() {
 			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "CDr" {
-				s.Log(fmt.Sprintf("Matched %v on the format: %v", ID, format))
+				s.CtxLog(ctx, fmt.Sprintf("Matched %v on the format: %v", ID, format))
 				match = true
 			}
 		}
 	} else {
-		s.Log(fmt.Sprintf("Matched %v since it has the right goal folder: %v ( => %v)", ID, record.GetMetadata().GetGoalFolder(), force))
+		s.CtxLog(ctx, fmt.Sprintf("Matched %v since it has the right goal folder: %v ( => %v)", ID, record.GetMetadata().GetGoalFolder(), force))
 		match = true
 	}
 
 	// This is not a CD we can process
 	if !match {
-		s.Log(fmt.Sprintf("Don't think %v is a rippable format", record.GetRelease().GetInstanceId()))
+		s.CtxLog(ctx, fmt.Sprintf("Don't think %v is a rippable format", record.GetRelease().GetInstanceId()))
 		return nil
 	}
 
@@ -210,14 +210,14 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		if len(record.GetMetadata().CdPath) == 0 || strings.Contains(record.GetMetadata().CdPath, "mp3") {
 			t := time.Now()
 			s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), "")
-			s.Log(fmt.Sprintf("Updated record in %v", time.Now().Sub(t)))
+			s.CtxLog(ctx, fmt.Sprintf("Updated record in %v", time.Now().Sub(t)))
 		}
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 		os.MkdirAll(fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), os.ModePerm)
 
 		t := time.Now()
 		trackSet := TrackExtract(record.GetRelease(), record.GetMetadata().GetGoalFolder() == 565206)
-		s.Log(fmt.Sprintf("Extracted %v tracks in %v", len(trackSet), time.Now().Sub(t)))
+		s.CtxLog(ctx, fmt.Sprintf("Extracted %v tracks in %v", len(trackSet), time.Now().Sub(t)))
 		noTracks := false
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" {
@@ -303,7 +303,7 @@ func (s *Server) convertToMP3(ctx context.Context, id int32) error {
 				found = true
 
 				if len(t.WavPath) > 0 && len(t.Mp3Path) == 0 && strings.Contains(t.WavPath, "track") {
-					s.Log(fmt.Sprintf("Missing MP3: %v", s.dir+t.WavPath))
+					s.CtxLog(ctx, fmt.Sprintf("Missing MP3: %v", s.dir+t.WavPath))
 					s.ripCount++
 					s.ripper.ripToMp3(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"mp3")
 					s.buildConfig(ctx)
@@ -328,7 +328,7 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 
 			for _, t := range rip.Tracks {
 				if len(t.WavPath) > 0 && len(t.FlacPath) == 0 && strings.Contains(t.WavPath, "track") {
-					s.Log(fmt.Sprintf("Missing FLAC: %v", s.dir+t.WavPath))
+					s.CtxLog(ctx, fmt.Sprintf("Missing FLAC: %v", s.dir+t.WavPath))
 					s.flacCount++
 					s.ripper.ripToFlac(ctx, s.dir+t.WavPath, s.dir+t.WavPath[0:len(t.WavPath)-3]+"flac")
 					s.buildConfig(ctx)
@@ -339,7 +339,7 @@ func (s *Server) convertToFlac(ctx context.Context, id int32) error {
 	}
 
 	if !found {
-		s.Log(fmt.Sprintf("Did not find any flacs for %v", id))
+		s.CtxLog(ctx, fmt.Sprintf("Did not find any flacs for %v", id))
 	}
 	return nil
 }
@@ -356,7 +356,7 @@ func (s *Server) buildConfig(ctx context.Context) error {
 			name := f.Name()
 			id, disk, err := s.io.convert(name)
 			if err != nil {
-				s.Log(fmt.Sprintf("Unable to convert %v -> %v", name, err))
+				s.CtxLog(ctx, fmt.Sprintf("Unable to convert %v -> %v", name, err))
 				return err
 			}
 
