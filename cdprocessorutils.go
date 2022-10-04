@@ -173,6 +173,10 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 }
 
 func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record) error {
+	// Skip TAPES
+	if record.GetMetadata().GetFiledUnder() == pbrc.ReleaseMetadata_FILE_TAPE {
+		return nil
+	}
 
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
