@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/brotherlogic/goserver/utils"
-	"golang.org/x/net/context"
 
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
@@ -18,7 +17,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	ctx, cancel := utils.ManualContext("cdproc-cli", time.Hour)
 	defer cancel()
 
 	conn, err := utils.LFDialServer(ctx, "cdprocessor")
