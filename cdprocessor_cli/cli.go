@@ -35,7 +35,18 @@ func main() {
 		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
-
+	case "gforce":
+		val, _ := strconv.Atoi(os.Args[2])
+		conn, err := utils.LFDialServer(ctx, "recordcollection")
+		if err != nil {
+			log.Fatalf("Bad dial: %v", err)
+		}
+		client := pbrc.NewRecordCollectionServiceClient(conn)
+		ids, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_ReleaseId{int32(val)}})
+		for _, id := range ids.GetInstanceIds() {
+			resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(id)})
+			fmt.Printf("%v and %v\n", resp, err)
+		}
 	case "force":
 		val, _ := strconv.Atoi(os.Args[2])
 		resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(val)})
