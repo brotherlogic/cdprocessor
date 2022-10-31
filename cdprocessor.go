@@ -35,7 +35,7 @@ const (
 type ripper interface {
 	ripToMp3(ctx context.Context, pathIn, pathOut string)
 	ripToFlac(ctx context.Context, pathIn, pathOut string)
-	runCommand(ctx context.Context, command []string) error
+	runCommand(ctx context.Context, command []string, delete bool) error
 }
 
 type prodRipper struct {
@@ -89,7 +89,7 @@ func (pr *prodRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	pr.log(ctx, fmt.Sprintf("MP3ed: %v", err))
 }
 
-func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
+func (pr *prodRipper) runCommand(ctx context.Context, command []string, delete bool) error {
 	conn, err := pr.dial(ctx, "executor", pr.server())
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (pr *prodRipper) runCommand(ctx context.Context, command []string) error {
 
 	client := pbe.NewExecutorServiceClient(conn)
 	//pr.log(fmt.Sprintf("Running %v", command))
-	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: command[0], Parameters: command[1:]}})
+	_, err = client.QueueExecute(ctx, &pbe.ExecuteRequest{Command: &pbe.Command{Binary: command[0], Parameters: command[1:], DeleteOnComplete: delete}})
 	return err
 }
 
@@ -226,7 +226,7 @@ func (i *prodIo) convert(name string) (int32, int32, error) {
 	return int32(val), 1, nil
 }
 
-//Server main server type
+// Server main server type
 type Server struct {
 	*goserver.GoServer
 	io          io

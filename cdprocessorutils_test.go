@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brotherlogic/keystore/client"
+	keystoreclient "github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -96,7 +96,6 @@ func InitTestServer(dir string) *Server {
 	s.SkipIssue = true
 	s.buildConfig(context.Background())
 	s.ripper = &testRipper{}
-	s.config = &pb.Config{LastProcessTime: make(map[int32]int64)}
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	return s
 }
