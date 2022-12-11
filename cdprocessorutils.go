@@ -109,6 +109,11 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
 		if len(files) != count || err != nil {
 			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
+
+			if len(files) > count {
+				s.CtxLog(ctx, fmt.Sprintf("%v (Expected %v)", files, count))
+			}
+
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files for %v: (%v)", len(files), count, record.GetRelease().GetId(), err))
 		}
 
