@@ -111,7 +111,11 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
 
 			if len(files) > count {
-				s.CtxLog(ctx, fmt.Sprintf("%v (Expected %v)", files, count))
+				fstr := ""
+				for _, file := range files {
+					fstr += file.Name() + " ;"
+				}
+				s.CtxLog(ctx, fmt.Sprintf("%v (Expected %v)", fstr, count))
 			}
 
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files for %v: (%v)", len(files), count, record.GetRelease().GetId(), err))
