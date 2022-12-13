@@ -174,7 +174,9 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	//Only fail if we're not in the listening pile
 	config, err := s.load(ctx)
 	if time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0)) > time.Hour*24*7 {
-		force = true
+		if config.GetLastProcessTime()[record.GetRelease().GetInstanceId()] > 0 {
+			force = true
+		}
 	}
 	err = s.runLinks(ctx, ID, force, record)
 	s.CtxLog(ctx, fmt.Sprintf("Error on run links: %v", err))
