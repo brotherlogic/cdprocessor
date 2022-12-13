@@ -9,12 +9,12 @@ import (
 	rcpb "github.com/brotherlogic/recordcollection/proto"
 )
 
-//GetRipped returns the ripped cds
+// GetRipped returns the ripped cds
 func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*pbcdp.GetRippedResponse, error) {
 	return &pbcdp.GetRippedResponse{Ripped: s.rips}, nil
 }
 
-//GetMissing gets the missing rips
+// GetMissing gets the missing rips
 func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (*pbcdp.GetMissingResponse, error) {
 	resp := &pbcdp.GetMissingResponse{}
 
@@ -51,7 +51,7 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 	return resp, nil
 }
 
-//Force the processor to do something
+// Force the processor to do something
 func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.ForceResponse, error) {
 	switch req.Type {
 	case pbcdp.ForceRequest_RECREATE_LINKS:
@@ -60,7 +60,7 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 	return nil, fmt.Errorf("Unknow force request")
 }
 
-//ClientUpdate on an updated record
+// ClientUpdate on an updated record
 func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
 	//return &rcpb.ClientUpdateResponse{}, nil
 	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
