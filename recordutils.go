@@ -132,11 +132,57 @@ func flatten(tracklist []*pbgd.Track) []*pbgd.Track {
 	return tracks
 }
 
-//TrackExtract extracts a trackset from a release
+// TrackExtract extracts a trackset from a release
 func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 	trackset := make([]*TrackSet, 0)
 
 	if tape {
+		if r.GetFormatQuantity() == 23 {
+			return []*TrackSet{
+				&TrackSet{Disk: "1",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side A"},
+					},
+					Position: "1",
+				},
+				&TrackSet{Disk: "1",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side B"},
+					},
+					Position: "2",
+				},
+				&TrackSet{Disk: "2",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side C"},
+					},
+					Position: "1",
+				},
+				&TrackSet{Disk: "2",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side D"},
+					},
+					Position: "2",
+				},
+				&TrackSet{Disk: "3",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side E"},
+					},
+					Position: "1",
+				},
+				&TrackSet{Disk: "3",
+					Format: "Tape",
+					tracks: []*pbgd.Track{
+						&pbgd.Track{Title: "Side F"},
+					},
+					Position: "2",
+				},
+			}
+		}
 		if r.GetFormatQuantity() == 2 {
 			return []*TrackSet{
 				&TrackSet{Disk: "1",
@@ -253,7 +299,7 @@ func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 	return trackset
 }
 
-//GetTitle of trackset
+// GetTitle of trackset
 func GetTitle(t *TrackSet) string {
 	result := t.tracks[0].Title
 	for _, tr := range t.tracks[1:] {
