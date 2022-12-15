@@ -137,7 +137,7 @@ func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 	trackset := make([]*TrackSet, 0)
 
 	if tape {
-		if r.GetFormatQuantity() == 23 {
+		if r.GetFormatQuantity() == 3 {
 			return []*TrackSet{
 				&TrackSet{Disk: "1",
 					Format: "Tape",
