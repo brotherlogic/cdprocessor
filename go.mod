@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/brotherlogic/executor v0.0.0-20221211053707-9f69a19efc0f
 	github.com/brotherlogic/godiscogs v0.0.0-20221025153630-9ad31d9fab21
-	github.com/brotherlogic/goserver v0.0.0-20221202193151-b0b39691c212
+	github.com/brotherlogic/goserver v0.0.0-20221217002224-0ba5c0213be1
 	github.com/brotherlogic/keystore v0.0.0-20221210190215-af3698c6a2c9
 	github.com/brotherlogic/recordcollection v0.0.0-20221211033323-f8affb90017d
 	github.com/brotherlogic/versionserver v0.0.0-20221025154054-c9bcd41be2f2
