@@ -184,15 +184,16 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 	err = s.runLinks(ctx, ID, force, record)
 	s.CtxLog(ctx, fmt.Sprintf("Error on run links: %v", err))
+	config.LastProcessTime[record.GetRelease().GetInstanceId()] = time.Now().Unix()
+
 	if record.GetRelease().GetFolderId() != 812802 {
-		return nil
+		return s.save(ctx, config)
 	}
 
 	if err != nil {
 		return err
 	}
 
-	config.LastProcessTime[record.GetRelease().GetInstanceId()] = time.Now().Unix()
 	s.CtxLog(ctx, fmt.Sprintf("Adjust force and saving %v", time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0))))
 
 	return s.save(ctx, config)
