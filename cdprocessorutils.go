@@ -193,10 +193,13 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	config.LastProcessTime[record.GetRelease().GetInstanceId()] = time.Now().Unix()
+	s.CtxLog(ctx, fmt.Sprintf("Adjust force and saving %v", time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0))))
+
 	return s.save(ctx, config)
 }
 
 func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record) error {
+	s.CtxLog(ctx, fmt.Sprintf("Runnign linkes %v -> %v", ID, force))
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
 		record.GetMetadata().GetGoalFolder() == 1433217 {
