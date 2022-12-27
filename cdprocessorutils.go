@@ -87,7 +87,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 	s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
 	time.Sleep(time.Second * 2)
-	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
+	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v (%v)", len(files), record.GetRelease().GetId(), count))
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
@@ -173,8 +173,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 
 	//Only fail if we're not in the listening pile
 	config, err := s.load(ctx)
+	if err != nil {
+		return err
+	}
 	if time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0)) > time.Hour*24*7 {
 		if config.GetLastProcessTime()[record.GetRelease().GetInstanceId()] > 0 {
+			s.CtxLog(ctx, fmt.Sprintf("Setting force since %v", time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0))))
 			force = true
 		}
 	}
