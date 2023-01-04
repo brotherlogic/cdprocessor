@@ -437,6 +437,7 @@ func (s *Server) adjustAlert(ctx context.Context, config *pbcdp.Config, r *pbrc.
 		if err != nil {
 			return err
 		}
+		s.CtxLog(ctx, fmt.Sprintf("Adding issue %v -> %v", r.GetRelease(), issue))
 		config.IssueMapping[r.GetRelease().GetId()] = issue.GetNumber()
 
 		return s.save(ctx, config)
