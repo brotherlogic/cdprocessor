@@ -4,14 +4,14 @@ go 1.19
 
 require (
 	github.com/brotherlogic/executor v0.0.0-20221229142200-a86bcb1cca3c
-	github.com/brotherlogic/godiscogs v0.0.0-20221025153630-9ad31d9fab21
-	github.com/brotherlogic/goserver v0.0.0-20221217002224-0ba5c0213be1
+	github.com/brotherlogic/godiscogs v0.0.0-20230104162206-2759618e526a
+	github.com/brotherlogic/goserver v0.0.0-20230104040908-a5268e3d66f6
 	github.com/brotherlogic/keystore v0.0.0-20230101043504-05ac1b6cfc9c
-	github.com/brotherlogic/recordcollection v0.0.0-20230103194527-bc4a244751f4
+	github.com/brotherlogic/recordcollection v0.0.0-20230104163055-af781c044ee0
 	github.com/brotherlogic/versionserver v0.0.0-20221025154054-c9bcd41be2f2
 	github.com/golang/protobuf v1.5.2
 	github.com/prometheus/client_golang v1.14.0
-	golang.org/x/net v0.4.0
+	golang.org/x/net v0.5.0
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
 )
@@ -23,7 +23,7 @@ require (
 	github.com/brotherlogic/discovery v0.0.0-20230101041754-a86bf8911dcc // indirect
 	github.com/brotherlogic/dstore v0.0.0-20230101070316-8cbb6f580f4f // indirect
 	github.com/brotherlogic/githubcard v0.0.0-20230101072631-dcc4a0e0d7ed // indirect
-	github.com/brotherlogic/gobuildslave v0.0.0-20230101061346-f609b4d6fd03 // indirect
+	github.com/brotherlogic/gobuildslave v0.0.0-20230104192933-16ebfc7ca538 // indirect
 	github.com/brotherlogic/lock v0.0.0-20230103180730-bb452b6fe70f // indirect
 	github.com/brotherlogic/logging v0.0.0-20230101073053-ef9c53dba006 // indirect
 	github.com/brotherlogic/monitor v0.0.0-20221025152653-c10877c5f9e6 // indirect
@@ -42,7 +42,7 @@ require (
 	go.opentelemetry.io/otel/metric v0.34.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.11.2 // indirect
 	go.opentelemetry.io/otel/trace v1.11.2 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
-	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
 )
