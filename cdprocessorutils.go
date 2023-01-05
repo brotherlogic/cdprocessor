@@ -172,7 +172,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	}
 
 	//Don't do anythng if we're in limbo folder
-	if record.GetRelease().GetFolderId() == 3380098 {
+	if record.GetRelease().GetFolderId() == 3380098 && record.GetMetadata().GetMoveFolder() == 0 {
 		return nil
 	}
 
