@@ -171,7 +171,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return nil
 	}
 
-	//Only fail if we're not in the listening pile
+	//Don't do anythng if we're in limbo folder
+	if record.GetRelease().GetFolderId() == 3380098 {
+		return nil
+	}
+
 	config, err := s.load(ctx)
 	if err != nil {
 		return err
