@@ -261,7 +261,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		}
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" || !noTracks {
-				err := s.buildLink(ctx, track, record.GetRelease())
+				err := s.buildLink(ctx, track, record)
 				if err != nil {
 					return err
 				}
@@ -284,46 +284,47 @@ func prepend(val string) string {
 	}
 }
 
-func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbgd.Release) error {
+func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Record) error {
 	s.CtxLog(ctx, fmt.Sprintf("Building links: %v", track))
 	// Verify that the track exists
 	adder := ""
-	if record.FormatQuantity > 1 {
+	if record.GetRelease().FormatQuantity > 1 {
 		adder = fmt.Sprintf("_%v", track.Disk)
 	}
 
-	trackPath := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position))
+	trackPath := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position))
 
 	if !s.fileExists(trackPath) {
+		s.verifyRecord(ctx, record)
 		return fmt.Errorf("Missing Track: %v (from %+v -> %v+)", trackPath, track, track.tracks[0])
 	}
 
-	if len(record.GetImages()) > 0 {
-		s.ripper.runCommand(ctx, []string{"wget", record.GetImages()[0].GetUri(), "-O", fmt.Sprintf("%v%v%v/cover.jpg", s.dir, record.Id, adder)}, false)
+	if len(record.GetRelease().GetImages()) > 0 {
+		s.ripper.runCommand(ctx, []string{"wget", record.GetRelease().GetImages()[0].GetUri(), "-O", fmt.Sprintf("%v%v%v/cover.jpg", s.dir, record.GetRelease().Id, adder)}, false)
 	}
 
 	title := GetTitle(track)
-	oldmp3 := fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.Id, adder, expand(track.Position))
-	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))}, false)
-	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))}, false)
-	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", title), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))}, false)
-	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.Title), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))}, false)
-	s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))}, false)
+	oldmp3 := fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, adder, expand(track.Position))
+	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.mp3", s.dir, record.GetRelease().Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
+	s.ripper.runCommand(ctx, []string{"mp3info", "-n", fmt.Sprintf("%v", track.Position), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
+	s.ripper.runCommand(ctx, []string{"mp3info", "-t", fmt.Sprintf("%v", title), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
+	s.ripper.runCommand(ctx, []string{"mp3info", "-l", fmt.Sprintf("%v", record.GetRelease().Title), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
+	s.ripper.runCommand(ctx, []string{"mp3info", "-a", computeArtist(record.GetRelease()), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
 
-	s.ripper.runCommand(ctx, []string{"eyeD3", fmt.Sprintf("--text-frame=TPOS:\"%v/%v\"", track.Disk, record.FormatQuantity), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.Id, track.Disk, expand(track.Position))}, false)
+	s.ripper.runCommand(ctx, []string{"eyeD3", fmt.Sprintf("--text-frame=TPOS:\"%v/%v\"", track.Disk, record.GetRelease().FormatQuantity), fmt.Sprintf("%v%v/track%v-%v.cdda.mp3", s.mp3dir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
 	s.ripper.runCommand(ctx, []string{"eyeD3", "--to-v2.4", oldmp3}, false)
-	s.ripper.runCommand(ctx, []string{"eyeD3", "--add-image", fmt.Sprintf("%v%v%v/cover.jpg:FRONT_COVER", s.dir, record.Id, adder), oldmp3}, false)
+	s.ripper.runCommand(ctx, []string{"eyeD3", "--add-image", fmt.Sprintf("%v%v%v/cover.jpg:FRONT_COVER", s.dir, record.GetRelease().Id, adder), oldmp3}, false)
 
-	oldfile := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position))
+	oldfile := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position))
 	//newfile := fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))
-	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))}, false)
-	s.ripper.runCommand(ctx, []string{"metaflac", "--remove-tag=artist", fmt.Sprintf("--set-tag=artist=%v", computeArtist(record)), oldfile}, true)
+	s.ripper.runCommand(ctx, []string{"ln", "-s", fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
+	s.ripper.runCommand(ctx, []string{"metaflac", "--remove-tag=artist", fmt.Sprintf("--set-tag=artist=%v", computeArtist(record.GetRelease())), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=tracknumber=%v", track.Position), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", prepend(track.Disk)), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", "--remove-tag=title", fmt.Sprintf("--set-tag=title=%v", title), oldfile}, true)
-	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.Title), oldfile}, true)
-	if len(record.GetImages()) > 0 {
-		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v%v/cover.jpg", s.dir, record.Id, adder), oldfile}, true)
+	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.GetRelease().Title), oldfile}, true)
+	if len(record.GetRelease().GetImages()) > 0 {
+		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v%v/cover.jpg", s.dir, record.GetRelease().Id, adder), oldfile}, true)
 	}
 	//s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=\"%v\"", record.Title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
 
