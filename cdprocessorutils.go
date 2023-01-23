@@ -61,10 +61,6 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 
 func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
-	if len(record.GetMetadata().CdPath) == 0 {
-		s.RaiseIssue("Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, record.GetRelease().Id, record.GetMetadata()))
-	}
-
 	t := time.Now()
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	count := 0
@@ -423,9 +419,6 @@ func (s *Server) buildConfig(ctx context.Context) error {
 				}
 			}
 
-			if len(tracks) == 0 {
-				s.RaiseIssue("Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks (%v)", id, disk, fmt.Sprintf("https://www.discogs.com/madeup/release/%v", id)))
-			}
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
 	}
