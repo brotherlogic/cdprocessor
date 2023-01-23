@@ -83,7 +83,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 	s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
 	time.Sleep(time.Second * 2)
-	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v (%v)", len(files), record.GetRelease().GetId(), count))
+	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
