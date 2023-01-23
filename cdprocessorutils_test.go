@@ -135,7 +135,7 @@ func TestRunMP3sWithNothing(t *testing.T) {
 	s.convertToFlac(context.Background(), 123)
 
 	if s.ripCount != 0 || s.flacCount != 0 {
-		t.Errorf("No rips occured")
+		t.Errorf("no rips occured")
 	}
 }
 
