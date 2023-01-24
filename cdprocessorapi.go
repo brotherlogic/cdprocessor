@@ -65,3 +65,17 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	//return &rcpb.ClientUpdateResponse{}, nil
 	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
 }
+
+func (s *Server) GetOutstanding(ctx context.Context, req *pbcdp.GetOutstandingRequest) (*pbcdp.GetOutstandingResponse, error) {
+	config, err := s.load(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var nums []int32
+	for _, issue := range config.GetIssueMapping() {
+		nums = append(nums, issue)
+	}
+
+	return &pbcdp.GetOutstandingResponse{Ids: nums}, nil
+}
