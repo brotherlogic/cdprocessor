@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	pbgd "github.com/brotherlogic/godiscogs"
@@ -244,6 +245,7 @@ type Server struct {
 	forceCheck  bool
 	master      master
 	count       int64
+	hack        *sync.Mutex
 }
 
 // Init builds the server
@@ -261,6 +263,7 @@ func Init(dir string, mp3dir string, flacdir string) *Server {
 	s.getter = &prodGetter{log: s.CtxLog, dial: s.FDialServer}
 	s.ripper = &prodRipper{log: s.CtxLog, server: s.resolve, dial: s.FDialSpecificServer}
 	s.master = &prodMaster{dial: s.FDialServer}
+	s.hack = &sync.Mutex{}
 
 	return s
 }
