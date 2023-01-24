@@ -53,6 +53,8 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 
 // Force the processor to do something
 func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.ForceResponse, error) {
+	s.hack.Lock()
+	defer s.hack.Unlock()
 	switch req.Type {
 	case pbcdp.ForceRequest_RECREATE_LINKS:
 		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id, true)
@@ -63,6 +65,8 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 // ClientUpdate on an updated record
 func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
 	//return &rcpb.ClientUpdateResponse{}, nil
+	s.hack.Lock()
+	defer s.hack.Unlock()
 	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
 }
 
