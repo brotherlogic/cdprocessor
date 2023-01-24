@@ -48,8 +48,14 @@ message ForceRequest {
 
 message ForceResponse {}
 
+message GetOutstandingRequest {}
+message GetOutstandingResponse {
+  repeated int32 ids = 1;
+}
+
 service CDProcessor {
   rpc GetRipped (GetRippedRequest) returns (GetRippedResponse);
   rpc GetMissing (GetMissingRequest) returns (GetMissingResponse);
   rpc Force (ForceRequest) returns (ForceResponse);
+  rpc GetOutstanding (GetOutstandingRequest) returns (GetOutstandingResponse);
 }

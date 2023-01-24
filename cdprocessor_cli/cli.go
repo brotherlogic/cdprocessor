@@ -29,6 +29,14 @@ func main() {
 	registry := pbcdp.NewCDProcessorClient(conn)
 
 	switch os.Args[1] {
+	case "outstanding":
+		resp, err := registry.GetOutstanding(ctx, &pbcdp.GetOutstandingRequest{})
+		if err != nil {
+			log.Fatalf("Bad read: %v", err)
+		}
+		for i, entry := range resp.GetIds() {
+			fmt.Printf("%v. %v\n", i, entry)
+		}
 	case "sforce":
 		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		client := pbrc.NewClientUpdateServiceClient(conn)
