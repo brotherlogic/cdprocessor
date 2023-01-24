@@ -83,5 +83,7 @@ func main() {
 		for i, missing := range resp.Missing {
 			fmt.Printf("%v. [%v] %v\n", i, missing.GetRelease().Id, missing.GetRelease().Title)
 		}
+	default:
+		fmt.Printf("Unknown command: %v\n", os.Args[1])
 	}
 }
