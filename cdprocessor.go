@@ -208,18 +208,18 @@ func (i *prodIo) readSubdir(f string) ([]os.FileInfo, error) {
 
 func (i *prodIo) convert(name string) (int32, int32, error) {
 	if strings.Contains(name, "_") {
-		val, err := strconv.Atoi(name[:strings.Index(name, "_")])
+		val, err := strconv.ParseInt(name[:strings.Index(name, "_")], 10, 32)
 		if err != nil {
 			return -1, -1, err
 		}
-		dval, err := strconv.Atoi(name[strings.Index(name, "_")+1:])
+		dval, err := strconv.ParseInt(name[strings.Index(name, "_")+1:], 10, 32)
 		if err != nil {
 			return -1, -1, err
 		}
 		return int32(val), int32(dval), nil
 	}
 
-	val, err := strconv.Atoi(name)
+	val, err := strconv.ParseInt(name, 10, 32)
 	if err != nil {
 		return -1, -1, err
 	}

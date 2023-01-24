@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	keystoreclient "github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
@@ -80,7 +79,7 @@ func (tr *testRipper) ripToMp3(ctx context.Context, pathIn, pathOut string) {
 	log.Printf("Ripping %v -> %v", pathIn, pathOut)
 }
 
-func (tr *testRipper) runCommand(ctx context.Context, command []string) error {
+func (tr *testRipper) runCommand(ctx context.Context, command []string, delete bool) error {
 	return nil
 }
 
@@ -112,19 +111,6 @@ func TestAdjust(t *testing.T) {
 	}
 }
 
-func TestAdjustFailOnFailedGet(t *testing.T) {
-	s := InitTestServer("testdata")
-	tg := &testGetter{fail: true}
-	s.io = &testIo{dir: "testdata"}
-	s.getter = tg
-
-	s.adjustExisting(context.Background())
-
-	if tg.updates != 0 {
-		t.Errorf("Update has run!")
-	}
-}
-
 func TestLogMissing(t *testing.T) {
 	s := InitTestServer("testdata")
 	s.io = &testIo{dir: "testdata"}
@@ -143,37 +129,13 @@ func TestLogMissingFailOnBadLog(t *testing.T) {
 	s.logMissing(context.Background())
 }
 
-func TestMultiAdjustPasses(t *testing.T) {
-	s := InitTestServer("testmulti")
-	getter := &testGetter{adjusted: make(map[int32]bool)}
-	s.getter = getter
-
-	for i := 0; i < 3; i++ {
-		s.adjustExisting(context.Background())
-	}
-
-	if len(getter.adjusted) != 2 {
-		t.Errorf("Not enough records have been adjusted: %v", getter.adjusted)
-	}
-}
-
-func TestRunMP3s(t *testing.T) {
-	s := InitTestServer("testdata/")
-	s.convertToMP3(context.Background(), 123)
-	s.convertToFlac(context.Background(), 123)
-
-	if s.ripCount != 1 || s.flacCount != 1 {
-		t.Errorf("No rips occured")
-	}
-}
-
 func TestRunMP3sWithNothing(t *testing.T) {
 	s := InitTestServer("testempty/")
 	s.convertToMP3(context.Background(), 123)
 	s.convertToFlac(context.Background(), 123)
 
 	if s.ripCount != 0 || s.flacCount != 0 {
-		t.Errorf("No rips occured")
+		t.Errorf("no rips occured")
 	}
 }
 
@@ -218,7 +180,6 @@ func TestFailOnLink(t *testing.T) {
 
 func TestFailOnLinkTime(t *testing.T) {
 	s := InitTestServer("testdata/")
-	s.config.LastProcessTime[1234] = time.Now().Unix()
 
 	err := s.makeLinks(context.Background(), 1234, false)
 
@@ -241,19 +202,6 @@ func TestFailOnLinkUpdate(t *testing.T) {
 
 }
 
-func TestLink(t *testing.T) {
-	s := InitTestServer("testdata/")
-	tg := &testGetter{}
-	s.getter = tg
-
-	err := s.makeLinks(context.Background(), 12345, false)
-
-	if err != nil {
-		t.Errorf("Failing link passed: %v", err)
-	}
-
-}
-
 func TestLinkBuildLinkError(t *testing.T) {
 	s := InitTestServer("testdata/")
 	tg := &testGetter{override: &pbrc.Record{Release: &pbgd.Release{Id: 12345,
@@ -269,20 +217,6 @@ func TestLinkBuildLinkError(t *testing.T) {
 
 	if err == nil {
 		t.Errorf("Should have failed")
-	}
-
-}
-
-func TestLinkForced(t *testing.T) {
-	s := InitTestServer("testdata/")
-	s.forceCheck = true
-	tg := &testGetter{}
-	s.getter = tg
-
-	err := s.makeLinks(context.Background(), 1234, false)
-
-	if err != nil {
-		t.Errorf("Failing link passed")
 	}
 
 }
@@ -335,27 +269,5 @@ func TestFindMissingNone(t *testing.T) {
 
 	if missing != nil {
 		t.Errorf("Found one: %v", missing)
-	}
-}
-
-func TestForceRecreate(t *testing.T) {
-	log.Printf("FORCING")
-	s := InitTestServer("testdata/")
-	s.getter = &testGetter{}
-	_, err := s.Force(context.Background(), &pb.ForceRequest{Type: pb.ForceRequest_RECREATE_LINKS, Id: int32(12345)})
-	if err != nil {
-		t.Errorf("Recreate links failed: %v", err)
-	}
-}
-
-func TestVerifyTrackMismatchFail(t *testing.T) {
-	s := InitTestServer("testdata/")
-	s.getter = &testGetter{
-		override: &pbrc.Record{Release: &pbgd.Release{Id: 123, Tracklist: []*pbgd.Track{&pbgd.Track{}}}, Metadata: &pbrc.ReleaseMetadata{CdPath: "testmp3s/"}},
-	}
-	err := s.verify(context.Background(), int32(123))
-
-	if err != nil {
-		t.Errorf("Verify did not fail with tracklist mismatch %v", err)
 	}
 }

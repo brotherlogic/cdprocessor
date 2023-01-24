@@ -61,10 +61,6 @@ func (s *Server) verify(ctx context.Context, ID int32) error {
 
 func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 
-	if len(record.GetMetadata().CdPath) == 0 {
-		s.RaiseIssue("Missing MP3", fmt.Sprintf("%v [%v] is missing the CD Path: %v", record.GetRelease().Title, record.GetRelease().Id, record.GetMetadata()))
-	}
-
 	t := time.Now()
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
 	count := 0
@@ -87,7 +83,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 	s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
 	time.Sleep(time.Second * 2)
-	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v (%v)", len(files), record.GetRelease().GetId(), count))
+	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
 		err = s.buildConfig(ctx)
@@ -400,11 +396,11 @@ func (s *Server) buildConfig(ctx context.Context) error {
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
 				if !tf.IsDir() && strings.Contains(tf.Name(), "track") {
-					trackNumber, _ := strconv.Atoi(tf.Name()[5:7])
+					trackNumber, _ := strconv.ParseInt(tf.Name()[5:7], 10, 32)
 
 					var foundTrack *pbcdp.Track
 					for _, t := range tracks {
-						if int(t.TrackNumber) == trackNumber {
+						if t.TrackNumber == int32(trackNumber) {
 							foundTrack = t
 						}
 					}
@@ -423,9 +419,6 @@ func (s *Server) buildConfig(ctx context.Context) error {
 				}
 			}
 
-			if len(tracks) == 0 {
-				s.RaiseIssue("Missing Tracks", fmt.Sprintf("%v disk %v has missing tracks (%v)", id, disk, fmt.Sprintf("https://www.discogs.com/madeup/release/%v", id)))
-			}
 			rips = append(rips, &pbcdp.Rip{Id: id, Path: f.Name(), Tracks: tracks})
 		}
 	}

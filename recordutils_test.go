@@ -20,7 +20,7 @@ func TestTrackExtract(t *testing.T) {
 		},
 	}
 
-	tracks := TrackExtract(r)
+	tracks := TrackExtract(r, false)
 
 	if len(tracks) != 1 {
 		t.Fatalf("Tracks not extracted")
@@ -42,7 +42,7 @@ func TestTrackExtractWithVideo(t *testing.T) {
 		},
 	}
 
-	tracks := TrackExtract(r)
+	tracks := TrackExtract(r, false)
 
 	if len(tracks) != 1 {
 		t.Fatalf("Tracks not extracted")
@@ -60,7 +60,7 @@ func TestRunExtract(t *testing.T) {
 	release := &pbgd.Release{}
 	proto.Unmarshal(data, release)
 
-	tracks := TrackExtract(release)
+	tracks := TrackExtract(release, false)
 
 	if len(tracks) != 13 {
 		t.Errorf("Wrong number of tracks: %v", len(tracks))
@@ -82,7 +82,7 @@ func TestRunExtractTatay(t *testing.T) {
 	release := &pbgd.Release{}
 	proto.Unmarshal(data, release)
 
-	tracks := TrackExtract(release)
+	tracks := TrackExtract(release, false)
 
 	if len(tracks) != 13 {
 		t.Errorf("Wrong number of tracks: %v", len(tracks))
@@ -119,7 +119,7 @@ func TestRunExtractLiveVariousYears(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 14 {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -135,7 +135,7 @@ func TestRunExtractSplitDecisionBand(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 24 {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -161,7 +161,7 @@ func TestRunExtractElektra(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 117 {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -187,7 +187,7 @@ func TestRunExtractSunRa(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 12 || tracks[6].Position != "1" || tracks[6].Disk != "2" {
 		for i, tr := range tracks {
@@ -209,7 +209,7 @@ func TestRunExtractBehindCounter(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 39 {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -239,7 +239,7 @@ func TestRunExtractARMAchines(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 100 {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -267,7 +267,7 @@ func TestRunExtractInfotainment(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (12 + 19) {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -293,7 +293,7 @@ func TestRunExtractLegend(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (16 + 13 + 11) {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -319,7 +319,7 @@ func TestRunExtractSensitive(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (14 + 16 + 19 + 16 + 15) {
 		t.Errorf("Wrong number of tracks: %v, from %v", len(tracks), len(record.GetRelease().Tracklist))
@@ -341,7 +341,7 @@ func TestRunExtractWillie(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (15 + 2) {
 		for i, tr := range tracks {
@@ -368,7 +368,7 @@ func TestRunExtractInAHole(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (11 + 11) {
 		for i, tr := range tracks {
@@ -396,7 +396,7 @@ func TestRunExtractFiveAlbums(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (12 + 18 + 7 + 15 + 14) {
 		for i, tr := range tracks {
@@ -420,7 +420,7 @@ func TestRunExtractWitchTrials(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (20 + 21) {
 		for i, tr := range tracks {
@@ -447,7 +447,7 @@ func TestRunExtractGruppo(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (9 + 3) {
 		for i, tr := range tracks {
@@ -486,7 +486,7 @@ func TestRunExtractSleep(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (5 + 6 + 4 + 4 + 4 + 4 + 2 + 2) {
 		for i, tr := range tracks {
@@ -509,7 +509,7 @@ func TestRunExtractFloyd(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (11 + 11 + 9) {
 		for i, tr := range tracks {
@@ -536,7 +536,7 @@ func TestRunExtractBunker(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != (10 + 6 + 7) {
 		for i, tr := range tracks {
@@ -567,7 +567,7 @@ func TestRunExtractIsotach(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 20 {
 		for i, tr := range tracks {
@@ -598,7 +598,7 @@ func TestRunExtractSndtrak(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 9 {
 		for i, tr := range tracks {
@@ -625,7 +625,7 @@ func TestRunExtractBrainticket(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 4 {
 		for i, tr := range tracks {
@@ -652,7 +652,7 @@ func TestRunExtractGrosskopf(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 8+11 || tracks[8+11-1].Disk != "2" {
 		for i, tr := range tracks {
@@ -675,7 +675,7 @@ func TestRunExtractKreepers(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 11 || tracks[len(tracks)-1].Format != "CD" || tracks[len(tracks)-1].Disk != "6" {
 		for i, tr := range tracks {
@@ -698,7 +698,7 @@ func TestRunExtractVannier(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 36 || tracks[len(tracks)-1].Format != "CD" || tracks[len(tracks)-1].Disk != "4" {
 		for i, tr := range tracks {
@@ -721,7 +721,7 @@ func TestRunExtractFoster(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 22 || tracks[0].Format == "CD" || tracks[0].Disk != "1" {
 		for i, tr := range tracks {
@@ -744,7 +744,7 @@ func TestRunExtractHex(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 20 || tracks[0].Format != "CD" || tracks[0].Disk != "1" {
 		for i, tr := range tracks {
@@ -767,7 +767,7 @@ func TestRunExtractDarkscorch(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 35 || tracks[19].Format != "CD" || tracks[19].Disk != "4" || tracks[18].Format == "CD" {
 		for i, tr := range tracks {
@@ -790,7 +790,7 @@ func TestRunExtractGate(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 12 || tracks[11].Format != "CD" || tracks[11].Disk != "2" {
 		for i, tr := range tracks {
@@ -813,7 +813,7 @@ func TestRunExtractBedazzled(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 16 || tracks[14].Format != "Vinyl" || tracks[14].Disk != "2" {
 		for i, tr := range tracks {
@@ -836,7 +836,7 @@ func TestRunExtractSkein(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 14 || tracks[13].Position != "14" {
 		for i, tr := range tracks {
@@ -859,7 +859,7 @@ func TestRunExtractKnot(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 12 || tracks[11].Position != "12" {
 		for i, tr := range tracks {
@@ -884,7 +884,7 @@ func TestRunExtractBaird(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 18 || tracks[11].Position != "2" {
 		for i, tr := range tracks {
@@ -909,7 +909,7 @@ func TestRunExtractHaint(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 4 {
 		for i, tr := range tracks {
@@ -934,7 +934,7 @@ func TestRunExtractBestShow(t *testing.T) {
 	record := &pbrc.Record{}
 	proto.Unmarshal(data, record)
 
-	tracks := TrackExtract(record.GetRelease())
+	tracks := TrackExtract(record.GetRelease(), false)
 
 	if len(tracks) != 153 {
 		t.Errorf("Bad tracks: %v", len(tracks))
@@ -942,50 +942,5 @@ func TestRunExtractBestShow(t *testing.T) {
 
 	for _, t := range tracks {
 		log.Printf("%+v", t)
-	}
-}
-
-func TestRunExtractSyl(t *testing.T) {
-	data, err := ioutil.ReadFile("cdtests/4291874.data")
-
-	if err != nil {
-		t.Fatalf("Error: %v", err)
-	}
-
-	record := &pbrc.Record{}
-	proto.Unmarshal(data, record)
-
-	tracks := TrackExtract(record.GetRelease())
-
-	if len(tracks) != 81 {
-		t.Errorf("Bad tracks: %v", len(tracks))
-	}
-
-	for _, t := range tracks {
-		ts := ""
-		for _, tr := range t.tracks {
-			ts += " " + tr.GetTitle()
-		}
-		log.Printf("%+v -> %v", t, ts)
-	}
-}
-
-func TestRunExtractPF(t *testing.T) {
-	data, err := ioutil.ReadFile("cdtests/9218307.data")
-
-	if err != nil {
-		t.Fatalf("Error: %v", err)
-	}
-
-	record := &pbrc.Record{}
-	proto.Unmarshal(data, record)
-
-	tracks := TrackExtract(record.GetRelease())
-
-	if len(tracks) != 146 {
-		t.Errorf("Bad tracks: %v", len(tracks))
-		for _, t := range tracks {
-			log.Printf("TRACK %v - %v [%v]", t.Disk, t.Position, t.Format)
-		}
 	}
 }
