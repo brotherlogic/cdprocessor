@@ -396,11 +396,11 @@ func (s *Server) buildConfig(ctx context.Context) error {
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
 				if !tf.IsDir() && strings.Contains(tf.Name(), "track") {
-					trackNumber, _ := strconv.Atoi(tf.Name()[5:7])
+					trackNumber, _ := strconv.ParseInt(tf.Name()[5:7], 10, 32)
 
 					var foundTrack *pbcdp.Track
 					for _, t := range tracks {
-						if int(t.TrackNumber) == trackNumber {
+						if t.TrackNumber == int32(trackNumber) {
 							foundTrack = t
 						}
 					}

@@ -30,13 +30,13 @@ func main() {
 
 	switch os.Args[1] {
 	case "sforce":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		client := pbrc.NewClientUpdateServiceClient(conn)
 		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
 	case "gforce":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		conn, err := utils.LFDialServer(ctx, "recordcollection")
 		if err != nil {
 			log.Fatalf("Bad dial: %v", err)
@@ -48,7 +48,7 @@ func main() {
 			fmt.Printf("%v and %v\n", resp, err)
 		}
 	case "force":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(val)})
 		fmt.Printf("%v and %v\n", resp, err)
 	case "got":
@@ -56,7 +56,7 @@ func main() {
 
 		if err == nil {
 			fmt.Printf("Got %v ripped records\n", len(resp.GetRipped()))
-			i, _ := strconv.Atoi(os.Args[2])
+			i, _ := strconv.ParseInt(os.Args[2], 10, 32)
 			for _, missing := range resp.GetRipped() {
 				if missing.Id == int32(i) {
 					fmt.Printf("%v\n", missing)
