@@ -51,7 +51,7 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 	if t.adjusted[id] {
 		filepath = fmt.Sprintf("%v", id)
 	}
-	return &pbrc.Record{Release: &pbgd.Release{Id: id, InstanceId: id,
+	return &pbrc.Record{Release: &pbgd.Release{Id: id, InstanceId: id, FolderId: 812802,
 		FormatQuantity: 1, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
 		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
@@ -205,7 +205,7 @@ func TestFailOnLinkUpdate(t *testing.T) {
 func TestLinkBuildLinkError(t *testing.T) {
 	s := InitTestServer("testdata/")
 	tg := &testGetter{override: &pbrc.Record{Release: &pbgd.Release{Id: 12345,
-		FormatQuantity: 2, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
+		FormatQuantity: 2, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}}, FolderId: 812802,
 		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
 			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
