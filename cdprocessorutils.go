@@ -147,6 +147,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return err
 	}
 
+	// Skip records which aren't in the listening pile
+	if record.GetRelease().GetFolderId() != 812802 {
+		s.CtxLog(ctx, "Skipping because it's not in the listening pile")
+		return nil
+	}
+
 	// Skip SOLD_ARCHIVE records
 	if !force && record.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_SOLD_ARCHIVE {
 		s.CtxLog(ctx, "Skipping because it's SOLD_ARCHIVE")
