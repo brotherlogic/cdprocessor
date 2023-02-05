@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	pbgd "github.com/brotherlogic/godiscogs"
+	pbgd "github.com/brotherlogic/godiscogs/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	"google.golang.org/protobuf/proto"
 )
