@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	pbgd "github.com/brotherlogic/godiscogs"
+	pbgd "github.com/brotherlogic/godiscogs/proto"
 )
 
 // TrackSet is a set of tracks that map to a CD track
