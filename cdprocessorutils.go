@@ -297,6 +297,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 	trackPath := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position))
 
 	if !s.fileExists(trackPath) {
+		s.CtxLog(ctx, fmt.Sprintf("Track %v does not exist", trackPath))
 		s.verifyRecord(ctx, record)
 		return fmt.Errorf("Missing Track: %v (from %+v -> %v+)", trackPath, track, track.tracks[0])
 	}
