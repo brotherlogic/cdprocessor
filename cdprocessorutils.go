@@ -325,7 +325,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=tracknumber=%v", track.Position), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", prepend(track.Disk)), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", "--remove-tag=title", fmt.Sprintf("--set-tag=title=%v", title), oldfile}, true)
-	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=%v", record.GetRelease().Title), oldfile}, true)
+	s.ripper.runCommand(ctx, []string{"metaflac", "--remove-tag=album", fmt.Sprintf("--set-tag=album=%v", record.GetRelease().Title), oldfile}, true)
 	if len(record.GetRelease().GetImages()) > 0 {
 		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v%v/cover.jpg", s.dir, record.GetRelease().Id, adder), oldfile}, true)
 	}
