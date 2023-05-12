@@ -147,6 +147,12 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return err
 	}
 
+	// Skip records which aren't here yet
+	if record.GetMetadata().GetDateArrived() == 0 && time.Since(time.Unix(record.GetMetadata().GetDateAdded(), 0)) < time.Hour*24*365 {
+		s.CtxLog(ctx, "Skipping because it's not arrived yet")
+		return nil
+	}
+
 	// Skip records which aren't in the listening pile
 	if record.GetRelease().GetFolderId() != 812802 {
 		s.CtxLog(ctx, "Skipping because it's not in the listening pile")
