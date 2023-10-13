@@ -24,6 +24,11 @@ var (
 		Name: "cdprocessor_rips",
 		Help: "The number of records needing a rip",
 	})
+
+	ripped24Hours = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "cdprocessor_rips_24",
+		Help: "The number of records needing a rip",
+	})
 )
 
 func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
@@ -113,10 +118,14 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 				}
 				s.CtxLog(ctx, fmt.Sprintf("%v (Expected %v)", fstr, count))
 			}
-
 			return status.Error(codes.DataLoss, fmt.Sprintf("Error reading %v/%v files for %v: (%v)", len(files), count, record.GetRelease().GetId(), err))
 		}
+	}
 
+	// Update rip time
+	if _, ok := config.GetLastRipTime()[record.GetRelease().GetId()]; !ok {
+		config.GetLastRipTime()[record.GetRelease().GetId()] = time.Now().Unix()
+		return s.save(ctx, config)
 	}
 
 	return nil

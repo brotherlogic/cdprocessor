@@ -2,12 +2,25 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"golang.org/x/net/context"
 
+	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	rcpb "github.com/brotherlogic/recordcollection/proto"
 )
+
+func (s *Server) updateMetrics(config *pb.Config) {
+	last24 := 0
+	for _, date := range config.GetLastRipTime() {
+		if time.Since(time.Unix(date, 0)) < time.Hour*24 {
+			last24++
+		}
+	}
+
+	ripped24Hours.Set(float64(last24))
+}
 
 // GetRipped returns the ripped cds
 func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*pbcdp.GetRippedResponse, error) {
@@ -67,6 +80,12 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	//return &rcpb.ClientUpdateResponse{}, nil
 	s.hack.Lock()
 	defer s.hack.Unlock()
+	defer func() {
+		config, err := s.load(ctx)
+		if err == nil {
+			s.updateMetrics(config)
+		}
+	}()
 	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
 }
 
