@@ -466,6 +466,7 @@ func (s *Server) adjustAlert(ctx context.Context, config *pbcdp.Config, r *pbrc.
 
 		// Update rip time
 		config.GetLastRipTime()[r.GetRelease().GetId()] = time.Now().Unix()
+		s.updateMetrics(config)
 		return s.save(ctx, config)
 	}
 
