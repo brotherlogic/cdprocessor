@@ -11,9 +11,11 @@ import (
 	rcpb "github.com/brotherlogic/recordcollection/proto"
 )
 
-func (s *Server) updateMetrics(config *pb.Config) {
+func (s *Server) updateMetrics(ctx context.Context, config *pb.Config) {
 	last24 := 0
-	for _, date := range config.GetLastRipTime() {
+	s.CtxLog(ctx, fmt.Sprintf("SEEN METRICS %v", len(config.GetLastRipTime())))
+	for key, date := range config.GetLastRipTime() {
+		s.CtxLog(ctx, fmt.Sprintf("SEEN %v -> %v", key, time.Unix(date, 0)))
 		if time.Since(time.Unix(date, 0)) < time.Hour*24 {
 			last24++
 		}
@@ -83,7 +85,7 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	defer func() {
 		config, err := s.load(ctx)
 		if err == nil {
-			s.updateMetrics(config)
+			s.updateMetrics(ctx, config)
 		}
 	}()
 	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
