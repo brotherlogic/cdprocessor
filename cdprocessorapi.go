@@ -68,11 +68,15 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 
 // Force the processor to do something
 func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.ForceResponse, error) {
+	config, err := s.load(ctx)
+	if err != nil {
+		return nil, err
+	}
 	s.hack.Lock()
 	defer s.hack.Unlock()
 	switch req.Type {
 	case pbcdp.ForceRequest_RECREATE_LINKS:
-		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id, true)
+		return &pbcdp.ForceResponse{}, s.makeLinks(ctx, req.Id, true, config)
 	}
 	return nil, fmt.Errorf("Unknow force request")
 }
@@ -80,15 +84,13 @@ func (s *Server) Force(ctx context.Context, req *pbcdp.ForceRequest) (*pbcdp.For
 // ClientUpdate on an updated record
 func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest) (*rcpb.ClientUpdateResponse, error) {
 	//return &rcpb.ClientUpdateResponse{}, nil
+	config, err := s.load(ctx)
+	if err != nil {
+		return nil, err
+	}
 	s.hack.Lock()
 	defer s.hack.Unlock()
-	defer func() {
-		config, err := s.load(ctx)
-		if err == nil {
-			s.updateMetrics(ctx, config)
-		}
-	}()
-	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false)
+	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false, config)
 }
 
 func (s *Server) GetOutstanding(ctx context.Context, req *pbcdp.GetOutstandingRequest) (*pbcdp.GetOutstandingResponse, error) {

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	pbgd "github.com/brotherlogic/godiscogs/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
@@ -55,16 +56,16 @@ func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
 }
 
 // verifies the status of the ripped cd
-func (s *Server) verify(ctx context.Context, ID int32) error {
+func (s *Server) verify(ctx context.Context, ID int32, config *pb.Config) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
 	}
 
-	return s.verifyRecord(ctx, record)
+	return s.verifyRecord(ctx, record, config)
 }
 
-func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
+func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record, config *pb.Config) error {
 
 	t := time.Now()
 	files, err := ioutil.ReadDir(record.GetMetadata().CdPath)
@@ -82,10 +83,6 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 	}
 
 	s.CtxLog(ctx, fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
-	config, err2 := s.load(ctx)
-	if err2 != nil {
-		return err2
-	}
 	s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
 	time.Sleep(time.Second * 2)
 	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
@@ -109,7 +106,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		}
 
 		if len(files) != count || err != nil {
-			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true)
+			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true, config)
 
 			if len(files) > count {
 				fstr := ""
@@ -141,7 +138,7 @@ func computeArtist(rec *pbgd.Release) string {
 	return str[:len(str)-2]
 }
 
-func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
+func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb.Config) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		if status.Convert(err).Code() == codes.OutOfRange {
@@ -187,17 +184,13 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 		return nil
 	}
 
-	config, err := s.load(ctx)
-	if err != nil {
-		return err
-	}
 	if time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0)) > time.Hour*24*7 {
 		if config.GetLastProcessTime()[record.GetRelease().GetInstanceId()] > 0 {
 			s.CtxLog(ctx, fmt.Sprintf("Setting force since %v", time.Since(time.Unix(config.GetLastProcessTime()[record.GetRelease().GetInstanceId()], 0))))
 			force = true
 		}
 	}
-	err = s.runLinks(ctx, ID, force, record)
+	err = s.runLinks(ctx, ID, force, record, config)
 	s.CtxLog(ctx, fmt.Sprintf("Error on run links: %v", err))
 
 	if err != nil {
@@ -218,7 +211,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool) error {
 	return s.save(ctx, config)
 }
 
-func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record) error {
+func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record, config *pb.Config) error {
 	s.CtxLog(ctx, fmt.Sprintf("Runnign linkes %v -> %v", ID, force))
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
@@ -272,7 +265,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		}
 		for _, track := range trackSet {
 			if track.Format == "CD" || track.Format == "CDr" || track.Format == "File" || !noTracks {
-				err := s.buildLink(ctx, track, record)
+				err := s.buildLink(ctx, track, record, config)
 				if err != nil {
 					return err
 				}
@@ -284,7 +277,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		return s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), "")
 	}
 
-	return s.verifyRecord(ctx, record)
+	return s.verifyRecord(ctx, record, config)
 }
 
 func prepend(val string) string {
@@ -295,7 +288,7 @@ func prepend(val string) string {
 	}
 }
 
-func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Record) error {
+func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Record, config *pb.Config) error {
 	s.CtxLog(ctx, fmt.Sprintf("Building links: %v", track))
 	// Verify that the track exists
 	adder := ""
@@ -307,7 +300,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 
 	if !s.fileExists(trackPath) {
 		s.CtxLog(ctx, fmt.Sprintf("Track %v does not exist", trackPath))
-		s.verifyRecord(ctx, record)
+		s.verifyRecord(ctx, record, config)
 		return fmt.Errorf("Missing Track: %v (from %+v -> %v+)", trackPath, track, track.tracks[0])
 	}
 
