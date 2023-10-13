@@ -122,12 +122,6 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record) error {
 		}
 	}
 
-	// Update rip time
-	if _, ok := config.GetLastRipTime()[record.GetRelease().GetId()]; !ok {
-		config.GetLastRipTime()[record.GetRelease().GetId()] = time.Now().Unix()
-		return s.save(ctx, config)
-	}
-
 	return nil
 }
 
@@ -469,6 +463,9 @@ func (s *Server) adjustAlert(ctx context.Context, config *pbcdp.Config, r *pbrc.
 			return err
 		}
 		delete(config.IssueMapping, r.GetRelease().GetId())
+
+		// Update rip time
+		config.GetLastRipTime()[r.GetRelease().GetId()] = time.Now().Unix()
 		return s.save(ctx, config)
 	}
 
