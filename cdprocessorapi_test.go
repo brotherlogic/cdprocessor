@@ -91,7 +91,7 @@ func TestGetRipped(t *testing.T) {
 	}
 
 	if len(ripped.GetRipped()) != 1 || ripped.GetRipped()[0].Id != 12345 {
-		t.Errorf("Error in reading rips: %v", ripped)
+		t.Errorf("Error in reading rips: %v -> %v", ripped, err)
 	}
 }
 

@@ -337,10 +337,10 @@ func (s *Server) GetState() []*pbg.State {
 	return []*pbg.State{}
 }
 
-func (s *Server) runVerify(ctx context.Context) error {
+func (s *Server) runVerify(ctx context.Context, config *pb.Config) error {
 	ids := []int32{}
 	for _, rip := range s.rips {
-		err := s.verify(ctx, rip.Id)
+		err := s.verify(ctx, rip.Id, config)
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.DataLoss {
 			ids = append(ids, rip.Id)
@@ -354,10 +354,10 @@ func (s *Server) runVerify(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) runLink(ctx context.Context) error {
+func (s *Server) runLink(ctx context.Context, config *pb.Config) error {
 	s.count = int64(0)
 	for _, rip := range s.rips {
-		err := s.makeLinks(ctx, rip.Id, false)
+		err := s.makeLinks(ctx, rip.Id, false, config)
 		st := status.Convert(err)
 		if st.Code() != codes.ResourceExhausted && err != nil {
 			return err
