@@ -290,6 +290,10 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 		config.IssueMapping = make(map[int32]int32)
 	}
 
+	if config.LastRipTime == nil {
+		config.LastRipTime = make(map[int32]int64)
+	}
+
 	return config, nil
 }
 

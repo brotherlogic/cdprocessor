@@ -9,6 +9,7 @@ import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
 message Config {
   map<int32,int64> last_process_time = 1;
   map<int32,int32> issue_mapping = 2;
+  map<int32,int64> last_rip_time = 3;
 }
 
 message GetRippedRequest {}
