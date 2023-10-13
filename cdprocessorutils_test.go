@@ -144,7 +144,7 @@ func TestFailOnVerify(t *testing.T) {
 	tg := &testGetter{fail: true}
 	s.getter = tg
 
-	err := s.verify(context.Background(), 1234)
+	err := s.verify(context.Background(), 1234, &pb.Config{})
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -157,7 +157,7 @@ func TestVerifyMissingPath(t *testing.T) {
 	tg := &testGetter{}
 	s.getter = tg
 
-	err := s.verify(context.Background(), 1234)
+	err := s.verify(context.Background(), 1234, &pb.Config{LastRipTime: make(map[int32]int64), IssueMapping: map[int32]int32{}})
 
 	if err == nil {
 		t.Errorf("Verify did not fail")
@@ -170,7 +170,7 @@ func TestFailOnLink(t *testing.T) {
 	tg := &testGetter{fail: true}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 1234, false)
+	err := s.makeLinks(context.Background(), 1234, false, &pb.Config{})
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -181,7 +181,7 @@ func TestFailOnLink(t *testing.T) {
 func TestFailOnLinkTime(t *testing.T) {
 	s := InitTestServer("testdata/")
 
-	err := s.makeLinks(context.Background(), 1234, false)
+	err := s.makeLinks(context.Background(), 1234, false, &pb.Config{})
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -194,7 +194,7 @@ func TestFailOnLinkUpdate(t *testing.T) {
 	tg := &testGetter{failUpdate: true}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 12345, false)
+	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{})
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -213,7 +213,7 @@ func TestLinkBuildLinkError(t *testing.T) {
 	}}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 12345, false)
+	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{})
 
 	if err == nil {
 		t.Errorf("Should have failed")
