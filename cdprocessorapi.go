@@ -13,7 +13,7 @@ import (
 
 func (s *Server) updateMetrics(ctx context.Context, config *pb.Config) {
 	last24 := 0
-	s.CtxLog(ctx, fmt.Sprintf("SEEN METRICS %v", len(config.GetLastRipTime())))
+	s.CtxLog(ctx, fmt.Sprintf("SEEN METRICS %v", len(config.GetGoalFolder())))
 	for key, date := range config.GetLastRipTime() {
 		s.CtxLog(ctx, fmt.Sprintf("SEEN %v -> %v", key, time.Unix(date, 0)))
 		if val, ok := config.GetGoalFolder()[key]; ok && val != 1782105 {

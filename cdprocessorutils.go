@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -395,7 +394,6 @@ func (s *Server) buildConfig(ctx context.Context) error {
 
 	rips := []*pbcdp.Rip{}
 	for _, f := range files {
-		log.Printf("HERE %v", f)
 		if f.IsDir() && f.Name() != "lost+found" {
 			name := f.Name()
 			id, disk, err := s.io.convert(name)
