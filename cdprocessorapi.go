@@ -16,8 +16,10 @@ func (s *Server) updateMetrics(ctx context.Context, config *pb.Config) {
 	s.CtxLog(ctx, fmt.Sprintf("SEEN METRICS %v", len(config.GetLastRipTime())))
 	for key, date := range config.GetLastRipTime() {
 		s.CtxLog(ctx, fmt.Sprintf("SEEN %v -> %v", key, time.Unix(date, 0)))
-		if time.Since(time.Unix(date, 0)) < time.Hour*24 {
-			last24++
+		if val, ok := config.GetGoalFolder()[key]; ok && val != 1782105 {
+			if time.Since(time.Unix(date, 0)) < time.Hour*24 {
+				last24++
+			}
 		}
 	}
 
