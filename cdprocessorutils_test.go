@@ -157,7 +157,7 @@ func TestVerifyMissingPath(t *testing.T) {
 	tg := &testGetter{}
 	s.getter = tg
 
-	err := s.verify(context.Background(), 1234, &pb.Config{LastRipTime: make(map[int32]int64), IssueMapping: map[int32]int32{}})
+	err := s.verify(context.Background(), 1234, &pb.Config{GoalFolder: make(map[int32]int32), LastRipTime: make(map[int32]int64), IssueMapping: map[int32]int32{}})
 
 	if err == nil {
 		t.Errorf("Verify did not fail")
