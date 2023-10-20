@@ -294,8 +294,8 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 		config.LastRipTime = make(map[int32]int64)
 	}
 
-	for key, val := range config.GetLastRipTime() {
-		s.CtxLog(ctx, fmt.Sprintf("RIPTIME %v->%v", key, val))
+	if config.GoalFolder == nil {
+		config.GoalFolder = make(map[int32]int32)
 	}
 
 	return config, nil
