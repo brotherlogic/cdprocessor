@@ -146,7 +146,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb
 		}
 		return err
 	}
-	config.GoalFolder[ID] = record.GetMetadata().GetGoalFolder()
+	config.GoalFolder[record.GetRelease().GetId()] = record.GetMetadata().GetGoalFolder()
 
 	// Skip records which aren't here yet
 	if record.GetMetadata().GetDateArrived() == 0 && time.Since(time.Unix(record.GetMetadata().GetDateAdded(), 0)) < time.Hour*24*365 {
