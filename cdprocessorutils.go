@@ -84,6 +84,9 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record, config *
 
 	s.CtxLog(ctx, fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
 	err = s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
+	if err != nil {
+		return err
+	}
 	time.Sleep(time.Second * 2)
 	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
 	if len(files) != count || err != nil {
