@@ -181,7 +181,7 @@ func TestFailOnLink(t *testing.T) {
 func TestFailOnLinkTime(t *testing.T) {
 	s := InitTestServer("testdata/")
 
-	err := s.makeLinks(context.Background(), 1234, false, &pb.Config{})
+	err := s.makeLinks(context.Background(), 1234, false, &pb.Config{GoalFolder: make(map[int32]int32)})
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -194,7 +194,7 @@ func TestFailOnLinkUpdate(t *testing.T) {
 	tg := &testGetter{failUpdate: true}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{})
+	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{GoalFolder: make(map[int32]int32)})
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
@@ -213,7 +213,7 @@ func TestLinkBuildLinkError(t *testing.T) {
 	}}
 	s.getter = tg
 
-	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{})
+	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{GoalFolder: make(map[int32]int32)})
 
 	if err == nil {
 		t.Errorf("Should have failed")

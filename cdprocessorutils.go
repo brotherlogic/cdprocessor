@@ -83,7 +83,10 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record, config *
 	}
 
 	s.CtxLog(ctx, fmt.Sprintf("Processing (%v): %v / %v", record.GetRelease().GetInstanceId(), len(files), count))
-	s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
+	err = s.adjustAlert(ctx, config, record, len(files) != count || err != nil)
+	if err != nil {
+		return err
+	}
 	time.Sleep(time.Second * 2)
 	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
 	if len(files) != count || err != nil {
@@ -301,7 +304,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 
 	if !s.fileExists(trackPath) {
 		s.CtxLog(ctx, fmt.Sprintf("Track %v does not exist", trackPath))
-		s.verifyRecord(ctx, record, config)
+		//s.verifyRecord(ctx, record, config)
 		return fmt.Errorf("Missing Track: %v (from %+v -> %v+)", trackPath, track, track.tracks[0])
 	}
 
