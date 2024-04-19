@@ -304,7 +304,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 
 	if !s.fileExists(trackPath) {
 		s.CtxLog(ctx, fmt.Sprintf("Track %v does not exist", trackPath))
-		s.verifyRecord(ctx, record, config)
+		//s.verifyRecord(ctx, record, config)
 		return fmt.Errorf("Missing Track: %v (from %+v -> %v+)", trackPath, track, track.tracks[0])
 	}
 
