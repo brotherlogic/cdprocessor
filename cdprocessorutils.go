@@ -149,6 +149,11 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb
 		}
 		return err
 	}
+
+	if record.GetMetadata().GetFiledUnder() == pbrc.ReleaseMetadata_FILE_TAPE {
+		return nil
+	}
+
 	config.GoalFolder[record.GetRelease().GetId()] = record.GetMetadata().GetGoalFolder()
 
 	// Skip records which aren't here yet
