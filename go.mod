@@ -3,7 +3,7 @@ module github.com/brotherlogic/cdprocessor
 go 1.22.1
 
 require (
-	github.com/brotherlogic/executor v0.0.0-20240705214620-1442c0d08a48
+	github.com/brotherlogic/executor v0.0.0-20240705220711-1ce0f85aa626
 	github.com/brotherlogic/godiscogs v0.0.0-20240619222044-69e643325529
 	github.com/brotherlogic/goserver v0.0.0-20240303220030-80da220f0393
 	github.com/brotherlogic/keystore v0.0.0-20240508161349-814b3200b126
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/brotherlogic/buildserver v0.0.0-20240705214942-6f63f5185656 // indirect
+	github.com/brotherlogic/buildserver v0.0.0-20240705220503-89995eb137f4 // indirect
 	github.com/brotherlogic/datastore v0.0.0-20240705024151-ad9e144aa8f8 // indirect
 	github.com/brotherlogic/discovery v0.0.0-20240705215225-a9a590238ab2 // indirect
 	github.com/brotherlogic/dstore v0.0.0-20240705165527-7982c4fed622 // indirect
