@@ -4,8 +4,8 @@ github.com/brotherlogic/buildserver v0.0.0-20240705220503-89995eb137f4 h1:LsuPCT
 github.com/brotherlogic/buildserver v0.0.0-20240705220503-89995eb137f4/go.mod h1:zfVEk2E30rFpNFnpVg6LBulFfmd6rfVWMsO/iNXSdBo=
 github.com/brotherlogic/datastore v0.0.0-20240705024151-ad9e144aa8f8 h1:/qtkypdXbeoB93eGODc4I/WQXqlqEOf49zMTEiH1SNA=
 github.com/brotherlogic/datastore v0.0.0-20240705024151-ad9e144aa8f8/go.mod h1:+DUgNtmKnJZZB+zhbQh40a9dll1EJW+e+fCY/5eRzPI=
-github.com/brotherlogic/discovery v0.0.0-20240705215225-a9a590238ab2 h1:S3++5MR5Ph0TxQICP9PNWOcZeOxk1j8Y2d/yilvG5U0=
-github.com/brotherlogic/discovery v0.0.0-20240705215225-a9a590238ab2/go.mod h1:9xeagr0w6tS6H7uub9Lk+svZ+Gnmw5NMKSRr8Zi/3mI=
+github.com/brotherlogic/discovery v0.0.0-20240705220835-53ccc5f11024 h1:QjLmRGXSA6JTuFRDUjy9FAqF3yszU8ioTOaEbY5197w=
+github.com/brotherlogic/discovery v0.0.0-20240705220835-53ccc5f11024/go.mod h1:N8Ckj82dUrmL0s90bMCLN9s6VGEEsDVzFqrf/s15lag=
 github.com/brotherlogic/dstore v0.0.0-20240705165527-7982c4fed622 h1:42XKyMMuA0o48WygNlSnDOwIdcUdubmkjyzRcwoaz/0=
 github.com/brotherlogic/dstore v0.0.0-20240705165527-7982c4fed622/go.mod h1:34RigG8yY0OxE2cX0Jzg5dGwHayh7yF8LITQgryiq/c=
 github.com/brotherlogic/executor v0.0.0-20240705220711-1ce0f85aa626 h1:b8n+1s64/ZFQKCRTYXuHrEP70GvSg8+RJL35RimXma0=
