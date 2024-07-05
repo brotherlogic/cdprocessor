@@ -3,7 +3,7 @@ module github.com/brotherlogic/cdprocessor
 go 1.22.1
 
 require (
-	github.com/brotherlogic/executor v0.0.0-20240705203959-7212a92b1353
+	github.com/brotherlogic/executor v0.0.0-20240705214620-1442c0d08a48
 	github.com/brotherlogic/godiscogs v0.0.0-20240619222044-69e643325529
 	github.com/brotherlogic/goserver v0.0.0-20240303220030-80da220f0393
 	github.com/brotherlogic/keystore v0.0.0-20240508161349-814b3200b126
