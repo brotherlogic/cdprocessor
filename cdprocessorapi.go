@@ -35,7 +35,7 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (*pbcdp.GetMissingResponse, error) {
 	resp := &pbcdp.GetMissingResponse{}
 
-	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105} {
+	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105, 7664293} {
 		missing, err := s.rc.getRecordsInFolder(ctx, id)
 		if err != nil {
 			return resp, err
