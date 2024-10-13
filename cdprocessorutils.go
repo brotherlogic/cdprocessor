@@ -163,7 +163,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb
 	}
 
 	// Skip records which aren't in the listening pile
-	if record.GetRelease().GetFolderId() != 7664293 {
+	if record.GetRelease().GetFolderId() != 7664293 && record.GetRelease().GetFolderId() != 7651472 {
 		s.CtxLog(ctx, "Skipping because it's not in the listening pile")
 		return nil
 	}
