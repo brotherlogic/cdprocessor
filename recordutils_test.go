@@ -944,3 +944,32 @@ func TestRunExtractBestShow(t *testing.T) {
 		log.Printf("%+v", t)
 	}
 }
+
+func TestRunExtractLantern(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests//32780652.data")
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease(), false)
+
+	if len(tracks) != 11 {
+		for i, tr := range tracks {
+			log.Printf("%v. %v", i, len(tr.tracks))
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v - should be 11", len(tracks))
+	}
+
+	for _, track := range tracks {
+		if track.Disk != "1" {
+			t.Errorf("Should be disk 1: %+v", track)
+		}
+	}
+
+}

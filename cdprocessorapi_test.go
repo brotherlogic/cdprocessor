@@ -129,7 +129,7 @@ func TestGetMissing(t *testing.T) {
 		t.Fatalf("Error getting missing: %v", err)
 	}
 
-	if len(missing.GetMissing()) != 7 || missing.GetMissing()[0].GetRelease().Id != 12346 {
+	if len(missing.GetMissing()) != 8 || missing.GetMissing()[0].GetRelease().Id != 12346 {
 		for i := range missing.GetMissing() {
 			t.Errorf("%v. Missing: %v", i, missing.GetMissing()[i].GetRelease().Id)
 		}

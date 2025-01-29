@@ -301,7 +301,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 	s.CtxLog(ctx, fmt.Sprintf("Building links: %v", track))
 	// Verify that the track exists
 	adder := ""
-	if record.GetRelease().FormatQuantity > 1 {
+	if record.GetRelease().FormatQuantity > 1 && record.GetMetadata().GetFiledUnder() != pbrc.ReleaseMetadata_FILE_DIGITAL {
 		adder = fmt.Sprintf("_%v", track.Disk)
 	}
 
