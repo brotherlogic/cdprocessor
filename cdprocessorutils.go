@@ -412,9 +412,8 @@ func (s *Server) buildConfig(ctx context.Context) error {
 				continue
 			}
 
-			t := time.Now()
 			trackFiles, _ := s.io.readSubdir(f.Name())
-			s.CtxLog(ctx, fmt.Sprintf("Read subdir in %v", time.Now().Sub(t)))
+			//s.CtxLog(ctx, fmt.Sprintf("Read subdir in %v", time.Now().Sub(t)))
 			tracks := []*pbcdp.Track{}
 			for _, tf := range trackFiles {
 				if !tf.IsDir() && strings.Contains(tf.Name(), "track") {
