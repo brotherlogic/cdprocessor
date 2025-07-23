@@ -91,10 +91,12 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record, config *
 	s.CtxLog(ctx, fmt.Sprintf("Found %v files for %v, expected to see %v", len(files), record.GetRelease().GetId(), count))
 	if len(files) != count || err != nil {
 		files, err = ioutil.ReadDir(record.GetMetadata().CdPath)
+		t = time.Now()
 		err = s.buildConfig(ctx)
 		if err != nil {
 			s.CtxLog(ctx, fmt.Sprintf("Bad config building: %v", err))
 		}
+		s.CtxLog(ctx, fmt.Sprintf("Built conversion config in %v", time.Now().Sub(t)))
 		t = time.Now()
 		err = s.convertToMP3(ctx, record.GetRelease().GetId())
 		s.CtxLog(ctx, fmt.Sprintf("MP3 (%v) conversion in %v", record.GetRelease().GetId(), time.Now().Sub(t)))
