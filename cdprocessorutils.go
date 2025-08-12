@@ -333,7 +333,6 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 
 	oldfile := fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position))
 	//newfile := fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))
-	s.ripper.runCommand(ctx, []string{"ln", fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
 	s.ripper.runCommand(ctx, []string{"metaflac", "--remove-tag=artist", fmt.Sprintf("--set-tag=artist=%v", computeArtist(record.GetRelease())), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=tracknumber=%v", track.Position), oldfile}, true)
 	s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=discnumber=%v", prepend(track.Disk)), oldfile}, true)
@@ -343,6 +342,7 @@ func (s *Server) buildLink(ctx context.Context, track *TrackSet, record *pbrc.Re
 		s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--import-picture-from=%v%v%v/cover.jpg", s.dir, record.GetRelease().Id, adder), oldfile}, true)
 	}
 	//s.ripper.runCommand(ctx, []string{"metaflac", fmt.Sprintf("--set-tag=album=\"%v\"", record.Title), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.Id, track.Disk, expand(track.Position))})
+	s.ripper.runCommand(ctx, []string{"ln", fmt.Sprintf("%v%v%v/track%v.cdda.flac", s.dir, record.GetRelease().Id, adder, expand(track.Position)), fmt.Sprintf("%v%v/%v-%v.cdda.flac", s.flacdir, record.GetRelease().Id, track.Disk, expand(track.Position))}, false)
 
 	return nil
 }
