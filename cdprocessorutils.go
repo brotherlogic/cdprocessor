@@ -223,7 +223,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb
 }
 
 func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record, config *pb.Config) error {
-	s.CtxLog(ctx, fmt.Sprintf("Runnign linkes %v -> %v", ID, force))
+	s.CtxLog(ctx, fmt.Sprintf("Running linkes %v -> %v", ID, force))
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
 		record.GetMetadata().GetGoalFolder() == 1433217 {
@@ -239,7 +239,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		record.GetMetadata().GetGoalFolder() != 565206 {
 		// Not a cd or a bandcamp or cd boxset
 		for _, format := range record.GetRelease().GetFormats() {
-			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "CDr" || format.GetName() == "Cassette" || format.GetName() == "Memory Stick" {
+			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "CDr" || format.GetName() == "Memory Stick" {
 				s.CtxLog(ctx, fmt.Sprintf("Matched %v on the format: %v", ID, format))
 				match = true
 			}
