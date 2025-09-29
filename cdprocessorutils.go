@@ -239,7 +239,7 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 		record.GetMetadata().GetGoalFolder() != 565206 {
 		// Not a cd or a bandcamp or cd boxset
 		for _, format := range record.GetRelease().GetFormats() {
-			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "CDr" || format.GetName() == "Cassette" || format.GetName() == "Memory Stick" {
+			if format.GetName() == "File" || format.GetName() == "CD" || format.GetName() == "CDr" || format.GetName() == "Memory Stick" {
 				s.CtxLog(ctx, fmt.Sprintf("Matched %v on the format: %v", ID, format))
 				match = true
 			}
