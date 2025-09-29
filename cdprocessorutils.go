@@ -223,7 +223,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb
 }
 
 func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record, config *pb.Config) error {
-	s.CtxLog(ctx, fmt.Sprintf("Runnign linkes %v -> %v", ID, force))
+	s.CtxLog(ctx, fmt.Sprintf("Running linkes %v -> %v", ID, force))
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
 		record.GetMetadata().GetGoalFolder() == 1433217 {
