@@ -256,12 +256,11 @@ func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbr
 	}
 
 	if force || len(record.GetMetadata().CdPath) == 0 {
-
-		if len(record.GetMetadata().CdPath) == 0 || strings.Contains(record.GetMetadata().CdPath, "mp3") {
+		/*if len(record.GetMetadata().CdPath) == 0 || strings.Contains(record.GetMetadata().CdPath, "mp3") {
 			t := time.Now()
 			s.getter.updateRecord(ctx, record.GetRelease().GetInstanceId(), fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), "")
 			s.CtxLog(ctx, fmt.Sprintf("Updated record in %v", time.Now().Sub(t)))
-		}
+		}*/
 		os.MkdirAll(fmt.Sprintf("%v%v", s.mp3dir, record.GetRelease().Id), os.ModePerm)
 		os.MkdirAll(fmt.Sprintf("%v%v", s.flacdir, record.GetRelease().Id), os.ModePerm)
 
