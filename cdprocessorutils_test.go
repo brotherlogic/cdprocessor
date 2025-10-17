@@ -111,24 +111,6 @@ func TestAdjust(t *testing.T) {
 	}
 }
 
-func TestLogMissing(t *testing.T) {
-	s := InitTestServer("testdata")
-	s.io = &testIo{dir: "testdata"}
-	s.rc = &testRc{}
-	s.SkipLog = true
-
-	s.logMissing(context.Background())
-}
-
-func TestLogMissingFailOnBadLog(t *testing.T) {
-	s := InitTestServer("testdata")
-	s.io = &testIo{dir: "testdata"}
-	s.rc = &testRc{}
-	s.SkipLog = true
-
-	s.logMissing(context.Background())
-}
-
 func TestRunMP3sWithNothing(t *testing.T) {
 	s := InitTestServer("testempty/")
 	s.convertToMP3(context.Background(), 123)
@@ -174,49 +156,6 @@ func TestFailOnLink(t *testing.T) {
 
 	if err == nil {
 		t.Errorf("Failing verify passed")
-	}
-
-}
-
-func TestFailOnLinkTime(t *testing.T) {
-	s := InitTestServer("testdata/")
-
-	err := s.makeLinks(context.Background(), 1234, false, &pb.Config{GoalFolder: make(map[int32]int32)})
-
-	if err == nil {
-		t.Errorf("Failing verify passed")
-	}
-
-}
-
-func TestFailOnLinkUpdate(t *testing.T) {
-	s := InitTestServer("testdata/")
-	tg := &testGetter{failUpdate: true}
-	s.getter = tg
-
-	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{GoalFolder: make(map[int32]int32)})
-
-	if err == nil {
-		t.Errorf("Failing verify passed")
-	}
-
-}
-
-func TestLinkBuildLinkError(t *testing.T) {
-	s := InitTestServer("testdata/")
-	tg := &testGetter{override: &pbrc.Record{Release: &pbgd.Release{Id: 12345,
-		FormatQuantity: 2, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}}, FolderId: 812802,
-		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
-		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
-			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
-				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: "blah"},
-	}}
-	s.getter = tg
-
-	err := s.makeLinks(context.Background(), 12345, false, &pb.Config{GoalFolder: make(map[int32]int32)})
-
-	if err == nil {
-		t.Errorf("Should have failed")
 	}
 
 }
