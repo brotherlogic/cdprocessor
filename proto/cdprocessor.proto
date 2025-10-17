@@ -11,6 +11,7 @@ message Config {
   map<int32,int32> issue_mapping = 2;
   map<int32,int64> last_rip_time = 3;
   map<int32,int32> goal_folder = 4;
+  repeated int32 to_go = 5;
 }
 
 message GetRippedRequest {}

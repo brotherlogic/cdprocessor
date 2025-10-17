@@ -119,23 +119,6 @@ func TestGetFailConvert(t *testing.T) {
 	}
 }
 
-func TestGetMissing(t *testing.T) {
-	s := InitTestServer("testdata/")
-	s.io = &testIo{dir: "testdata/"}
-	s.rc = &testRc{}
-	s.buildConfig(context.Background())
-	missing, err := s.GetMissing(context.Background(), &pbcdp.GetMissingRequest{})
-	if err != nil {
-		t.Fatalf("Error getting missing: %v", err)
-	}
-
-	if len(missing.GetMissing()) != 8 || missing.GetMissing()[0].GetRelease().Id != 12346 {
-		for i := range missing.GetMissing() {
-			t.Errorf("%v. Missing: %v", i, missing.GetMissing()[i].GetRelease().Id)
-		}
-	}
-}
-
 func TestGetMissingFailGet(t *testing.T) {
 	s := InitTestServer("testdata/")
 	s.io = &testIo{dir: "testdata/"}

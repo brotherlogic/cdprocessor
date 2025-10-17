@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"golang.org/x/net/context"
@@ -33,39 +34,24 @@ func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*p
 
 // GetMissing gets the missing rips
 func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (*pbcdp.GetMissingResponse, error) {
-	resp := &pbcdp.GetMissingResponse{}
+	config, err := s.load(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, id := range []int32{242018, 288751, 812802, 242017, 857449, 673768, 1782105, 7664293} {
-		missing, err := s.rc.getRecordsInFolder(ctx, id)
+	sort.Slice(config.ToGo, func(i, j int) bool {
+		return config.ToGo[i] < config.ToGo[j]
+	})
+
+	var record *rcpb.Record
+	if len(config.ToGo) > 0 {
+		record, err = s.getter.getRecord(ctx, config.ToGo[0])
 		if err != nil {
-			return resp, err
-		}
-
-		ripped, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
-
-		for _, r := range missing {
-			hasCD := false
-			for _, f := range r.GetRelease().GetFormats() {
-				if f.Name == "CD" || f.Name == "File" || f.Name == "CDr" {
-					hasCD = true
-				}
-			}
-
-			if hasCD {
-				found := false
-				for _, ri := range ripped.GetRipped() {
-					if ri.Id == r.GetRelease().Id {
-						found = true
-					}
-				}
-				if !found {
-					resp.Missing = append(resp.GetMissing(), r)
-				}
-			}
+			return nil, err
 		}
 	}
 
-	return resp, nil
+	return &pbcdp.GetMissingResponse{Missing: []*rcpb.Record{record}}, nil
 }
 
 // Force the processor to do something
@@ -92,7 +78,37 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	}
 	s.hack.Lock()
 	defer s.hack.Unlock()
-	return &rcpb.ClientUpdateResponse{}, s.makeLinks(ctx, req.GetInstanceId(), false, config)
+
+	err = s.makeLinks(ctx, req.GetInstanceId(), false, config)
+	if err == nil {
+		var ntogo []int32
+		for _, togo := range config.ToGo {
+			if togo != req.GetInstanceId() {
+				ntogo = append(ntogo, togo)
+			}
+		}
+		config.ToGo = ntogo
+		err = s.save(ctx, config)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		found := false
+		for _, togo := range config.ToGo {
+			if togo == req.GetInstanceId() {
+				found = true
+			}
+		}
+		if !found {
+			config.ToGo = append(config.ToGo, req.GetInstanceId())
+			serr := s.save(ctx, config)
+			if serr != nil {
+				return nil, serr
+			}
+		}
+	}
+
+	return &rcpb.ClientUpdateResponse{}, err
 }
 
 func (s *Server) GetOutstanding(ctx context.Context, req *pbcdp.GetOutstandingRequest) (*pbcdp.GetOutstandingResponse, error) {
