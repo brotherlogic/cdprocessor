@@ -110,7 +110,7 @@ func (s *Server) verifyRecord(ctx context.Context, record *pbrc.Record, config *
 			s.CtxLog(ctx, fmt.Sprintf("Bad flaccing: %v", err))
 		}
 
-		if len(files) != count || err != nil {
+		if len(files) < count || err != nil {
 			s.makeLinks(ctx, record.GetRelease().GetInstanceId(), true, config)
 
 			if len(files) > count {
