@@ -10,6 +10,15 @@ import (
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
 	rcpb "github.com/brotherlogic/recordcollection/proto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	togo = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "cdprocessor_togo",
+		Help: "The number of records needing a rip",
+	})
 )
 
 func (s *Server) updateMetrics(ctx context.Context, config *pb.Config) {
@@ -25,6 +34,8 @@ func (s *Server) updateMetrics(ctx context.Context, config *pb.Config) {
 	}
 
 	ripped24Hours.Set(float64(last24))
+
+	togo.Set(float64(len(config.GetToGo())))
 }
 
 // GetRipped returns the ripped cds
