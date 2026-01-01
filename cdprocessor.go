@@ -298,6 +298,7 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 		config.GoalFolder = make(map[int32]int32)
 	}
 
+	s.updateMetrics(ctx, config)
 	return config, nil
 }
 
