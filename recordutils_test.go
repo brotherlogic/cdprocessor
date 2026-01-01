@@ -665,6 +665,29 @@ func TestRunExtractGrosskopf(t *testing.T) {
 	}
 }
 
+func TestRunExtractNeilYoung(t *testing.T) {
+	data, err := ioutil.ReadFile("cdtests/31754291.data")
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	record := &pbrc.Record{}
+	proto.Unmarshal(data, record)
+
+	tracks := TrackExtract(record.GetRelease(), false)
+
+	if len(tracks) != 14+8+21+18+9+12+19+13+10+10+12+19+16+8+14+9+10 || tracks[8+11-1].Disk != "2" {
+		for i, tr := range tracks {
+			log.Printf("%v. %v (%v-%v)", i, len(tr.tracks), tr.Format, tr.Disk)
+			for j, trs := range tr.tracks {
+				log.Printf(" %v. %v", j, trs.Title)
+			}
+		}
+		t.Fatalf("Wrong number of tracks: %v", len(tracks))
+	}
+}
+
 func TestRunExtractKreepers(t *testing.T) {
 	data, err := ioutil.ReadFile("cdtests/5675438.data")
 
