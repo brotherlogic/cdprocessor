@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brotherlogic/cdprocessor/proto"
 	pbcdp "github.com/brotherlogic/cdprocessor/proto"
@@ -58,6 +60,12 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 	if len(config.ToGo) > 0 {
 		record, err = s.getter.getRecord(ctx, config.ToGo[0])
 		if err != nil {
+
+			if status.Code(err) == codes.OutOfRange {
+				config.ToGo = config.ToGo[1:]
+				return &pbcdp.GetMissingResponse{Missing: []*rcpb.Record{}}, s.save(ctx, config)
+			}
+
 			return nil, err
 		}
 	}
