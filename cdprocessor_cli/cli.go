@@ -38,9 +38,9 @@ func main() {
 			fmt.Printf("%v. %v\n", i, entry)
 		}
 	case "sforce":
-		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
+		val, _ := strconv.ParseInt(os.Args[2], 10, 64)
 		client := pbrc.NewClientUpdateServiceClient(conn)
-		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
+		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int64(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
 	case "gforce":
@@ -52,12 +52,12 @@ func main() {
 		client := pbrc.NewRecordCollectionServiceClient(conn)
 		ids, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_ReleaseId{int32(val)}})
 		for _, id := range ids.GetInstanceIds() {
-			resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(id)})
+			resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: id})
 			fmt.Printf("%v and %v\n", resp, err)
 		}
 	case "force":
-		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
-		resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: int32(val)})
+		val, _ := strconv.ParseInt(os.Args[2], 10, 64)
+		resp, err := registry.Force(ctx, &pbcdp.ForceRequest{Type: pbcdp.ForceRequest_RECREATE_LINKS, Id: val})
 		fmt.Printf("%v and %v\n", resp, err)
 	case "got":
 		resp, err := registry.GetRipped(ctx, &pbcdp.GetRippedRequest{})

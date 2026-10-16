@@ -36,11 +36,11 @@ type testGetter struct {
 	fail       bool
 	failUpdate bool
 	updates    int
-	adjusted   map[int32]bool
+	adjusted   map[int64]bool
 	override   *pbrc.Record
 }
 
-func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
+func (t *testGetter) getRecord(ctx context.Context, id int64) (*pbrc.Record, error) {
 	if t.fail {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Built to fail"))
 	}
@@ -51,7 +51,7 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 	if t.adjusted[id] {
 		filepath = fmt.Sprintf("%v", id)
 	}
-	return &pbrc.Record{Release: &pbgd.Release{Id: id, InstanceId: id, FolderId: 812802,
+	return &pbrc.Record{Release: &pbgd.Release{Id: int32(id), InstanceId: id, FolderId: 812802,
 		FormatQuantity: 1, Artists: []*pbgd.Artist{&pbgd.Artist{Name: "Hello"}},
 		Formats: []*pbgd.Format{&pbgd.Format{Name: "CD", Qty: "2"}},
 		Tracklist: []*pbgd.Track{&pbgd.Track{TrackType: pbgd.Track_TRACK, Position: "1"},
@@ -60,14 +60,14 @@ func (t *testGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, err
 	}, nil
 }
 
-func (t *testGetter) updateRecord(ctx context.Context, id int32, cdpath, filepath string) error {
+func (t *testGetter) updateRecord(ctx context.Context, id int64, cdpath, filepath string) error {
 	log.Printf("HERE %v", id)
 	if t.failUpdate {
 		return fmt.Errorf("Built to fail")
 	}
 	t.updates++
 	if t.adjusted == nil {
-		t.adjusted = make(map[int32]bool)
+		t.adjusted = make(map[int64]bool)
 	}
 	t.adjusted[id] = true
 	return nil

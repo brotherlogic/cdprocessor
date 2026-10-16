@@ -116,8 +116,8 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 }
 
 type getter interface {
-	getRecord(ctx context.Context, id int32) (*pbrc.Record, error)
-	updateRecord(ctx context.Context, id int32, cdpath, filepath string) error
+	getRecord(ctx context.Context, id int64) (*pbrc.Record, error)
+	updateRecord(ctx context.Context, id int64, cdpath, filepath string) error
 }
 
 type prodGetter struct {
@@ -126,7 +126,7 @@ type prodGetter struct {
 	lastUpdate time.Time
 }
 
-func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, error) {
+func (rc *prodGetter) getRecord(ctx context.Context, id int64) (*pbrc.Record, error) {
 	conn, err := rc.dial(ctx, "recordcollection")
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int32) (*pbrc.Record, er
 	return resp.GetRecord(), err
 }
 
-func (rc *prodGetter) updateRecord(ctx context.Context, instanceID int32, cdpath, filepath string) error {
+func (rc *prodGetter) updateRecord(ctx context.Context, instanceID int64, cdpath, filepath string) error {
 	conn, err := rc.dial(ctx, "recordcollection")
 	if err != nil {
 		return err
@@ -283,7 +283,7 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 	config = data.(*pb.Config)
 
 	if config.LastProcessTime == nil {
-		config.LastProcessTime = make(map[int32]int64)
+		config.LastProcessTime = make(map[int64]int64)
 	}
 
 	if config.IssueMapping == nil {
@@ -341,7 +341,7 @@ func (s *Server) GetState() []*pbg.State {
 func (s *Server) runVerify(ctx context.Context, config *pb.Config) error {
 	ids := []int32{}
 	for _, rip := range s.rips {
-		err := s.verify(ctx, rip.Id, config)
+		err := s.verify(ctx, int64(rip.Id), config)
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.DataLoss {
 			ids = append(ids, rip.Id)
@@ -358,7 +358,7 @@ func (s *Server) runVerify(ctx context.Context, config *pb.Config) error {
 func (s *Server) runLink(ctx context.Context, config *pb.Config) error {
 	s.count = int64(0)
 	for _, rip := range s.rips {
-		err := s.makeLinks(ctx, rip.Id, false, config)
+		err := s.makeLinks(ctx, int64(rip.Id), false, config)
 		st := status.Convert(err)
 		if st.Code() != codes.ResourceExhausted && err != nil {
 			return err
@@ -402,7 +402,7 @@ func main() {
 		ctx, cancel := utils.BuildContext("cdprocessor", "cdprocessor")
 		defer cancel()
 
-		mapper := make(map[int32]int64)
+		mapper := make(map[int64]int64)
 		mapper[1] = 1
 		err := server.KSclient.Save(ctx, KEY, &pb.Config{LastProcessTime: mapper})
 		fmt.Printf("Inits: %v\n", err)
