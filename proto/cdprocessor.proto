@@ -7,11 +7,11 @@ option go_package = "github.com/brotherlogic/cdprocessor/proto";
 import "github.com/brotherlogic/recordcollection/proto/recordcollection.proto";
 
 message Config {
-  map<int32,int64> last_process_time = 1;
+  map<int64,int64> last_process_time = 1;
   map<int32,int32> issue_mapping = 2;
   map<int32,int64> last_rip_time = 3;
   map<int32,int32> goal_folder = 4;
-  repeated int32 to_go = 5;
+  repeated int64 to_go = 5;
 }
 
 message GetRippedRequest {}
@@ -46,7 +46,7 @@ message ForceRequest {
     RECREATE_LINKS = 1;
   }
   ForceType type = 1;
-  int32 id = 2;
+  int64 id = 2;
 }
 
 message ForceResponse {}

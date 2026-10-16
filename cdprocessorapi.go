@@ -98,7 +98,7 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 
 	err = s.makeLinks(ctx, req.GetInstanceId(), false, config)
 	if err == nil {
-		var ntogo []int32
+		var ntogo []int64
 		for _, togo := range config.ToGo {
 			if togo != req.GetInstanceId() {
 				ntogo = append(ntogo, togo)

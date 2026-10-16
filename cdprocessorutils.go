@@ -56,7 +56,7 @@ func (s *Server) findMissing(ctx context.Context) (*pbcdp.Rip, error) {
 }
 
 // verifies the status of the ripped cd
-func (s *Server) verify(ctx context.Context, ID int32, config *pb.Config) error {
+func (s *Server) verify(ctx context.Context, ID int64, config *pb.Config) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ func computeArtist(rec *pbgd.Release) string {
 	return str[:len(str)-2]
 }
 
-func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb.Config) error {
+func (s *Server) makeLinks(ctx context.Context, ID int64, force bool, config *pb.Config) error {
 	record, err := s.getter.getRecord(ctx, ID)
 	if err != nil {
 		if status.Convert(err).Code() == codes.OutOfRange {
@@ -222,7 +222,7 @@ func (s *Server) makeLinks(ctx context.Context, ID int32, force bool, config *pb
 	return s.save(ctx, config)
 }
 
-func (s *Server) runLinks(ctx context.Context, ID int32, force bool, record *pbrc.Record, config *pb.Config) error {
+func (s *Server) runLinks(ctx context.Context, ID int64, force bool, record *pbrc.Record, config *pb.Config) error {
 	s.CtxLog(ctx, fmt.Sprintf("Running linkes %v -> %v", ID, force))
 	// Don't process digital CDs
 	if record.GetMetadata().GetGoalFolder() == 268147 ||
@@ -486,7 +486,7 @@ func (s *Server) adjustExisting(ctx context.Context) error {
 	m, _ := s.GetRipped(ctx, &pbcdp.GetRippedRequest{})
 
 	for _, r := range m.Ripped {
-		rec, err := s.getter.getRecord(ctx, r.Id)
+		rec, err := s.getter.getRecord(ctx, int64(r.Id))
 		if err != nil {
 			e, ok := status.FromError(err)
 			if !ok || e.Code() == codes.InvalidArgument {
