@@ -38,6 +38,45 @@ func (s *Server) updateMetrics(ctx context.Context, config *pb.Config) {
 	togo.Set(float64(len(config.GetToGo())))
 }
 
+func (s *Server) cleanConfig(config *pb.Config) bool {
+	changed := false
+	if config.LastProcessTime == nil {
+		config.LastProcessTime = make(map[int64]int64)
+	}
+
+	for k, v := range config.LastProcessTime {
+		if k < 0 {
+			nk := int64(uint32(k))
+			if v > config.LastProcessTime[nk] {
+				config.LastProcessTime[nk] = v
+			}
+			delete(config.LastProcessTime, k)
+			changed = true
+		}
+	}
+
+	seen := make(map[int64]bool)
+	var ntogo []int64
+	for _, id := range config.ToGo {
+		nid := id
+		if nid < 0 {
+			nid = int64(uint32(nid))
+			changed = true
+			if config.LastProcessTime[nid] > 0 {
+				continue
+			}
+		}
+		if !seen[nid] {
+			seen[nid] = true
+			ntogo = append(ntogo, nid)
+		} else {
+			changed = true
+		}
+	}
+	config.ToGo = ntogo
+	return changed
+}
+
 // GetRipped returns the ripped cds
 func (s *Server) GetRipped(ctx context.Context, req *pbcdp.GetRippedRequest) (*pbcdp.GetRippedResponse, error) {
 	return &pbcdp.GetRippedResponse{Ripped: s.rips}, nil
@@ -54,21 +93,33 @@ func (s *Server) GetMissing(ctx context.Context, req *pbcdp.GetMissingRequest) (
 		return config.ToGo[i] < config.ToGo[j]
 	})
 
-	var record *rcpb.Record
-	if len(config.ToGo) > 0 {
-		record, err = s.getter.getRecord(ctx, config.ToGo[0])
+	for len(config.ToGo) > 0 {
+		record, err := s.getter.getRecord(ctx, config.ToGo[0])
 		if err != nil {
-
-			if status.Code(err) == codes.OutOfRange {
+			code := status.Code(err)
+			if code == codes.OutOfRange || code == codes.InvalidArgument || code == codes.NotFound {
 				config.ToGo = config.ToGo[1:]
-				return &pbcdp.GetMissingResponse{Missing: []*rcpb.Record{}}, s.save(ctx, config)
+				if err := s.save(ctx, config); err != nil {
+					return nil, err
+				}
+				continue
 			}
 
 			return nil, err
 		}
+
+		if len(record.GetMetadata().GetCdPath()) > 0 {
+			config.ToGo = config.ToGo[1:]
+			if err := s.save(ctx, config); err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		return &pbcdp.GetMissingResponse{Missing: []*rcpb.Record{record}}, nil
 	}
 
-	return &pbcdp.GetMissingResponse{Missing: []*rcpb.Record{record}}, nil
+	return &pbcdp.GetMissingResponse{Missing: []*rcpb.Record{}}, nil
 }
 
 // Force the processor to do something
@@ -96,11 +147,16 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	s.hack.Lock()
 	defer s.hack.Unlock()
 
-	err = s.makeLinks(ctx, req.GetInstanceId(), false, config)
+	instanceID := req.GetInstanceId()
+	if instanceID < 0 {
+		instanceID = int64(uint32(instanceID))
+	}
+
+	err = s.makeLinks(ctx, instanceID, false, config)
 	if err == nil {
 		var ntogo []int64
 		for _, togo := range config.ToGo {
-			if togo != req.GetInstanceId() {
+			if togo != instanceID {
 				ntogo = append(ntogo, togo)
 			}
 		}
@@ -112,12 +168,12 @@ func (s *Server) ClientUpdate(ctx context.Context, req *rcpb.ClientUpdateRequest
 	} else {
 		found := false
 		for _, togo := range config.ToGo {
-			if togo == req.GetInstanceId() {
+			if togo == instanceID {
 				found = true
 			}
 		}
 		if !found {
-			config.ToGo = append(config.ToGo, req.GetInstanceId())
+			config.ToGo = append(config.ToGo, instanceID)
 			serr := s.save(ctx, config)
 			if serr != nil {
 				return nil, serr
