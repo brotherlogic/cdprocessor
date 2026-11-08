@@ -298,6 +298,12 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 		config.GoalFolder = make(map[int32]int32)
 	}
 
+	if s.cleanConfig(config) {
+		if err := s.save(ctx, config); err != nil {
+			return nil, err
+		}
+	}
+
 	s.updateMetrics(ctx, config)
 	return config, nil
 }

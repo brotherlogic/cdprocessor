@@ -34,15 +34,31 @@ func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*
 
 type testGetter struct {
 	fail       bool
+	failCode   codes.Code
 	failUpdate bool
 	updates    int
 	adjusted   map[int64]bool
 	override   *pbrc.Record
+	records    map[int64]*pbrc.Record
+	errByID    map[int64]error
 }
 
 func (t *testGetter) getRecord(ctx context.Context, id int64) (*pbrc.Record, error) {
+	if t.errByID != nil {
+		if err, ok := t.errByID[id]; ok {
+			return nil, err
+		}
+	}
+	if t.records != nil {
+		if rec, ok := t.records[id]; ok {
+			return rec, nil
+		}
+	}
 	if t.fail {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Built to fail"))
+		if t.failCode != codes.OK {
+			return nil, status.Error(t.failCode, fmt.Sprintf("Built to fail"))
+		}
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Built to fail"))
 	}
 	if t.override != nil {
 		return t.override, nil
@@ -158,6 +174,16 @@ func TestFailOnLink(t *testing.T) {
 		t.Errorf("Failing verify passed")
 	}
 
+}
+
+func TestLinkIgnoreInvalidAndDeleted(t *testing.T) {
+	s := InitTestServer("testdata/")
+	for _, c := range []codes.Code{codes.OutOfRange, codes.InvalidArgument, codes.NotFound} {
+		s.getter = &testGetter{fail: true, failCode: c}
+		if err := s.makeLinks(context.Background(), 1234, false, &pb.Config{}); err != nil {
+			t.Errorf("Expected nil error for code %v, got %v", c, err)
+		}
+	}
 }
 
 func TestExpand(t *testing.T) {
