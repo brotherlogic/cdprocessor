@@ -56,9 +56,44 @@ message GetOutstandingResponse {
   repeated int32 ids = 1;
 }
 
+enum DownloadState {
+  DOWNLOAD_UNKNOWN = 0;
+  DOWNLOAD_QUEUED = 1;
+  DOWNLOAD_IN_PROGRESS = 2;
+  DOWNLOAD_COMPLETED = 3;
+  DOWNLOAD_ALREADY_EXISTS = 4;
+  DOWNLOAD_FAILED_RETRYABLE = 5;
+  DOWNLOAD_FAILED_PERMANENT = 6;
+  DOWNLOAD_NOT_FOUND = 7;
+}
+
+message DownloadReleaseRequest {
+  int32 release_id = 1;
+  int64 instance_id = 2;
+  string download_url = 3;
+}
+
+message DownloadReleaseResponse {
+  DownloadState state = 1;
+  string message = 2;
+}
+
+message GetDownloadStatusRequest {
+  int32 release_id = 1;
+}
+
+message GetDownloadStatusResponse {
+  DownloadState state = 1;
+  int32 track_count = 2;
+  string error_message = 3;
+  string quarantine_path = 4;
+}
+
 service CDProcessor {
   rpc GetRipped (GetRippedRequest) returns (GetRippedResponse);
   rpc GetMissing (GetMissingRequest) returns (GetMissingResponse);
   rpc Force (ForceRequest) returns (ForceResponse);
   rpc GetOutstanding (GetOutstandingRequest) returns (GetOutstandingResponse);
+  rpc DownloadRelease (DownloadReleaseRequest) returns (DownloadReleaseResponse);
+  rpc GetDownloadStatus (GetDownloadStatusRequest) returns (GetDownloadStatusResponse);
 }

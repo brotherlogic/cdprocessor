@@ -282,6 +282,10 @@ func TrackExtract(r *pbgd.Release, tape bool) []*TrackSet {
 		}
 	}
 
+	if len(trackset) == 0 {
+		return trackset
+	}
+
 	// Rebalance track numbers
 	currTrackRe := 1
 	currDiskRe := trackset[0].Disk
