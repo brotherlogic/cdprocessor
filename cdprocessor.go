@@ -246,6 +246,7 @@ type Server struct {
 	master      master
 	count       int64
 	hack        *sync.Mutex
+	downloader  *downloadManager
 }
 
 // Init builds the server
@@ -264,6 +265,7 @@ func Init(dir string, mp3dir string, flacdir string) *Server {
 	s.ripper = &prodRipper{log: s.CtxLog, server: s.resolve, dial: s.FDialSpecificServer}
 	s.master = &prodMaster{dial: s.FDialServer}
 	s.hack = &sync.Mutex{}
+	s.downloader = newDownloadManager(s)
 
 	return s
 }
@@ -321,6 +323,9 @@ func (s *Server) ReportHealth() bool {
 
 // Shutdown the server
 func (s *Server) Shutdown(ctx context.Context) error {
+	if s.downloader != nil {
+		s.downloader.stop()
+	}
 	return nil
 }
 
