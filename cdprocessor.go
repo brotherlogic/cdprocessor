@@ -117,6 +117,7 @@ func (pr *prodRipper) ripToFlac(ctx context.Context, pathIn, pathOut string) {
 
 type getter interface {
 	getRecord(ctx context.Context, id int64) (*pbrc.Record, error)
+	getRelease(ctx context.Context, releaseID int32) (*pbrc.Record, error)
 	updateRecord(ctx context.Context, id int64, cdpath, filepath string) error
 }
 
@@ -140,6 +141,22 @@ func (rc *prodGetter) getRecord(ctx context.Context, id int64) (*pbrc.Record, er
 	}
 
 	return resp.GetRecord(), err
+}
+
+func (rc *prodGetter) getRelease(ctx context.Context, releaseID int32) (*pbrc.Record, error) {
+	conn, err := rc.dial(ctx, "recordcollection")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	resp, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{ReleaseId: releaseID})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetRecord(), nil
 }
 
 func (rc *prodGetter) updateRecord(ctx context.Context, instanceID int64, cdpath, filepath string) error {

@@ -160,11 +160,12 @@ func waitForTerminalStatus(t *testing.T, s *Server, releaseID int32) *pb.GetDown
 func TestDownloadReleaseZipEndToEnd(t *testing.T) {
 	enc := &mockAudioEncoder{}
 	s, dir := newDownloadTestServer(t, enc)
-	s.getter = &testGetter{
+	tg := &testGetter{
 		records: map[int64]*pbrc.Record{
 			5001: makeReleaseRecord(1001, 5001, 3, "File"),
 		},
 	}
+	s.getter = tg
 
 	// Pre-seed old quarantine directory to ensure atomic commit cleans it up.
 	oldQuarantine := filepath.Join(dir, ".quarantine", "1001")
@@ -248,6 +249,9 @@ func TestDownloadReleaseZipEndToEnd(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("expected release 1001 to appear in GetRipped after commit")
+	}
+	if calls := atomic.LoadInt32(&tg.releaseCalls); calls != 0 {
+		t.Errorf("expected 0 getRelease calls when cached Tracklist is populated, got %d", calls)
 	}
 }
 
@@ -1003,4 +1007,259 @@ func TestDownloadReleaseDeduplicationAndSingleConcurrency(t *testing.T) {
 	if atomic.LoadInt32(&maxConcurrent) != 1 {
 		t.Errorf("expected max concurrent encodings == 1, got %d", maxConcurrent)
 	}
+}
+
+func TestDownloadReleaseFallbackToLiveRelease(t *testing.T) {
+	t.Run("fallback_success", func(t *testing.T) {
+		enc := &mockAudioEncoder{}
+		s, dir := newDownloadTestServer(t, enc)
+		const releaseID = int32(31692413)
+		const instanceID = int64(9901)
+
+		tg := &testGetter{
+			records: map[int64]*pbrc.Record{
+				instanceID: {
+					Release: &pbgd.Release{
+						Id:         releaseID,
+						InstanceId: instanceID,
+						FolderId:   1782105,
+					},
+					Metadata: &pbrc.ReleaseMetadata{
+						GoalFolder: 1782105,
+						FiledUnder: pbrc.ReleaseMetadata_FILE_DIGITAL,
+					},
+				},
+			},
+			releases: map[int32]*pbrc.Record{
+				releaseID: {
+					Release: makeReleaseRecord(releaseID, instanceID, 3, "File").GetRelease(),
+				},
+			},
+		}
+		s.getter = tg
+
+		zipBytes := buildTestZip(t, map[string][]byte{
+			"01 One.wav":   makeFakeWav("track1"),
+			"02 Two.wav":   makeFakeWav("track2"),
+			"03 Three.wav": makeFakeWav("track3"),
+		})
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write(zipBytes)
+		}))
+		defer srv.Close()
+
+		resp, err := s.DownloadRelease(context.Background(), &pb.DownloadReleaseRequest{
+			ReleaseId:   releaseID,
+			InstanceId:  instanceID,
+			DownloadUrl: srv.URL + "/album.zip",
+		})
+		if err != nil {
+			t.Fatalf("DownloadRelease failed: %v", err)
+		}
+		if resp.GetState() != pb.DownloadState_DOWNLOAD_QUEUED {
+			t.Fatalf("expected DOWNLOAD_QUEUED, got %v", resp.GetState())
+		}
+
+		st := waitForTerminalStatus(t, s, releaseID)
+		if st.GetState() != pb.DownloadState_DOWNLOAD_COMPLETED {
+			t.Fatalf("expected DOWNLOAD_COMPLETED, got %v (%s)", st.GetState(), st.GetErrorMessage())
+		}
+		if st.GetTrackCount() != 3 {
+			t.Fatalf("expected track_count 3, got %d", st.GetTrackCount())
+		}
+		if calls := atomic.LoadInt32(&tg.releaseCalls); calls != 1 {
+			t.Errorf("expected 1 getRelease call, got %d", calls)
+		}
+		for i := 1; i <= 3; i++ {
+			for _, ext := range []string{"wav", "flac", "mp3"} {
+				p := filepath.Join(dir, fmt.Sprintf("%d", releaseID), fmt.Sprintf("track%02d.cdda.%s", i, ext))
+				info, err := os.Stat(p)
+				if err != nil || info.Size() == 0 {
+					t.Fatalf("expected non-empty %s, err=%v", p, err)
+				}
+			}
+		}
+	})
+
+	t.Run("fallback_transient_error_retryable", func(t *testing.T) {
+		enc := &mockAudioEncoder{}
+		s, dir := newDownloadTestServer(t, enc)
+		const releaseID = int32(31692415)
+		const instanceID = int64(9903)
+
+		s.getter = &testGetter{
+			records: map[int64]*pbrc.Record{
+				instanceID: {
+					Release: &pbgd.Release{Id: releaseID, InstanceId: instanceID},
+				},
+			},
+			releaseErrByID: map[int32]error{
+				releaseID: status.Error(codes.Unavailable, "discogs unavailable"),
+			},
+		}
+
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write(makeFakeWav("single"))
+		}))
+		defer srv.Close()
+
+		if _, err := s.DownloadRelease(context.Background(), &pb.DownloadReleaseRequest{
+			ReleaseId: releaseID, InstanceId: instanceID, DownloadUrl: srv.URL + "/t.wav",
+		}); err != nil {
+			t.Fatalf("DownloadRelease failed: %v", err)
+		}
+
+		st := waitForTerminalStatus(t, s, releaseID)
+		if st.GetState() != pb.DownloadState_DOWNLOAD_FAILED_RETRYABLE {
+			t.Fatalf("expected DOWNLOAD_FAILED_RETRYABLE, got %v (%s)", st.GetState(), st.GetErrorMessage())
+		}
+		if _, err := os.Stat(filepath.Join(dir, fmt.Sprintf(".tmp-%d", releaseID))); !os.IsNotExist(err) {
+			t.Errorf("expected staging dir removed, err=%v", err)
+		}
+		if _, err := os.Stat(filepath.Join(dir, ".quarantine", fmt.Sprintf("%d", releaseID))); !os.IsNotExist(err) {
+			t.Errorf("expected release not to be quarantined on transient error, err=%v", err)
+		}
+	})
+
+	t.Run("fallback_permanent_error", func(t *testing.T) {
+		enc := &mockAudioEncoder{}
+		s, dir := newDownloadTestServer(t, enc)
+		const releaseID = int32(31692416)
+		const instanceID = int64(9904)
+
+		s.getter = &testGetter{
+			records: map[int64]*pbrc.Record{
+				instanceID: {
+					Release: &pbgd.Release{Id: releaseID, InstanceId: instanceID},
+				},
+			},
+			releaseErrByID: map[int32]error{
+				releaseID: status.Error(codes.NotFound, "release not found"),
+			},
+		}
+
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write(makeFakeWav("single"))
+		}))
+		defer srv.Close()
+
+		if _, err := s.DownloadRelease(context.Background(), &pb.DownloadReleaseRequest{
+			ReleaseId: releaseID, InstanceId: instanceID, DownloadUrl: srv.URL + "/t.wav",
+		}); err != nil {
+			t.Fatalf("DownloadRelease failed: %v", err)
+		}
+
+		st := waitForTerminalStatus(t, s, releaseID)
+		if st.GetState() != pb.DownloadState_DOWNLOAD_FAILED_PERMANENT {
+			t.Fatalf("expected DOWNLOAD_FAILED_PERMANENT, got %v (%s)", st.GetState(), st.GetErrorMessage())
+		}
+		if _, err := os.Stat(filepath.Join(dir, fmt.Sprintf(".tmp-%d", releaseID))); !os.IsNotExist(err) {
+			t.Errorf("expected staging dir removed, err=%v", err)
+		}
+		if _, err := os.Stat(filepath.Join(dir, ".quarantine", fmt.Sprintf("%d", releaseID))); !os.IsNotExist(err) {
+			t.Errorf("expected release not to be quarantined on NotFound error, err=%v", err)
+		}
+	})
+
+	t.Run("fallback_track_count_mismatch_quarantines", func(t *testing.T) {
+		enc := &mockAudioEncoder{}
+		s, dir := newDownloadTestServer(t, enc)
+		const releaseID = int32(31692417)
+		const instanceID = int64(9905)
+
+		s.getter = &testGetter{
+			records: map[int64]*pbrc.Record{
+				instanceID: {
+					Release: &pbgd.Release{Id: releaseID, InstanceId: instanceID},
+				},
+			},
+			releases: map[int32]*pbrc.Record{
+				releaseID: {
+					Release: makeReleaseRecord(releaseID, instanceID, 4, "File").GetRelease(),
+				},
+			},
+		}
+
+		zipBytes := buildTestZip(t, map[string][]byte{
+			"01 One.wav": makeFakeWav("one"),
+			"02 Two.wav": makeFakeWav("two"),
+		})
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write(zipBytes)
+		}))
+		defer srv.Close()
+
+		if _, err := s.DownloadRelease(context.Background(), &pb.DownloadReleaseRequest{
+			ReleaseId: releaseID, InstanceId: instanceID, DownloadUrl: srv.URL + "/mismatch.zip",
+		}); err != nil {
+			t.Fatalf("DownloadRelease failed: %v", err)
+		}
+
+		st := waitForTerminalStatus(t, s, releaseID)
+		wantQuarantine := filepath.Join(dir, ".quarantine", fmt.Sprintf("%d", releaseID))
+		if st.GetState() != pb.DownloadState_DOWNLOAD_FAILED_PERMANENT {
+			t.Fatalf("expected DOWNLOAD_FAILED_PERMANENT, got %v", st.GetState())
+		}
+		if st.GetTrackCount() != 2 {
+			t.Errorf("expected track_count 2, got %d", st.GetTrackCount())
+		}
+		if st.GetQuarantinePath() != wantQuarantine {
+			t.Errorf("expected quarantine_path %q, got %q", wantQuarantine, st.GetQuarantinePath())
+		}
+		if !strings.Contains(st.GetErrorMessage(), "4") || !strings.Contains(st.GetErrorMessage(), "2") {
+			t.Errorf("expected error message to mention 4 and 2, got %q", st.GetErrorMessage())
+		}
+		for i := 1; i <= 2; i++ {
+			if _, err := os.Stat(filepath.Join(wantQuarantine, fmt.Sprintf("track%02d.cdda.wav", i))); err != nil {
+				t.Errorf("expected quarantined track %d: %v", i, err)
+			}
+		}
+	})
+
+	t.Run("fallback_live_release_zero_tracks", func(t *testing.T) {
+		enc := &mockAudioEncoder{}
+		s, dir := newDownloadTestServer(t, enc)
+		const releaseID = int32(31692418)
+		const instanceID = int64(9906)
+
+		tg := &testGetter{
+			records: map[int64]*pbrc.Record{
+				instanceID: {
+					Release: &pbgd.Release{Id: releaseID, InstanceId: instanceID},
+				},
+			},
+			releases: map[int32]*pbrc.Record{
+				releaseID: {
+					Release: &pbgd.Release{Id: releaseID},
+				},
+			},
+		}
+		s.getter = tg
+
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write(makeFakeWav("single"))
+		}))
+		defer srv.Close()
+
+		if _, err := s.DownloadRelease(context.Background(), &pb.DownloadReleaseRequest{
+			ReleaseId: releaseID, InstanceId: instanceID, DownloadUrl: srv.URL + "/zero.wav",
+		}); err != nil {
+			t.Fatalf("DownloadRelease failed: %v", err)
+		}
+
+		st := waitForTerminalStatus(t, s, releaseID)
+		if calls := atomic.LoadInt32(&tg.releaseCalls); calls != 1 {
+			t.Errorf("expected 1 getRelease call, got %d", calls)
+		}
+		wantQuarantine := filepath.Join(dir, ".quarantine", fmt.Sprintf("%d", releaseID))
+		if st.GetState() != pb.DownloadState_DOWNLOAD_FAILED_PERMANENT {
+			t.Fatalf("expected DOWNLOAD_FAILED_PERMANENT, got %v", st.GetState())
+		}
+		if st.GetQuarantinePath() != wantQuarantine {
+			t.Errorf("expected quarantine_path %q, got %q", wantQuarantine, st.GetQuarantinePath())
+		}
+		if !strings.Contains(st.GetErrorMessage(), "expected 0") || !strings.Contains(st.GetErrorMessage(), "extracted 1") {
+			t.Errorf("expected error message to mention expected 0 and extracted 1, got %q", st.GetErrorMessage())
+		}
+	})
 }

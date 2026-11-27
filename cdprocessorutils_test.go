@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync/atomic"
 	"testing"
 
 	keystoreclient "github.com/brotherlogic/keystore/client"
@@ -33,14 +34,17 @@ func (p *testMaster) GetRipped(ctx context.Context, req *pb.GetRippedRequest) (*
 }
 
 type testGetter struct {
-	fail       bool
-	failCode   codes.Code
-	failUpdate bool
-	updates    int
-	adjusted   map[int64]bool
-	override   *pbrc.Record
-	records    map[int64]*pbrc.Record
-	errByID    map[int64]error
+	fail           bool
+	failCode       codes.Code
+	failUpdate     bool
+	updates        int
+	adjusted       map[int64]bool
+	override       *pbrc.Record
+	records        map[int64]*pbrc.Record
+	errByID        map[int64]error
+	releases       map[int32]*pbrc.Record
+	releaseErrByID map[int32]error
+	releaseCalls   int32
 }
 
 func (t *testGetter) getRecord(ctx context.Context, id int64) (*pbrc.Record, error) {
@@ -74,6 +78,27 @@ func (t *testGetter) getRecord(ctx context.Context, id int64) (*pbrc.Record, err
 			&pbgd.Track{Position: "2", SubTracks: []*pbgd.Track{
 				&pbgd.Track{Position: "3", TrackType: pbgd.Track_TRACK}}}}}, Metadata: &pbrc.ReleaseMetadata{FilePath: filepath},
 	}, nil
+}
+
+func (t *testGetter) getRelease(ctx context.Context, releaseID int32) (*pbrc.Record, error) {
+	atomic.AddInt32(&t.releaseCalls, 1)
+	if t.releaseErrByID != nil {
+		if err, ok := t.releaseErrByID[releaseID]; ok {
+			return nil, err
+		}
+	}
+	if t.releases != nil {
+		if rec, ok := t.releases[releaseID]; ok {
+			return rec, nil
+		}
+	}
+	if t.fail {
+		if t.failCode != codes.OK {
+			return nil, status.Error(t.failCode, fmt.Sprintf("Built to fail"))
+		}
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Built to fail"))
+	}
+	return &pbrc.Record{Release: &pbgd.Release{Id: releaseID}}, nil
 }
 
 func (t *testGetter) updateRecord(ctx context.Context, id int64, cdpath, filepath string) error {
