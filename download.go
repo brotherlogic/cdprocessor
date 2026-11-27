@@ -431,6 +431,24 @@ func (dm *downloadManager) processDownload(ctx context.Context, task downloadTas
 	}
 
 	expected := expectedTrackCount(rec)
+	if expected == 0 {
+		s.CtxLog(ctx, fmt.Sprintf("Download %d: cached record for instance %d has 0 expected tracks, falling back to live release lookup", task.releaseID, task.instanceID))
+		relRec, err := s.getter.getRelease(ctx, task.releaseID)
+		if err != nil {
+			code := status.Code(err)
+			if code == codes.NotFound || code == codes.InvalidArgument {
+				failPermanent(fmt.Sprintf("recordcollection release lookup failed for release %d: %v", task.releaseID, err))
+				return
+			}
+			failRetryable(fmt.Sprintf("recordcollection release lookup failed for release %d: %v", task.releaseID, err))
+			return
+		}
+		merged := &pbrc.Record{
+			Release:  relRec.GetRelease(),
+			Metadata: rec.GetMetadata(),
+		}
+		expected = expectedTrackCount(merged)
+	}
 	if trackCount != expected {
 		quarantineDir := filepath.Join(s.dir, ".quarantine", strconv.Itoa(int(task.releaseID)))
 		if err := os.MkdirAll(filepath.Dir(quarantineDir), 0755); err != nil {
